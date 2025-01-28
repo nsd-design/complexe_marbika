@@ -1,0 +1,61 @@
+# Python
+*.pyc
+*.pyo
+*.pyd
+__pycache__
+*.so
+*.egg
+*.egg-info
+dist
+build
+*.bak
+*.swp
+
+# Environnements virtuels
+.venv/
+env/
+venv/
+
+# Django
+*.log
+*.pot
+*.pyc
+*.pyo
+__pycache__/
+
+# Base de données SQLite
+db.sqlite3
+*.sqlite3
+
+# Fichiers de migration
+migrations/
+
+# Fichiers de configuration
+*.env
+*.env.*
+
+# PyCharm
+.idea/
+
+# VS Code
+.vscode/
+
+# Coverage
+.coverage
+*.cover
+
+# Distribution / Build
+*.tar.gz
+*.zip
+
+# Médias et fichiers statiques générés
+/static/
+/media/
+
+# Fichiers personnels
+*.db
+*.DS_Store
+
+# Autres
+*.bak
+*.log
