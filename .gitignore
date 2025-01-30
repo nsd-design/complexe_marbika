@@ -49,7 +49,7 @@ migrations/
 *.zip
 
 # Médias et fichiers statiques générés
-/static/
+#/static/
 /media/
 
 # Fichiers personnels

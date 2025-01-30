@@ -60,7 +60,7 @@ ROOT_URLCONF = 'marbika.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -128,7 +128,20 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
+# Répertoire où Django va chercher les fichiers statiques lors du développement
 STATIC_URL = 'static/'
+
+# Répertoire où les fichiers statiques seront collectés lors de la commande collectstatic
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# Répertoires supplémentaires où Django va chercher des fichiers statiques
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),  # Répertoire des fichiers statiques personnalisés
+]
+
+# Pour gérer les fichiers media (images téléchargées par les utilisateurs)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field

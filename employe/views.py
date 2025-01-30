@@ -1,3 +1,5 @@
 from django.shortcuts import render
 
-# Create your views here.
+
+def dashmin(request):
+    return render(request, "dashboard.html")

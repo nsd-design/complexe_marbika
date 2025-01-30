@@ -1,10 +1,26 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% load static %}
+    <!-- *************
+			************ JavaScript Files *************
+		************* -->
+    <!-- Required jQuery first, then Bootstrap Bundle JS -->
+    <script src="{% static 'assets/js/jquery.min.js' %}"></script>
+    <script src="{% static 'assets/js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'assets/js/moment.min.js' %}"></script>
+
+    <!-- *************
+			************ Vendor Js Files *************
+		************* -->
+
+    <!-- Overlay Scroll JS -->
+    <script src="{% static 'assets/vendor/overlay-scroll/jquery.overlayScrollbars.min.js' %}"></script>
+    <script src="{% static 'assets/vendor/overlay-scroll/custom-scrollbar.js' %}"></script>
+
+    <!-- Apex Charts -->
+    <script src="{% static 'assets/vendor/apex/apexcharts.min.js' %}"></script>
+    <script src="{% static 'assets/vendor/apex/custom/home/invoices.js' %}"></script>
+    <script src="{% static 'assets/vendor/apex/custom/home/deals.js' %}"></script>
+    <script src="{% static 'assets/vendor/apex/custom/home/tickets.js' %}"></script>
+    <script src="{% static 'assets/vendor/apex/custom/home/leads.js' %}"></script>
+
+    <!-- Custom JS files -->
+    <script src="{% static 'assets/js/custom.js' %}"></script>
