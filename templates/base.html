@@ -36,7 +36,7 @@
 
             <!-- Breadcrumb starts -->
             <div class="d-flex align-items-center ms-3">
-              <h5 class="m-0">Analytics</h5>
+              <h5 class="m-0">{% block page_title %}{% endblock %}</h5>
             </div>
             <!-- Breadcrumb ends -->
 
@@ -247,7 +247,9 @@
           <!-- App header ends -->
 
           <!-- App body starts -->
-          {% block main %}{% endblock main %}
+          <div class="app-body">
+            {% block main %}{% endblock main %}
+          </div>
           <!-- App body ends -->
 
           <!-- App footer starts -->
