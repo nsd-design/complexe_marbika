@@ -5,7 +5,7 @@
           <!-- App brand starts -->
           <div class="app-brand mb-3">
             <a href="{% url 'dashmin' %}">
-              <img src="{% static 'assets/images/LogoMarbika.png' %}" class="logo img-fluid" alt="Axis Bootstrap Template" />
+              <img src="{% static 'assets/images/LogoMarbika.png' %}" class="logo img-fluid" alt="Logo Marbika" />
             </a>
           </div>
           <!-- App brand ends -->
@@ -14,22 +14,58 @@
           <div class="sidebarMenuScroll">
             <ul class="sidebar-menu">
               <li class="active current-page">
-                <a href="#">
+                <a href="{% url 'dashmin' %}">
                   <i class="bi bi-laptop"></i>
                   <span class="menu-text">Analytics</span>
                 </a>
               </li>
               <li>
-                <a href="#">
-                  <i class="bi bi-bar-chart-line"></i>
-                  <span class="menu-text">Reports</span>
+                <a href="{% url 'employe' %}">
+                  <i class="bi bi-people"></i>
+                  <span class="menu-text">Employés</span>
                 </a>
               </li>
-              <li>
-                <a href="customers.html">
-                  <i class="bi bi-globe"></i>
-                  <span class="menu-text">Customers</span>
+              <li class="treeview">
+                <a href="#">
+                  <i class="bi bi-flower1"></i>
+                  <span class="menu-text">Salon</span>
                 </a>
+                <ul class="treeview-menu">
+                  <li>
+                    <a href="#">Services</a>
+                  </li>
+                  <li>
+                    <a href="#">Prestations</a>
+                  </li>
+                </ul>
+              </li>
+              <li class="treeview">
+                <a href="#!">
+                  <i class="bi bi-cup-straw"></i>
+                  <span class="menu-text">Restaurant</span>
+                </a>
+                <ul class="treeview-menu">
+                  <li>
+                    <a href="#">Commandes</a>
+                  </li>
+                  <li>
+                    <a href="#">Contrôle Boisson</a>
+                  </li>
+                </ul>
+              </li>
+              <li class="treeview">
+                <a href="#!">
+                  <i class="bi bi-gift"></i>
+                  <span class="menu-text">Produits</span>
+                </a>
+                <ul class="treeview-menu">
+                  <li>
+                    <a href="#">Produits</a>
+                  </li>
+                  <li>
+                    <a href="#">Ventes</a>
+                  </li>
+                </ul>
               </li>
               <li>
                 <a href="notes.html">
@@ -80,7 +116,7 @@
                 </a>
               </li>
               <li class="treeview">
-                <a href="#!">
+                <a href="#">
                   <i class="bi bi-stickies"></i>
                   <span class="menu-text">UI Elements</span>
                 </a>
