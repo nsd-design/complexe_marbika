@@ -6,66 +6,200 @@
 {% block main %}
 <!-- Row starts -->
 <div class="row gx-4">
-  <div class="col-sm-12">
-    <div class="card mb-4">
-      <div class="card-header">
-        <h5 class="card-title">Création d'un nouveau Employé</h5>
-      </div>
-      <div class="card-body">
-        <div class="accordion" id="accordionSpecialTitle">
-          <div class="accordion-item">
-            <h2 class="accordion-header" id="headingSpecialTitleTwo">
-              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                data-bs-target="#collapseSpecialTitleTwo" aria-expanded="false"
-                aria-controls="collapseSpecialTitleTwo">
-                <div class="d-flex flex-column">
-                  <h5 class="m-0">Nouveau Employé</h5>
-                </div>
-              </button>
-            </h2>
-            <div id="collapseSpecialTitleTwo" class="accordion-collapse collapse"
-              aria-labelledby="headingSpecialTitleTwo" data-bs-parent="#accordionSpecialTitle">
-              <div class="accordion-body">
-
-                <!-- Row starts -->
-                <form method="POST" action="{% url 'add_employe' %}" class="row gx-4">
-                    {% csrf_token %}
-                  <div class="col-xl-3 col-sm-4 col-12">
-                    <div class="mb-3">
-                      <label class="form-label" for="id_first_name">Prénom</label>
-                        {{ form.first_name | as_crispy_field }}
-                    </div>
-                  </div>
-                  <div class="col-xl-3 col-sm-4 col-12">
-                    <div class="mb-3">
-                      <label class="form-label" for="id_last_name">Nom</label>
-                      {{ form.last_name | as_crispy_field }}
-                    </div>
-                  </div>
-                  <div class="col-xl-3 col-sm-4 col-12">
-                    <div class="mb-3">
-                      <label class="form-label" for="id_email">Email</label>
-                      {{ form.email | as_crispy_field }}
-                    </div>
-                  </div>
-
-
-                  <div class="col-sm-12 col-12">
-                    <div class="d-flex gap-2 justify-content-end">
-<!--                      <button type="button" class="btn btn-secondary">Clear</button>-->
-                      <button type="submit" class="btn btn-primary">Créer</button>
-                    </div>
-                  </div>
-                </form>
-                <!-- Row ends -->
-
-              </div>
+    <div class="col-sm-12">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title">Création d'un nouveau Employé</h5>
             </div>
-          </div>
+            <div class="card-body">
+                <div class="accordion" id="accordionSpecialTitle">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingSpecialTitleTwo">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#collapseSpecialTitleTwo" aria-expanded="false"
+                                    aria-controls="collapseSpecialTitleTwo">
+                                <div class="d-flex flex-column">
+                                    <h5 class="m-0">Nouveau Employé</h5>
+                                </div>
+                            </button>
+                        </h2>
+                        <div id="collapseSpecialTitleTwo" class="accordion-collapse collapse"
+                             aria-labelledby="headingSpecialTitleTwo" data-bs-parent="#accordionSpecialTitle">
+                            <div class="accordion-body">
+
+                                <!-- Row starts -->
+                                <form method="POST" action="{% url 'add_employe' %}" class="row gx-4" id="employe-form">
+                                    {% csrf_token %}
+                                    <div class="col-xl-3 col-sm-4 col-12">
+                                        <div class="mb-3">
+                                            <label class="form-label" for="id_first_name">Prénom</label>
+                                            {{ form.first_name | as_crispy_field }}
+                                        </div>
+                                    </div>
+                                    <div class="col-xl-3 col-sm-4 col-12">
+                                        <div class="mb-3">
+                                            <label class="form-label" for="id_last_name">Nom</label>
+                                            {{ form.last_name | as_crispy_field }}
+                                        </div>
+                                    </div>
+                                    <div class="col-xl-3 col-sm-4 col-12">
+                                        <div class="mb-3">
+                                            <label class="form-label" for="id_email">Email</label>
+                                            {{ form.email | as_crispy_field }}
+                                        </div>
+                                    </div>
+                                    <div class="col-xl-3 col-sm-4 col-12">
+                                        <div class="mb-3">
+                                            <label class="form-label" for="id_telephone">Téléphone</label>
+                                            {{ form.telephone | as_crispy_field }}
+                                        </div>
+                                    </div>
+
+                                    <!-- Zone d'affichage des messages -->
+                                    <div id="response-message" class="alert bg-success text-white alert-dismissible fade" role="alert">
+
+                                      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"
+                                        aria-label="Close"></button>
+                                    </div>
+
+                                    <div class="col-sm-12 col-12">
+                                        <div class="d-flex gap-2 justify-content-end">
+                                            <!--                      <button type="button" class="btn btn-secondary">Clear</button>-->
+                                            <button type="submit" class="btn btn-primary">Créer</button>
+                                        </div>
+                                    </div>
+                                </form>
+                                <!-- Row ends -->
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title">Default</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-outer">
+                    <div class="table-responsive">
+                        <table class="table align-middle table-hover m-0 truncate" id="table-emplye">
+                            <thead>
+                            <tr>
+                                <th>Employee</th>
+                                <th>Téléphone</th>
+                                <th>Email</th>
+                                <th>Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for employe in employes %}
+                            <tr>
+                                <td>
+                                    <p>{{ employe.first_name}} {{ employe.last_name }}</p>
+                                </td>
+                                <td>{{ employe.telephone }}</td>
+                                <td>{{ employe.email }}</td>
+                                <td>
+                                    <a class="btn btn-danger btn-sm" href="#"><i class="bi bi-pencil"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
 </div>
+
+<!-- Custom JS files -->
+{% block custom_js %}
+<script src="{% static 'assets/js/jquery.min.js' %}"></script>
+{% endblock %}
+<script>
+    $(document).ready(function(){
+
+        function getCSRFToken(){
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+            return csrfToken ? csrfToken.value : "";
+        }
+
+        $("#employe-form").submit(function(event){
+            event.preventDefault();
+
+            const actionUrl = $(this).attr('action');
+
+            // Collecte des données du formulaire
+            const formData = {
+                first_name: $('#id_first_name').val().trim(),
+                last_name: $('#id_last_name').val().trim(),
+                telephone: $('#id_telephone').val().trim(),
+                email: $('#id_email').val().trim(),
+            };
+
+            if(!formData.first_name || !formData.last_name || !formData.telephone || !formData.email){
+                $("#response-message").text("Tous les champs sont obligatoires.")
+                $('#response-message').addClass('show').fadeIn();
+                setTimeout(function(){
+                    $("#response-message").removeClass('show').fadeOut();
+                }, 3000)
+                return
+            }
+
+            // Envoi de la requête AJAX
+            $.ajax({
+                url: actionUrl,
+                method: 'POST',
+                headers: { 'X-CSRFToken': getCSRFToken() },
+                data: JSON.stringify(formData),
+                contentType: 'application/json',
+                dataType: 'json',
+                success: function(res){
+                    $('#response-message').text(res.msg);
+                    $('#response-message').addClass('show');
+
+                    // Ajouter le nouvel Employe a la table
+                    var newRow = `
+                        <tr>
+                            <td>${res.first_name} ${res.last_name}</td>
+                            <td>${res.telephone}</td>
+                            <td>${res.email}</td>
+                        </tr>
+                    `
+                    // Ajouter la nouvelle ligne a la table sans recharger la page
+                    $("#table-emplye tbody").prepend(newRow);
+
+                    // Faire disparaître après 3 secondes (3000 ms)
+                    setTimeout(function () {
+                        $('#response-message').removeClass('show').fadeOut();
+                    }, 3000);
+
+                    $('#employe-form')[0].reset();
+
+                    $("#table-emplye tbody").append(res.new_row_html)
+                },
+                error: function(xhr){
+                    const errorResponse = xhr.responseJSON ? xhr.responseJSON.error : 'Erreur serveur.';
+                    $('#response-message').text(`Erreur: ${errorResponse}`);
+                    $('#response-message').removeClass('bg-success')
+                    $('#response-message').addClass('bg-warning').addClass('show');
+                    // Faire disparaître après 3 secondes (3000 ms)
+                    setTimeout(function () {
+                        $('#response-message').removeClass('show').fadeOut();
+                        $('#response-message').removeClass('bg-warning');
+                    }, 3000);
+                },
+            })
+
+        })
+    })
+</script>
 <!-- Row ends -->
 {% endblock %}
+
