@@ -80,7 +80,7 @@
 
         <div class="card mb-4">
             <div class="card-header">
-                <h5 class="card-title">Default</h5>
+                <h5 class="card-title">Liste des Employés</h5>
             </div>
             <div class="card-body">
                 <div class="table-outer">
@@ -89,7 +89,7 @@
                             <thead>
                             <tr>
                                 <th>Employee</th>
-                                <th>Téléphone</th>
+                                <th class="text-center">Téléphone</th>
                                 <th>Email</th>
                                 <th>Actions</th>
                             </tr>
@@ -100,7 +100,7 @@
                                 <td>
                                     <p>{{ employe.first_name}} {{ employe.last_name }}</p>
                                 </td>
-                                <td>{{ employe.telephone }}</td>
+                                <td class="text-center">{{ employe.telephone }}</td>
                                 <td>{{ employe.email }}</td>
                                 <td>
                                     <a class="btn btn-danger btn-sm" href="#"><i class="bi bi-pencil"></i>
@@ -121,9 +121,27 @@
 <!-- Custom JS files -->
 {% block custom_js %}
 <script src="{% static 'assets/js/jquery.min.js' %}"></script>
+<script src="{% static 'assets/js/datatables.min.js' %}"></script>
 {% endblock %}
 <script>
     $(document).ready(function(){
+
+        $("#table-emplye").DataTable({
+            language: {
+                processing: "Traitement en cours...",
+                search: "Rechercher&nbsp;:&nbsp;",
+                lengthMenu:    "Afficher _MENU_ &eacute;l&eacute;ments",
+                info:           "Affichage de l'&eacute;lement _START_ &agrave; _END_ sur _TOTAL_ &eacute;l&eacute;ments",
+                infoEmpty:      "Affichage de l'&eacute;lement 0 &agrave; 0 sur 0 &eacute;l&eacute;ments",
+                loadingRecords: "Chargement en cours...",
+                zeroRecords:    "Aucun &eacute;l&eacute;ment &agrave; afficher",
+                emptyTable:     "Aucune donnée disponible dans le tableau",
+                aria: {
+                    sortAscending:  ": activer pour trier la colonne par ordre croissant",
+                    sortDescending: ": activer pour trier la colonne par ordre décroissant"
+                }
+            }
+        });
 
         function getCSRFToken(){
             const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
