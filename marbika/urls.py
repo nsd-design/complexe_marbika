@@ -22,5 +22,6 @@ from employe.views import dashmin
 urlpatterns = [
     path("", dashmin, name="dashmin"),
     path('admin/', admin.site.urls),
-    path("employe/", include("employe.urls"))
+    path("employe/", include("employe.urls")),
+    path("salon/", include("salon.urls")),
 ]

@@ -48,7 +48,7 @@ class MyBaseModel(models.Model):
         editable=False,
         default=uuid.uuid4
     )
-    created_at = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(Employe, on_delete=models.SET_NULL, null=True,
                                    related_name="created_%(class)s_set")
     updated_at = models.DateTimeField(null=True, blank=True)
