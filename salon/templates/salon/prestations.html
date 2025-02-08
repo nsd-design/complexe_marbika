@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block page_title %} {{ page_title }} {% endblock %}
+{% block main %}
+<!-- Row starts -->
+<div class="row gx-4">
+  <div class="col-sm-12">
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5 class="card-title">Prix des Services</h5>
+      </div>
+      <div class="card-body">
+        <div class="accordion" id="accordionSpecialTitle">
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingSpecialTitleOne">
+              <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                data-bs-target="#collapseSpecialTitleOne" aria-expanded="true"
+                aria-controls="collapseSpecialTitleOne">
+                <div class="d-flex flex-column">
+                  <h5 class="m-0">Prix Services</h5>
+                </div>
+              </button>
+            </h2>
+            <div id="collapseSpecialTitleOne" class="accordion-collapse collapse show"
+              aria-labelledby="headingSpecialTitleOne" data-bs-parent="#accordionSpecialTitle">
+              <div class="accordion-body">
+                <!-- Row starts -->
+                <form method="POST" action="{% url 'add_prix_services' %}" class="row gx-4" id="prix-services-form">
+                    {% csrf_token %}
+                    <div class="col-xl-3 col-sm-4 col-12">
+                        <div class="mb-3">
+                            <label class="form-label" for="id_service">Prénom</label>
+                            {{ form.service | as_crispy_field }}
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-sm-4 col-12">
+                        <div class="mb-3">
+                            <label class="form-label" for="id_montant_a_payer">Nom</label>
+                            {{ form.montant_a_payer | as_crispy_field }}
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-sm-4 col-12">
+                        <div class="mb-3">
+                            <label class="form-label" for="id_montant_reduit">Email</label>
+                            {{ form.montant_reduit | as_crispy_field }}
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-sm-4 col-12">
+                        <div class="mb-3">
+                            <label class="form-label" for="id_fait_par">Téléphone</label>
+                            {{ form.fait_par | as_crispy_field }}
+                        </div>
+                    </div>
+
+                    <!-- Zone d'affichage des messages -->
+                    <div id="response-message" class="alert bg-success text-white alert-dismissible fade" role="alert">
+
+                      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"
+                        aria-label="Close"></button>
+                    </div>
+
+                    <div class="col-sm-12 col-12">
+                        <div class="d-flex gap-2 justify-content-end">
+                            <!--                      <button type="button" class="btn btn-secondary">Clear</button>-->
+                            <button type="submit" class="btn btn-primary">Créer</button>
+                        </div>
+                    </div>
+                </form>
+                <!-- Row ends -->
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Row ends -->
+{% endblock %}

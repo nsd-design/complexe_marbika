@@ -30,7 +30,7 @@ class PrixService(MyBaseModel):
 class Prestation(MyBaseModel):
     service = models.ForeignKey(Service, on_delete=models.SET_NULL, null=True)
     montant_a_payer = models.BigIntegerField()
-    montant_reduit = models.BigIntegerField(null=True)
+    montant_reduit = models.BigIntegerField(default=0)
     fait_par = models.ForeignKey(Employe, null=True, on_delete=models.SET_NULL)
 
     def __str__(self):
