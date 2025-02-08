@@ -328,9 +328,9 @@
             data: $(this).serialize(),
 
             success: function(res){
-                console.log(res)
                  $("#response-message-service").text(res.msg);
                  $("#response-message-service").addClass('show');
+                 $("#service-form")[0].reset();
                  // Ajouter le nouvel Employe a la table
                   var newRow = `
                       <tr>
