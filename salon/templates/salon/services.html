@@ -8,33 +8,26 @@
   <div class="col-sm-12">
       <div class="card mb-4">
         <div class="card-header">
-          <h5 class="card-title">Services</h5>
+          <h5 class="card-title">Créer une nouvelle Categorie ou un nouveau Service</h5>
         </div>
         <div class="card-body">
           <div class="custom-tabs-container">
             <ul class="nav nav-tabs" id="customTab3" role="tablist">
               <li class="nav-item" role="presentation">
                 <a class="nav-link active" id="tab-oneAA" data-bs-toggle="tab" href="#oneAA" role="tab"
-                  aria-controls="oneAA" aria-selected="true"><i class="bi bi-check-circle"></i>
+                  aria-controls="oneAA" aria-selected="true">
                   Categorie</a>
               </li>
               <li class="nav-item" role="presentation">
                 <a class="nav-link" id="tab-twoAA" data-bs-toggle="tab" href="#twoAA" role="tab"
-                  aria-controls="twoAA" aria-selected="false" tabindex="-1"><i
-                    class="bi bi-check-circle"></i>
-                  Service</a>
+                  aria-controls="twoAA" aria-selected="false" tabindex="-1"> Service</a>
               </li>
-              <li class="nav-item" role="presentation">
-                <a class="nav-link" id="tab-threeAA" data-bs-toggle="tab" href="#threeAA" role="tab"
-                  aria-controls="threeAA" aria-selected="false" tabindex="-1">
-                  <i class="bi bi-check-circle"></i>
-                  Tab Three</a>
-              </li>
+
             </ul>
             <div class="tab-content" id="customTabContent3">
               <div class="tab-pane fade show active" id="oneAA" role="tabpanel" aria-labelledby="tab-oneAA">
                 <div class="p-3">
-                  <h1 class="display-6 fw-bold text-primary">
+                  <h1 class="fs-2 fw-bold text-primary">
                     Créer une Categorie
                   </h1>
                   <div class="col-lg-12 mx-auto">
@@ -60,49 +53,39 @@
                 </div>
               </div>
               <div class="tab-pane fade" id="twoAA" role="tabpanel" aria-labelledby="tab-twoAA">
-                <div class="p-3 text-center">
-                  <h1 class="display-5 fw-bold text-primary">
+                <div class="p-3">
+                  <h1 class="fs-2 fw-bold text-primary">
                     Créer un Services
                   </h1>
-                  <div class="col-lg-6 mx-auto">
-                    <p class="lead mb-4">
-                      Download 100+ fully customizable and responsive Bootstrap Admin Templates and Dashboard
-                      UI Kits. Designed and Developed by Bootstrap Gallery.
-                    </p>
-                    <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
-                      <button type="button" class="btn btn-dark btn-lg">
-                        Button
-                      </button>
-                      <button type="button" class="btn btn-primary btn-lg">
-                        Button
-                      </button>
-                    </div>
+                  <div class="col-lg-12 mx-auto">
+                    <form method="POST" action="{% url 'add_service' %}" id="service-form">
+                      {% csrf_token %}
+                      <div class="col-xl-12 col-sm-12 col-12">
+                          <div class="col-xl-6 col-sm-4 col-12">
+                            <div class="mb-3">
+                                <label class="form-label" for="id_designation">Nom du Service</label>
+                                {{ service_form.designation | as_crispy_field }}
+                            </div>
+                          </div>
+                          <div class="col-xl-6 col-sm-4 col-12">
+                            <div class="mb-3">
+                                <label class="form-label" for="id_categorie">Catégorie</label>
+                                {{ service_form.categorie | as_crispy_field }}
+                            </div>
+                          </div>
+                          <div class="col-sm-3 col-12 self-align-center ms-2">
+                            <button type="submit" class="btn btn-primary mb-2">Créer</button>
+                          </div>
+                      </div>
+                      <!-- Zone d'affichage des messages -->
+                      <div id="response-message-service" class="alert bg-success text-white alert-dismissible fade" role="alert">
+
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"
+                          aria-label="Close"></button>
+                      </div>
+                    </form>
                   </div>
                 </div>
-              </div>
-              <div class="tab-pane fade" id="threeAA" role="tabpanel" aria-labelledby="tab-threeAA">
-                <div class="p-3 text-center">
-                  <h1 class="display-5 fw-bold text-primary">
-                    Tab Three
-                  </h1>
-                  <div class="col-lg-6 mx-auto">
-                    <p class="lead mb-4">
-                      Download 100+ fully customizable and responsive Bootstrap Admin Templates and Dashboard
-                      UI Kits. Designed and Developed by Bootstrap Gallery.
-                    </p>
-                    <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
-                      <button type="button" class="btn btn-outline-primary btn-lg">
-                        Button
-                      </button>
-                      <button type="button" class="btn btn-outline-dark btn-lg">
-                        Button
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="tab-pane fade" id="fourAA" role="tabpanel" aria-labelledby="tab-fourAA">
-                <h5 class="text-info">Tab Four Description</h5>
               </div>
             </div>
           </div>
@@ -110,39 +93,112 @@
         </div>
       </div>
 
-    <div class="card mb-4">
-        <div class="card-header">
-            <h5 class="card-title">Liste des Categories</h5>
-        </div>
-        <div class="card-body">
-            <div class="table-outer">
-                <div class="table-responsive">
-                    <table class="table align-middle table-hover m-0 truncate" id="table-category">
-                        <thead>
-                        <tr>
-                            <th>Categories</th>
-                            <th>Actions</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {% for category in categories %}
-                        <tr>
-                            <td>
-                                {{ category.nom_categorie }}
-                            </td>
-                            <td>
-                                <a class="btn btn-danger btn-sm" href="#"><i class="bi bi-pencil"></i>
-                                </a>
-                            </td>
-                        </tr>
-                        {% endfor %}
+<!--      Liste Services et Categories-->
+      <div class="col-sm-12">
+        <div class="card mb-4">
+          <div class="card-header">
+            <h5 class="card-title">Liste Services et Categories</h5>
+          </div>
+          <div class="card-body">
+            <div class="custom-tabs-container">
+              <ul class="nav nav-tabs" id="customTabServiceList" role="tablist">
+                <li class="nav-item" role="presentation">
+                  <a class="nav-link active" id="tab-tabCat" data-bs-toggle="tab" href="#tabCat" role="tab"
+                    aria-controls="tabCat" aria-selected="true">Categories</a>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <a class="nav-link" id="tab-tabServ" data-bs-toggle="tab" href="#tabServ" role="tab"
+                    aria-controls="tabServ" aria-selected="false" tabindex="-1">Services</a>
+                </li>
+              </ul>
+              <div class="tab-content" id="customTabService">
+                <div class="tab-pane fade show active" id="tabCat" role="tabpanel" aria-labelledby="tab-tabCat">
+                  <div class="p-3">
+                    <h1 class="fs-2 fw-bold text-primary">
+                      Liste Categories
+                    </h1>
+                    <div class="col-lg-6 ">
+                      <div class="card-body">
+                        <div class="table-outer">
+                            <div class="table-responsive p-4">
+                                <table class="table align-middle table-hover m-0 truncate" id="table-category">
+                                    <thead>
+                                    <tr>
+                                        <th>Categories</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for category in categories %}
+                                    <tr>
+                                        <td>
+                                            {{ category.nom_categorie }}
+                                        </td>
+                                        <td>
+                                            <a class="btn btn-danger btn-sm" href="#"><i class="bi bi-pencil"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
 
-                        </tbody>
-                    </table>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
                 </div>
+                <div class="tab-pane fade" id="tabServ" role="tabpanel" aria-labelledby="tab-tabServ">
+                  <div class="p-3 ">
+                    <h1 class="fs-2 fw-bold text-primary">
+                      Liste Services
+                    </h1>
+                    <div class="col-lg-6">
+                      <div class="card-body">
+                        <div class="table-outer">
+                            <div class="table-responsive p-4">
+                                <table class="table align-middle table-hover m-0 truncate" id="table-service">
+                                    <thead>
+                                    <tr>
+                                        <th>Designation</th>
+                                        <th>Categorie</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for service in services %}
+                                    <tr>
+                                        <td>
+                                            {{ service.designation }}
+                                        </td>
+                                        <td>
+                                            {{ service.categorie }}
+                                        </td>
+                                        <td>
+                                            <a class="btn btn-danger btn-sm" href="#"><i class="bi bi-pencil"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
             </div>
+
+          </div>
         </div>
-    </div>
+      </div>
+
   </div>
 </div>
 
@@ -154,6 +210,7 @@
 <script>
     $(document).ready(function(){
 
+      // Gestion Categories
       $("#table-category").DataTable({
           language: {
               processing: "Traitement en cours...",
@@ -227,6 +284,81 @@
                   $('#response-message').removeClass('bg-warning');
               }, 3000);
           },
+        })
+      })
+
+
+      // Gestion Services
+      $("#table-service").DataTable({
+          language: {
+              processing: "Traitement en cours...",
+              search: "Rechercher&nbsp;:&nbsp;",
+              lengthMenu:    "Afficher _MENU_ &eacute;l&eacute;ments",
+              info:           "Affichage de l'&eacute;lement _START_ &agrave; _END_ sur _TOTAL_ &eacute;l&eacute;ments",
+              infoEmpty:      "Affichage de l'&eacute;lement 0 &agrave; 0 sur 0 &eacute;l&eacute;ments",
+              loadingRecords: "Chargement en cours...",
+              zeroRecords:    "Aucun &eacute;l&eacute;ment &agrave; afficher",
+              emptyTable:     "Aucune donnée disponible dans le tableau",
+              aria: {
+                  sortAscending:  ": activer pour trier la colonne par ordre croissant",
+                  sortDescending: ": activer pour trier la colonne par ordre décroissant"
+              }
+          }
+      });
+      $("#service-form").submit(function(e){
+        e.preventDefault();
+
+        const formData = {
+            designation: $("#id_designation").val().trim(),
+            categorie: $("#id_categorie").val().trim(),
+        }
+
+        if(!formData.designation || !formData.categorie){
+            $("#response-message-service").text("Tous les champs sont obligatoires");
+            $("#response-message-service").addClass('show');
+            // Faire disparaître après 3 secondes (3000 ms)
+            setTimeout(function () {
+                 $("#response-message-service").removeClass('show').fadeOut();
+            }, 3000);
+        }
+        $.ajax({
+            url: $(this).attr('action'),
+            method: 'POST',
+            headers: { 'X-CSRFToken': getCSRFToken() },
+            data: $(this).serialize(),
+
+            success: function(res){
+                console.log(res)
+                 $("#response-message-service").text(res.msg);
+                 $("#response-message-service").addClass('show');
+                 // Ajouter le nouvel Employe a la table
+                  var newRow = `
+                      <tr>
+                          <td>${res.designation}</td>
+                          <td>${res.categorie}</td>
+                          <td>
+                            <a class="btn btn-danger btn-sm" href="#"><i class="bi bi-pencil"></i>
+                            </a>
+                          </td>
+                      </tr>
+                  `
+                  // Ajouter la nouvelle ligne a la table sans recharger la page
+                  $("#table-service tbody").prepend(newRow);
+                 setTimeout(function () {
+                     $("#response-message-service").removeClass('show').fadeOut();
+                 }, 3000);
+
+            },
+            error: function(err){
+                $("#response-message-service").text(err.error);
+                $("#response-message-service").removeClass('bg-success');
+                $("#response-message-service").addClass('bg-danger').addClass('show');
+
+                setTimeout(function () {
+                     $("#response-message-service").removeClass('show').fadeOut();
+                 }, 3000);
+            },
+
         })
       })
 
