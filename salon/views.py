@@ -5,8 +5,9 @@ from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.utils.html import escape
 
-from salon.forms import ServiceForm, CategorieForm, PrixServiceForm
-from salon.models import CategorieService, Service, PrixService
+from employe.models import Employe
+from salon.forms import ServiceForm, CategorieForm, PrixServiceForm, PrestationForm
+from salon.models import CategorieService, Service, PrixService, Prestation
 
 tmp = "salon/"
 
@@ -79,7 +80,7 @@ def prix_services(request):
     prix_services_list = PrixService.objects.all()
     context = {
         "form": PrixServiceForm(),
-        "page_title": "Prestations",
+        "page_title": "Prix des Services",
         "prix_services": prix_services_list,
     }
 
@@ -114,10 +115,47 @@ def add_prix_service(request):
 
 
 def prestations(request):
-
+    prestations_list = Prestation.objects.all()
     context= {
-        "form": "",
+        "form": PrestationForm(),
         "page_title": "Prestations",
     }
-
     return render(request, tmp + "prestations.html", context)
+
+def get_prix_service(request, service_id):
+    if request.method == 'GET':
+        try:
+            service = PrixService.objects.get(service_id=service_id)
+            return JsonResponse({"prix_service": service.prix_service})
+        except PrixService.DoesNotExist:
+            return JsonResponse({"error": "Aucun prix actif pour ce service."}, status=404)
+
+        except Exception as e:
+            print("get_prix_service:", e)
+
+    return JsonResponse({"error": "Méthode non autorisée"}, status=405)
+
+
+def add_prestation(request):
+    if request.method == "POST":
+        try:
+            form = PrestationForm(request.POST)
+            if form.is_valid():
+                service = form.cleaned_data['service']
+                fait_par = form.cleaned_data['fait_par']
+                montant_a_payer = form.cleaned_data['montant_a_payer']
+                montant_reduit = form.cleaned_data['montant_reduit']
+
+                Prestation.objects.create(
+                    service=service,
+                    montant_a_payer=montant_a_payer,
+                    montant_reduit=montant_reduit,
+                    fait_par=fait_par
+                )
+
+                return JsonResponse({"msg": "Prestation enregistrée"})
+
+        except Exception as e:
+            print("add prestation", e)
+    else:
+        JsonResponse({"error": "Methode non autorisée"}, status=405)
