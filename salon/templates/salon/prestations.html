@@ -9,7 +9,7 @@
   <div class="col-sm-12">
     <div class="card mb-4">
       <div class="card-header">
-        <h5 class="card-title">Prix des Services</h5>
+        <h5 class="card-title">Prestation du Personnel</h5>
       </div>
       <div class="card-body">
         <div class="accordion" id="accordionSpecialTitle">
@@ -19,7 +19,7 @@
                 data-bs-target="#collapseSpecialTitleOne" aria-expanded="true"
                 aria-controls="collapseSpecialTitleOne">
                 <div class="d-flex flex-column">
-                  <h5 class="m-0">Prix Services</h5>
+                  <h5 class="m-0">Prestations</h5>
                 </div>
               </button>
             </h2>
@@ -27,45 +27,44 @@
               aria-labelledby="headingSpecialTitleOne" data-bs-parent="#accordionSpecialTitle">
               <div class="accordion-body">
                 <!-- Row starts -->
-                <form method="POST" action="{% url 'add_prix_services' %}" class="row gx-4" id="prix-services-form">
+                <form method="POST" action="{% url 'add_prestations' %}" class="row gx-4" id="prestation-form">
                     {% csrf_token %}
                     <div class="col-xl-3 col-sm-4 col-12">
                         <div class="mb-3">
-                            <label class="form-label" for="id_service">Prénom</label>
+                            <label class="form-label" for="id_service">Selectionnez un Service</label>
                             {{ form.service | as_crispy_field }}
                         </div>
                     </div>
+
                     <div class="col-xl-3 col-sm-4 col-12">
                         <div class="mb-3">
-                            <label class="form-label" for="id_montant_a_payer">Nom</label>
+                            <label class="form-label" for="id_fait_par">Prestateur</label>
+                            {{ form.fait_par | as_crispy_field }}
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-sm-4 col-12">
+                        <div class="mb-3">
+                            <label class="form-label" for="id_montant_a_payer">Montant a Payer</label>
                             {{ form.montant_a_payer | as_crispy_field }}
                         </div>
                     </div>
+
                     <div class="col-xl-3 col-sm-4 col-12">
                         <div class="mb-3">
-                            <label class="form-label" for="id_montant_reduit">Email</label>
+                            <label class="form-label" for="id_montant_reduit">Reduction</label>
                             {{ form.montant_reduit | as_crispy_field }}
-                        </div>
-                    </div>
-                    <div class="col-xl-3 col-sm-4 col-12">
-                        <div class="mb-3">
-                            <label class="form-label" for="id_fait_par">Téléphone</label>
-                            {{ form.fait_par | as_crispy_field }}
                         </div>
                     </div>
 
                     <!-- Zone d'affichage des messages -->
                     <div id="response-message" class="alert bg-success text-white alert-dismissible fade" role="alert">
-
                       <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"
                         aria-label="Close"></button>
                     </div>
 
                     <div class="col-sm-12 col-12">
-                        <div class="d-flex gap-2 justify-content-end">
-                            <!--                      <button type="button" class="btn btn-secondary">Clear</button>-->
-                            <button type="submit" class="btn btn-primary">Créer</button>
-                        </div>
+                        <button type="submit" class="btn btn-primary">Créer</button>
                     </div>
                 </form>
                 <!-- Row ends -->
@@ -79,4 +78,66 @@
   </div>
 </div>
 <!-- Row ends -->
+
+<!-- Custom JS files -->
+{% block custom_js %}
+<script src="{% static 'assets/js/jquery.min.js' %}"></script>
+<script src="{% static 'assets/js/datatables.min.js' %}"></script>
+{% endblock %}
+<script>
+    $(document).ready(function(){
+        $("#id_service").change(function(){
+            const service_id = $(this).val();
+            const url = "{% url 'get_prix_service' 0 %}".replace('0', service_id);
+            $.ajax({
+                url: url,
+                method: "GET",
+                success: function(res){
+                    $("#id_montant_a_payer").val(res.prix_service)
+                },
+                error: function(err){
+                    $("#response-message").text(err.responseJSON.error);
+                    $("#response-message").removeClass('bg-success');
+                    $("#response-message").addClass('bg-danger').addClass('show');
+                    $("#id_montant_a_payer").val("")
+
+                    setTimeout(function () {
+                        $("#response-message").removeClass('show').fadeOut();
+                    }, 3000);
+                }
+            })
+        });
+
+        function getCSRFToken(){
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+            return csrfToken ? csrfToken.value : "";
+        }
+
+        $("#prestation-form").submit(function(e){
+            e.preventDefault();
+            $.ajax({
+                url: $(this).attr('action'),
+                method: "POST",
+                headers: { 'X-CSRFToken': getCSRFToken() },
+                data: $(this).serialize(),
+                success: function(res){
+                    $("#response-message").text(res.msg);
+                    $("#response-message").addClass('show');
+                    // Reinitialiser le formulaire
+                    $("#prestation-form")[0].reset();
+
+                    // Ajouter la nouvelle ligne a la table sans recharger la page
+                    //$("#table-prix-service tbody").prepend(newRow);
+                    setTimeout(function () {
+                        $("#response-message").removeClass('show').fadeOut();
+                    }, 3000);
+                },
+                error: function(err){
+                    //$("#id_montant_a_payer").val("")
+                },
+            })
+        })
+
+    })
+</script>
 {% endblock %}
