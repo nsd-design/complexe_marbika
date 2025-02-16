@@ -1,6 +1,7 @@
 import json
 
 from django.db import IntegrityError
+from django.db.models import F, Sum
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.utils.html import escape
@@ -115,10 +116,21 @@ def add_prix_service(request):
 
 
 def prestations(request):
-    prestations_list = Prestation.objects.all()
+    total_paye = 0
+
+    prestations_list = Prestation.objects.annotate(
+        montant_paye=F("montant_a_payer") - F("montant_reduit")
+    ).order_by("-created_at")
+
+    if prestations_list:
+        total_paye = prestations_list.aggregate(total=Sum("montant_paye"))['total']
+        total_paye = "{:,.0f} GNF".format(total_paye).replace(",", " ")
+
     context= {
         "form": PrestationForm(),
         "page_title": "Prestations",
+        "prestation_list": prestations_list if prestations_list.exists else None,
+        "total_paye": total_paye
     }
     return render(request, tmp + "prestations.html", context)
 
@@ -146,14 +158,21 @@ def add_prestation(request):
                 montant_a_payer = form.cleaned_data['montant_a_payer']
                 montant_reduit = form.cleaned_data['montant_reduit']
 
-                Prestation.objects.create(
+                new_prestation = Prestation.objects.create(
                     service=service,
                     montant_a_payer=montant_a_payer,
                     montant_reduit=montant_reduit,
                     fait_par=fait_par
                 )
+                pres = {
+                    "service": new_prestation.service.designation,
+                    "prestateur": new_prestation.fait_par.email,
+                    "montant": new_prestation.montant_a_payer,
+                    "reduction": new_prestation.montant_reduit,
+                    "net_paye": new_prestation.montant_a_payer - new_prestation.montant_reduit
+                }
 
-                return JsonResponse({"msg": "Prestation enregistrée"})
+                return JsonResponse({"msg": "Prestation enregistrée", "prestation": pres})
 
         except Exception as e:
             print("add prestation", e)
