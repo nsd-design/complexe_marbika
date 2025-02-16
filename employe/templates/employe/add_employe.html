@@ -180,7 +180,7 @@
                 dataType: 'json',
                 success: function(res){
                     $('#response-message').text(res.msg);
-                    $('#response-message').addClass('show');
+                    $('#response-message').addClass('show').fadeIn();
 
                     // Ajouter le nouvel Employe a la table
                     var newRow = `
@@ -206,7 +206,7 @@
                     const errorResponse = xhr.responseJSON ? xhr.responseJSON.error : 'Erreur serveur.';
                     $('#response-message').text(`Erreur: ${errorResponse}`);
                     $('#response-message').removeClass('bg-success')
-                    $('#response-message').addClass('bg-warning').addClass('show');
+                    $('#response-message').addClass('bg-warning show').fadeIn();
                     // Faire disparaître après 3 secondes (3000 ms)
                     setTimeout(function () {
                         $('#response-message').removeClass('show').fadeOut();

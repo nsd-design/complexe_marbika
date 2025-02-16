@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load crispy_forms_tags %}
+{% load custom_filters %}
 
 {% block page_title %} {{ page_title }} {% endblock %}
 {% block main %}
@@ -71,11 +72,54 @@
               </div>
             </div>
           </div>
-
         </div>
       </div>
     </div>
   </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title">Liste des Prestations</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-outer">
+                <div class="table-responsive">
+                    <table class="table align-middle table-hover m-0 truncate" id="table-prestation">
+                        <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Services</th>
+                            <th>Prestateurs</th>
+                            <th>Montant</th>
+                            <th>Reduction</th>
+                            <th>Net Payé</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for prestation in prestation_list %}
+                        <tr>
+                            <td></td>
+                            <td>
+                                {{ prestation.service }}
+                            </td>
+                            <td>{{ prestation.fait_par }}</td>
+                            <td>{{ prestation.montant_a_payer | currency }}</td>
+                            <td>{{ prestation.montant_reduit | currency }}</td>
+                            <td class="text-primary">{{ prestation.montant_paye | currency }} GNF</td>
+                            <td>
+                                <a class="btn btn-danger btn-sm" href="#"><i class="bi bi-pencil"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 <!-- Row ends -->
 
@@ -86,7 +130,35 @@
 {% endblock %}
 <script>
     $(document).ready(function(){
-        $("#id_service").change(function(){
+
+        $("#table-prestation").DataTable({
+            language: {
+                processing: "Traitement en cours...",
+                search: "Rechercher&nbsp;:&nbsp;",
+                lengthMenu:    "Afficher _MENU_ &eacute;l&eacute;ments",
+                info:           "Affichage de l'&eacute;lement _START_ &agrave; _END_ sur _TOTAL_ &eacute;l&eacute;ments",
+                infoEmpty:      "Affichage de l'&eacute;lement 0 &agrave; 0 sur 0 &eacute;l&eacute;ments",
+                loadingRecords: "Chargement en cours...",
+                zeroRecords:    "Aucun &eacute;l&eacute;ment &agrave; afficher",
+                emptyTable:     "Aucune donnée disponible dans le tableau",
+                aria: {
+                    sortAscending:  ": activer pour trier la colonne par ordre croissant",
+                    sortDescending: ": activer pour trier la colonne par ordre décroissant"
+                }
+            },
+            "columnDefs": [{
+                "targets": 0,
+                "searchable": false,
+                "orderable": false
+            }],
+            "order": [],
+            "rowCallback": function(row, data, index){
+                $('td:eq(0)', row).html(index + 1)
+            },
+
+        });
+
+        $("#id_service").on('change',function(){
             const service_id = $(this).val();
             const url = "{% url 'get_prix_service' 0 %}".replace('0', service_id);
             $.ajax({
@@ -96,9 +168,10 @@
                     $("#id_montant_a_payer").val(res.prix_service)
                 },
                 error: function(err){
+                    $("#response-message").addClass('bg-danger show').fadeIn();
                     $("#response-message").text(err.responseJSON.error);
                     $("#response-message").removeClass('bg-success');
-                    $("#response-message").addClass('bg-danger').addClass('show');
+
                     $("#id_montant_a_payer").val("")
 
                     setTimeout(function () {
@@ -126,11 +199,27 @@
                     // Reinitialiser le formulaire
                     $("#prestation-form")[0].reset();
 
-                    // Ajouter la nouvelle ligne a la table sans recharger la page
-                    //$("#table-prix-service tbody").prepend(newRow);
-                    setTimeout(function () {
-                        $("#response-message").removeClass('show').fadeOut();
-                    }, 3000);
+                    // Ajouter le nouvel Employe a la table
+                  var newRow = `
+                      <tr>
+                          <td></td>
+                          <td>${res.prestation.service}</td>
+                          <td>${res.prestation.prestateur}</td>
+                          <td>${res.prestation.montant}</td>
+                          <td>${res.prestation.reduction}</td>
+                          <td>${res.prestation.net_paye}</td>
+                          <td>
+                            <a class="btn btn-danger btn-sm" href="#"><i class="bi bi-pencil"></i>
+                            </a>
+                          </td>
+                      </tr>
+                  `
+                  // Ajouter la nouvelle ligne a la table sans recharger la page
+                  $("#table-prestation tbody").prepend(newRow);
+
+                   setTimeout(function () {
+                    $("#response-message").removeClass('show').fadeOut();
+                   }, 3000);
                 },
                 error: function(err){
                     //$("#id_montant_a_payer").val("")
