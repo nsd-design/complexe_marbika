@@ -1,0 +1,237 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block page_title %} {{ page_title }} {% endblock %}
+{% block main %}
+<!-- Row starts -->
+<div class="row gx-4">
+  <div class="col-sm-12">
+    <div class="card mb-4">
+      <div class="card-body">
+        <div class="custom-tabs-container">
+          <ul class="nav nav-tabs" id="customTab3" role="tablist">
+            <li class="nav-item" role="presentation">
+              <a class="nav-link active" id="tab-oneAA" data-bs-toggle="tab" href="#oneAA" role="tab"
+                aria-controls="oneAA" aria-selected="true"><i
+                  class="bi bi-flower3 me-2"></i>
+                  Créer un Plat
+              </a>
+            </li>
+            <li class="nav-item" role="presentation">
+              <a class="nav-link" id="tab-twoAA" data-bs-toggle="tab" href="#twoAA" role="tab"
+                aria-controls="twoAA" aria-selected="false" tabindex="-1"><i
+                  class="bi bi-cup-straw me-2"></i>Créer une Boisson</a>
+            </li>
+            <li class="nav-item" role="presentation">
+              <a class="nav-link" id="tab-threeAA" data-bs-toggle="tab" href="#threeAA" role="tab"
+                aria-controls="threeAA" aria-selected="false" tabindex="-1"><i
+                  class="bi bi-node-plus-fill me-2"></i>Approvisionner Boisson</a>
+            </li>
+          </ul>
+          <div class="tab-content" id="customTabContent3">
+            <div class="tab-pane fade show active" id="oneAA" role="tabpanel" aria-labelledby="tab-oneAA">
+
+              <!-- Form Create Plat -->
+              <form method="POST" action="{% url 'create_plat' %}" class="row gx-4" enctype="multipart/form-data" id="plat-form">
+                {% csrf_token %}
+                <div class="col-xl-3 col-sm-4 col-12">
+                  <div class="mb-3">
+                    <label class="form-label" for="id_nom_plat">Nom du Plat</label>
+                    {{ form.nom_plat | as_crispy_field  }}
+                  </div>
+                </div>
+                <div class="col-xl-3 col-sm-4 col-12">
+                  <div class="mb-3">
+                    <label class="form-label" for="id_prix">Prix</label>
+                    {{ form.prix | as_crispy_field  }}
+                  </div>
+                </div>
+                <div class="col-sm-6 col-12">
+                  <div class="mb-4">
+                      <div class="m-0">
+                        <label class="form-label">Image</label>
+                        <div class="input-group">
+                          {{ form.photo_plat | as_crispy_field  }}
+                        </div>
+                      </div>
+                  </div>
+                </div>
+
+                <!-- Zone d'affichage des messages -->
+                <div id="response-message" class="alert bg-success text-white alert-dismissible fade" role="alert">
+
+                  <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"
+                    aria-label="Close"></button>
+                </div>
+
+                <div class="col-sm-12 col-12">
+                  <div class="d-flex gap-4 justify-content-end">
+                    <button type="submit" class="btn btn-primary">Céer</button>
+                    <button type="reset" class="btn btn-outline-secondary">Annuler</button>
+                  </div>
+                </div>
+              </form>
+              <!-- Form Create Plat ends -->
+            </div> <!-- Tab Form Create Plat ends -->
+
+            <div class="tab-pane fade" id="twoAA" role="tabpanel" aria-labelledby="tab-twoAA">
+
+              <!-- Row starts -->
+              <form method="POST" action="{% url 'create_boisson' %}" enctype="multipart/form-data" class="row gx-4" id="boisson-form">
+                {% csrf_token %}
+                <div class="col-sm-3 col-12">
+                  <div class="mb-3">
+                    <label class="form-label" for="id_designation">Designation</label>
+                    {{ from_boisson.designation | as_crispy_field }}
+                  </div>
+                </div>
+                <div class="col-sm-3 col-12">
+                  <div class="mb-3">
+                    <label class="form-label" for="id_prix_boisson">Prix</label>
+                    <div class="input-group">
+                      {{ from_boisson.prix_boisson | as_crispy_field }}
+                    </div>
+                  </div>
+                </div>
+                 <div class="col-sm-6 col-12">
+                    <div class="mb-4">
+                        <div class="m-0">
+                          <label class="form-label" for="id_photo_boisson">Image</label>
+                          <div class="input-group">
+                            {{ from_boisson.photo_boisson | as_crispy_field  }}
+                          </div>
+                        </div>
+                    </div>
+                 </div>
+
+                 <!-- Zone d'affichage des messages -->
+                <div id="response-message_boisson" class="alert bg-success text-white alert-dismissible fade" role="alert">
+
+                  <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"
+                    aria-label="Close"></button>
+                </div>
+                <div class="col-sm-12 col-12">
+                  <div class="d-flex gap-4 justify-content-end">
+                    <button type="submit" class="btn btn-primary">Créer</button>
+                    <button type="reset" class="btn btn-secondary">Annuler</button>
+                  </div>
+                </div>
+              </form>
+              <!-- Row ends -->
+
+            </div>
+            <div class="tab-pane fade" id="threeAA" role="tabpanel" aria-labelledby="tab-threeAA">
+
+              <!-- Row starts -->
+              <div class="row gx-4">
+                <div class="col">
+                  <div class="mb-3">
+                    <label class="form-label">Communication</label>
+                    <div>
+                      <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="inlineCheckbox1" value="option1"
+                          checked="">
+                        <label class="form-check-label" for="inlineCheckbox1">Email</label>
+                      </div>
+                      <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="inlineCheckbox2" value="option2"
+                          checked="">
+                        <label class="form-check-label" for="inlineCheckbox2">SMS</label>
+                      </div>
+                      <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="inlineCheckbox3"
+                          value="option3">
+                        <label class="form-check-label" for="inlineCheckbox3">Phone</label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="mb-3">
+                    <label class="form-label" for="msg2">Message</label>
+                    <textarea type="text" class="form-control" id="msg2" placeholder="Enter message"
+                      rows="3"></textarea>
+                  </div>
+                </div>
+                <div class="col-sm-12 col-12">
+                  <div class="d-flex gap-2 justify-content-end">
+                    <button type="button" class="btn btn-secondary">Clear</button>
+                    <button type="button" class="btn btn-primary">Save & Submit</button>
+                  </div>
+                </div>
+              </div>
+              <!-- Row ends -->
+
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Row ends -->
+
+{% block custom_js %}
+<script src="{% static 'assets/js/jquery.min.js' %}"></script>
+<script src="{% static 'assets/js/datatables.min.js' %}"></script>
+{% endblock %}
+
+<script>
+  $(document).ready(function () {
+    $("#plat-form").submit(function (e) {
+        e.preventDefault();  // Empêche le rechargement de la page
+
+        let formData = new FormData(this); // Récupère les données du formulaire, y compris les fichiers
+        console.log(formData)
+        $.ajax({
+            url: $("#plat-form").attr("action"), // Récupère l'URL de l'attribut action
+            type: "POST",
+            data: formData,
+            processData: false, // Ne pas traiter les données (obligatoire pour FormData)
+            contentType: false, // Ne pas définir le contentType (obligatoire pour FormData)
+            success: function (response) {
+                $("#response-message").addClass("show bg-success").fadeIn().removeClass("bg-danger").text("Plat ajouté avec succès !");
+                $("#plat-form")[0].reset(); // Réinitialise le formulaire
+            },
+            error: function (xhr) {
+                let errMsg = xhr.responseJSON?.error || "Une erreur s'est produite";
+                $("#response-message").addClass("show bg-danger").fadeIn().removeClass("bg-success").text(errMsg);
+            }
+        });
+
+        // Cacher le message après 3 secondes
+        setTimeout(() => $("#response-message").removeClass("show").fadeOut(), 3000);
+    });
+    $("#boisson-form").submit(function (e) {
+        e.preventDefault();  // Empêche le rechargement de la page
+
+        let formData = new FormData(this); // Récupère les données du formulaire, y compris les fichiers
+        console.log(formData)
+        $.ajax({
+            url: $("#boisson-form").attr("action"), // Récupère l'URL de l'attribut action
+            type: "POST",
+            data: formData,
+            processData: false, // Ne pas traiter les données (obligatoire pour FormData)
+            contentType: false, // Ne pas définir le contentType (obligatoire pour FormData)
+            success: function (response) {
+                console.log(response)
+                $("#response-message_boisson").addClass("show bg-success").fadeIn().removeClass("bg-danger").text(response.msg);
+                $("#boisson-form")[0].reset(); // Réinitialise le formulaire
+            },
+            error: function (xhr) {
+                let errMsg = xhr.responseJSON?.error || "Une erreur s'est produite";
+                $("#response-message_boisson").addClass("show bg-danger").fadeIn().removeClass("bg-success").text(errMsg);
+            }
+        });
+
+        // Cacher le message après 3 secondes
+        setTimeout(() => $("#response-message_boisson").removeClass("show").fadeOut(), 3000);
+    });
+  });
+
+</script>
+
+{% endblock %}

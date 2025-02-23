@@ -1,0 +1,239 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block page_title %} {{ page_title }} {% endblock %}
+{% block main %}
+<!-- Row starts -->
+<div class="row gx-4">
+  <div class="col-sm-4">
+
+    <!-- Card starts -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5 class="card-title">Commandes</h5>
+      </div>
+      <div class="card-body">
+        <div class="graph-body auto-align-graph">
+
+          <div id="commandes" class="">
+            <!-- Row starts -->
+            <form method="POST" action="" class="row gx-4" id="form_commandes">
+              {% csrf_token %}
+
+              <div class="col-sm-12 col-12" id="colSubmit">
+                <div class="d-flex gap-2 justify-content-end">
+                  <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+              </div>
+            </form>
+            <!-- Row ends -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Card ends -->
+
+  </div>
+  <div class="col-sm-8">
+
+    <!-- Card starts -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5 class="card-title">Menu</h5>
+      </div>
+      <div class="card-body">
+        <div class="graph-body auto-align-graph">
+          <div id="menu" class="d-flex flex-wrap">
+              <div class="col-sm-2 col-4">
+                <div class="card mb-4" role="button">
+                  <div class="card-body">
+                    <div class="card-img">
+                      <img src="{% static 'assets/images/LogoMarbika.png' %}" class="img-fluid rounded-3 mb-2"
+                        alt="Axis Admin Template" />
+                    </div>
+                    <p class="mb-3">
+                      Foufou
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-sm-2 col-4">
+                <div class="card mb-4">
+                  <div class="card-body">
+                    <div class="card-img" role="button">
+                      <img src="{% static 'assets/images/LogoMarbika.png' %}" class="img-fluid rounded-3 mb-2"
+                        alt="Axis Admin Template" />
+                    </div>
+                    <p class="mb-3">
+                      Product Name
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-sm-2 col-4">
+                <div class="card mb-4">
+                  <div class="card-body">
+                    <div class="card-img" role="button">
+                      <img src="{% static 'assets/images/LogoMarbika.png' %}" class="img-fluid rounded-3 mb-2"
+                        alt="Axis Admin Template" />
+                    </div>
+                    <p class="mb-3">
+                      Product Name
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-sm-2 col-4">
+                <div class="card mb-4" role="button">
+                  <div class="card-body">
+                    <div class="card-img">
+                      <img src="{% static 'assets/images/LogoMarbika.png' %}" class="img-fluid rounded-3 mb-2"
+                        alt="Axis Admin Template" />
+                    </div>
+                    <p class="mb-3">
+                      Chawarma
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-sm-2 col-4">
+                <div class="card mb-4" role="button">
+                  <div class="card-body">
+                    <div class="card-img">
+                      <img src="{% static 'assets/images/LogoMarbika.png' %}" class="img-fluid rounded-3 mb-2"
+                        alt="Axis Admin Template" />
+                    </div>
+                    <p class="mb-3">
+                      Pain au lait
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-sm-2 col-4">
+                <div class="card mb-4">
+                  <div class="card-body">
+                    <div class="card-img" role="button">
+                      <img src="{% static 'assets/images/LogoMarbika.png' %}" class="img-fluid rounded-3 mb-2"
+                        alt="Axis Admin Template" />
+                    </div>
+                    <p class="mb-3">
+                      Product Name
+                    </p>
+                  </div>
+                </div>
+              </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Card ends -->
+
+  </div>
+</div>
+<!-- Row ends -->
+{% block custom_js %}
+<script src="{% static 'assets/js/jquery.min.js' %}"></script>
+<script src="{% static 'assets/js/datatables.min.js' %}"></script>
+{% endblock %}
+
+<script>
+    $(document).ready(function(){
+
+        // Cree Produit commande dans la liste des commandes
+        function createProductCard(container, imagePath, name, email, role, prix) {
+            // Création des éléments
+            let colDiv = $("<div>").addClass("col-12");
+            let cardDiv = $("<div>").addClass("card mb-4");
+            let cardBodyDiv = $("<div>").addClass("card-body");
+            let flexDiv = $("<div>").addClass("d-flex align-items-center flex-row");
+
+            let img = $("<img>")
+                .attr("src", imagePath)
+                .attr("alt", name)
+                .addClass("rounded-circle img-3xx");
+
+            let textDiv = $("<div>").addClass("ms-3");
+            let nameHeading = $("<h5>").addClass("mb-1").text(name);
+            let emailParagraph = $("<p>").addClass("mb-1").text(email);
+            let roleParagraph = $("<p>").addClass("m-0 small").text(role);
+            let prixParagraph = $("<p>").text(prix);
+
+            let iconDiv = $("<div>").addClass("ms-auto");
+            let iconLink = $("<a>").attr("href", "#").addClass("me-1 icon-box sm bg-secondary rounded-circle");
+            let icon = $("<i>").addClass("bi bi-heart-fill lh-1 text-danger");
+
+            // Assemblage des éléments
+            textDiv.append(nameHeading, emailParagraph, roleParagraph);
+            iconLink.append(icon);
+            iconDiv.append(prixParagraph, iconLink);
+
+            flexDiv.append(img, textDiv, iconDiv);
+            cardBodyDiv.append(flexDiv);
+            cardDiv.append(cardBodyDiv);
+            colDiv.append(cardDiv);
+
+            // Ajout au conteneur spécifié
+            $(container).append(colDiv);
+        } // Fin CreateProductCard
+
+        createProductCard("#commandes", "{% static 'assets/images/LogoMarbika.png' %}", "Myrtle Grant", "info@testing.com", "Software Engeenier", "130000");
+
+        $("#menu").on("click", ".card", function(){
+            let img = $(this).find("img").attr("src")
+            let productName = $(this).find("p").text().trim()
+
+            console.log("Image: ", img)
+            console.log("Produit: ", productName)
+
+            creerChampPlatBoisson(platBoisson = "Chawarma", idPlatBoisson = "Chawarma")
+        })
+
+
+
+
+
+      function creerChampPlatBoisson(platBoisson = "Chawarma", idPlatBoisson = "Chawarma") {
+        // Colonne Plat / Boisson
+        let $colPlat = $("<div>", { class: "col-xl-4 col-sm-6 col-12" });
+        let $divPlat = $("<div>", { class: "mb-3" });
+        let $labelPlat = $("<label>", { class: "form-label", for: "plat_boisson", text: "Plat / Boisson" });
+        let $inputPlat = $("<input>", { type: "text", class: "form-control", id: "plat_boisson", value: platBoisson });
+        let $inputHidden = $("<input>", { type: "text", class: "form-control", id: "id_plat_boisson", value: idPlatBoisson, hidden: true });
+
+        $divPlat.append($labelPlat, $inputPlat, $inputHidden);
+        $colPlat.append($divPlat);
+
+        // Colonne Quantité
+        let $colQuantite = $("<div>", { class: "col-xl-4 col-sm-6 col-12" });
+        let $divQuantite = $("<div>", { class: "mb-3" });
+        let $labelQuantite = $("<label>", { class: "form-label", for: "quantite", text: "Quantité" });
+        let $inputQuantite = $("<input>", { type: "number", min: 1, class: "form-control", id: "quantite", placeholder: "Enter phone number" });
+
+        $divQuantite.append($labelQuantite, $inputQuantite);
+        $colQuantite.append($divQuantite);
+
+        // Colonne Prix
+        let $colPrix = $("<div>", { class: "col-xl-4 col-sm-6 col-12" });
+        let $divPrix = $("<div>", { class: "mb-3" });
+        let $labelPrix = $("<label>", { class: "form-label", for: "quantite", text: "Prix" });
+        let $inputPrix = $("<input>", { type: "number", class: "form-control", id: "prix", placeholder: "Enter phone number" });
+
+        $divPrix.append($labelPrix, $inputPrix);
+        $colPrix.append($divPrix);
+
+        let $colSep = $("<div>", { class: "col-12 border my-2" });
+
+        // Ajouter les colonnes au conteneur principal
+        $("#colSubmit").before($colPlat, $colQuantite, $colPrix, $colSep);
+      }
+
+    })
+</script>
+
+{% endblock %}
