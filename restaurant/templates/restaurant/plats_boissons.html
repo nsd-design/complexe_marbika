@@ -26,7 +26,7 @@
             <li class="nav-item" role="presentation">
               <a class="nav-link" id="tab-threeAA" data-bs-toggle="tab" href="#threeAA" role="tab"
                 aria-controls="threeAA" aria-selected="false" tabindex="-1"><i
-                  class="bi bi-node-plus-fill me-2"></i>Approvisionner Boisson</a>
+                  class="bi bi-node-plus-fill me-2"></i>Approvisionner les Boissons</a>
             </li>
           </ul>
           <div class="tab-content" id="customTabContent3">
@@ -47,7 +47,7 @@
                     {{ form.prix | as_crispy_field  }}
                   </div>
                 </div>
-                <div class="col-sm-6 col-12">
+                <div class="col-xl-3 col-sm-4 col-12">
                   <div class="mb-4">
                       <div class="m-0">
                         <label class="form-label">Image</label>
@@ -90,7 +90,7 @@
                   <div class="mb-3">
                     <label class="form-label" for="id_prix_boisson">Prix</label>
                     <div class="input-group">
-                      {{ from_boisson.prix_boisson | as_crispy_field }}
+                      {{ from_boisson.prix_achat | as_crispy_field }}
                     </div>
                   </div>
                 </div>
@@ -114,7 +114,7 @@
                 <div class="col-sm-12 col-12">
                   <div class="d-flex gap-4 justify-content-end">
                     <button type="submit" class="btn btn-primary">Créer</button>
-                    <button type="reset" class="btn btn-secondary">Annuler</button>
+                    <button type="reset" class="btn btn-outline-secondary">Annuler</button>
                   </div>
                 </div>
               </form>
@@ -123,45 +123,47 @@
             </div>
             <div class="tab-pane fade" id="threeAA" role="tabpanel" aria-labelledby="tab-threeAA">
 
-              <!-- Row starts -->
-              <div class="row gx-4">
-                <div class="col">
+              <!-- Approvisionner Boissons -->
+              <form method="POST" action="{% url 'appro_boisson' %}" class="row gx-4" id="appro-form">
+                {% csrf_token %}
+                <div class="col-sm-3 col-12">
                   <div class="mb-3">
-                    <label class="form-label">Communication</label>
-                    <div>
-                      <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" id="inlineCheckbox1" value="option1"
-                          checked="">
-                        <label class="form-check-label" for="inlineCheckbox1">Email</label>
-                      </div>
-                      <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" id="inlineCheckbox2" value="option2"
-                          checked="">
-                        <label class="form-check-label" for="inlineCheckbox2">SMS</label>
-                      </div>
-                      <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" id="inlineCheckbox3"
-                          value="option3">
-                        <label class="form-check-label" for="inlineCheckbox3">Phone</label>
-                      </div>
+                    <label class="form-label" for="id_boisson">Selectionner une Boisson</label>
+                    {{ form_appro.boisson | as_crispy_field }}
+                  </div>
+                </div>
+                <div class="col-sm-3 col-12">
+                  <div class="mb-3">
+                    <label class="form-label" for="id_quantite">Quantité</label>
+                    <div class="input-group">
+                      {{ form_appro.quantite | as_crispy_field }}
                     </div>
                   </div>
                 </div>
-                <div class="col-12">
-                  <div class="mb-3">
-                    <label class="form-label" for="msg2">Message</label>
-                    <textarea type="text" class="form-control" id="msg2" placeholder="Enter message"
-                      rows="3"></textarea>
-                  </div>
+                 <div class="col-sm-6 col-12">
+                    <div class="mb-4">
+                        <div class="m-0">
+                          <label class="form-label" for="id_prix_achat_unit">Prix d'Achat Unitaire</label>
+                          <div class="input-group">
+                            {{ form_appro.prix_achat_unit | as_crispy_field  }}
+                          </div>
+                        </div>
+                    </div>
+                 </div>
+
+                 <!-- Zone d'affichage des messages -->
+                <div id="response-message-appro" class="alert bg-success text-white alert-dismissible fade" role="alert">
+                  <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"
+                    aria-label="Close"></button>
                 </div>
                 <div class="col-sm-12 col-12">
-                  <div class="d-flex gap-2 justify-content-end">
-                    <button type="button" class="btn btn-secondary">Clear</button>
-                    <button type="button" class="btn btn-primary">Save & Submit</button>
+                  <div class="d-flex gap-4 justify-content-end">
+                    <button type="submit" class="btn btn-primary">Valider</button>
+                    <button type="reset" class="btn btn-outline-secondary">Annuler</button>
                   </div>
                 </div>
-              </div>
-              <!-- Row ends -->
+              </form>
+              <!-- Approvisionner Boissons ends -->
 
             </div>
           </div>
@@ -209,7 +211,6 @@
         e.preventDefault();  // Empêche le rechargement de la page
 
         let formData = new FormData(this); // Récupère les données du formulaire, y compris les fichiers
-        console.log(formData)
         $.ajax({
             url: $("#boisson-form").attr("action"), // Récupère l'URL de l'attribut action
             type: "POST",
@@ -232,6 +233,55 @@
     });
   });
 
+</script>
+<script>
+  $(document).ready(function () {
+    function getCSRFToken(){
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+        return csrfToken ? csrfToken.value : "";
+    }
+    $("#appro-form").submit(function (e) {
+        e.preventDefault();  // Empêche le rechargement de la page
+
+        //let formData = new FormData(this); // Récupère les données du formulaire, y compris les fichiers
+
+        const actionUrl = $(this).attr('action');
+
+            // Collecte des données du formulaire
+            const formData = {
+                boisson: $('#id_boisson').val().trim(),
+                quantite: $('#id_quantite').val().trim(),
+                prix_achat_unit: $('#id_prix_achat_unit').val().trim(),
+            };
+
+            if (!formData.boisson || !formData.quantite || !formData.prix_achat_unit){
+              $("#response-message-appro").addClass("show bg-success").fadeIn().removeClass("bg-danger").text("Tous les champs sont obligatoires.");
+              setTimeout(() => $("#response-message-appro").removeClass("show").fadeOut(), 3000);
+            }
+
+        $.ajax({
+            url: actionUrl, // Récupère l'URL de l'attribut action
+            type: "POST",
+            data: formData,
+            headers: { 'X-CSRFToken': getCSRFToken() },
+            data: JSON.stringify(formData),
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function (response) {
+
+                $("#response-message-appro").addClass("show bg-success").fadeIn().removeClass("bg-danger").text(response.msg);
+                $("#appro-form")[0].reset(); // Réinitialise le formulaire
+            },
+            error: function (xhr) {
+                let errMsg = xhr.responseJSON?.error || "Une erreur s'est produite";
+                $("#response-message-appro").addClass("show bg-danger").fadeIn().removeClass("bg-success").text(errMsg);
+            }
+        });
+
+        // Cacher le message après 3 secondes
+        setTimeout(() => $("#response-message-appro").removeClass("show").fadeOut(), 3000);
+    });
+  })
 </script>
 
 {% endblock %}
