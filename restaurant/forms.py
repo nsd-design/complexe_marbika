@@ -1,6 +1,7 @@
 from django import forms
 
-from restaurant.models import Plat, Boisson
+from restaurant.models import Plat, Boisson, ApprovisionnementBoisson
+from salon.models import Approvisionnement
 
 
 class PlatForm(forms.ModelForm):
@@ -24,4 +25,16 @@ class BoissonForm(forms.ModelForm):
 
     class Meta:
         model = Boisson
-        fields = ['designation', 'prix_boisson', 'photo_boisson']
+        fields = ['designation', 'prix_achat', 'photo_boisson']
+
+
+class ApprovisionnementBoissonForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name in self.fields:
+            self.fields[field_name].label = ''
+
+
+    class Meta:
+        model = ApprovisionnementBoisson
+        fields = ['boisson', 'quantite', 'prix_achat_unit']

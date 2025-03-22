@@ -6,22 +6,40 @@
 {% block main %}
 <!-- Row starts -->
 <div class="row gx-4">
-  <div class="col-sm-4">
+  <div class="col-sm-5">
 
     <!-- Card starts -->
     <div class="card mb-4">
       <div class="card-header">
         <h5 class="card-title">Commandes</h5>
       </div>
-      <div class="card-body">
+      <div class="card-body overflow-auto" style="max-height: 400px">
         <div class="graph-body auto-align-graph">
 
           <div id="commandes" class="">
             <!-- Row starts -->
-            <form method="POST" action="" class="row gx-4" id="form_commandes">
+            <form method="POST" action="{% url 'passer_commande' %}" class="row gx-4" id="form_commandes">
               {% csrf_token %}
 
-              <div class="col-sm-12 col-12" id="colSubmit">
+              <div class="col-sm-12 col-12" id="colReduction" hidden="hidden">
+                <div class="mb-4">
+                    <div class="m-0">
+                      <label class="form-label" for="reduction">Rémise</label>
+                      <div class="input-group">
+                        <input type="number" name="remise" class="form-control" id="reduction">
+                      </div>
+                    </div>
+                </div>
+             </div>
+            <div class="col-sm-12 col-12" id="colTotal" >
+              <div class="mb-4">
+                  <div class="m-0 d-flex justify-content-between border-bottom">
+                    <p>Total :</p>
+                    <h5 id="montantTotal"></h5>
+                  </div>
+              </div>
+            </div>
+              <div class="col-sm-12 col-12" id="colSubmit" hidden="hidden">
                 <div class="d-flex gap-2 justify-content-end">
                   <button type="submit" class="btn btn-primary">Submit</button>
                 </div>
@@ -33,108 +51,78 @@
       </div>
     </div>
     <!-- Card ends -->
-
   </div>
-  <div class="col-sm-8">
 
-    <!-- Card starts -->
+  <div class="col-sm-7">
     <div class="card mb-4">
       <div class="card-header">
         <h5 class="card-title">Menu</h5>
       </div>
       <div class="card-body">
-        <div class="graph-body auto-align-graph">
-          <div id="menu" class="d-flex flex-wrap">
-              <div class="col-sm-2 col-4">
-                <div class="card mb-4" role="button">
-                  <div class="card-body">
-                    <div class="card-img">
-                      <img src="{% static 'assets/images/LogoMarbika.png' %}" class="img-fluid rounded-3 mb-2"
-                        alt="Axis Admin Template" />
-                    </div>
-                    <p class="mb-3">
-                      Foufou
-                    </p>
-                  </div>
-                </div>
-              </div>
+        <div class="custom-tabs-container">
+          <ul class="nav nav-tabs" id="customTab2" role="tablist">
+            <li class="nav-item" role="presentation">
+              <a class="nav-link active" id="tab-oneA" data-bs-toggle="tab" href="#oneA" role="tab"
+                aria-controls="oneA" aria-selected="true">Plats
+                <span class="badge rounded-pill bg-info ms-2">9</span></a>
+            </li>
+            <li class="nav-item" role="presentation">
+              <a class="nav-link" id="tab-twoA" data-bs-toggle="tab" href="#twoA" role="tab"
+                aria-controls="twoA" aria-selected="false">Boissons<span
+                  class="badge rounded-pill bg-danger ms-2">7</span></a>
+            </li>
+            <li class="nav-item" role="presentation">
+              <a class="nav-link" id="tab-threeA" data-bs-toggle="tab" href="#threeA" role="tab"
+                aria-controls="threeA" aria-selected="false">Tab Three
+                <span class="badge rounded-pill bg-success ms-2">3</span></a>
+            </li>
+          </ul>
+          <div class="tab-content" id="customTabContent2">
 
-              <div class="col-sm-2 col-4">
-                <div class="card mb-4">
-                  <div class="card-body">
-                    <div class="card-img" role="button">
-                      <img src="{% static 'assets/images/LogoMarbika.png' %}" class="img-fluid rounded-3 mb-2"
-                        alt="Axis Admin Template" />
-                    </div>
-                    <p class="mb-3">
-                      Product Name
-                    </p>
-                  </div>
+            <!-- Tab One-->
+            <div class="tab-pane fade show active" id="oneA" role="tabpanel">
+              <div class="row gx-4" id="plats-container">
+                {% for plat in plats %}
+                <div class="plat col-4 col-sm-2 mb-4" role="button">
+                    <p class="uuid" hidden>{{ plat.id }}</p>
+                  <img src="{% static 'assets/images/LogoMarbika.png' %}" background-size: cover;
+                    class="img-fluid " alt="Bootstrap Gallery" />
+                  <p>
+                    <span class="designation">{{ plat.nom_plat}}</span>
+                    <span class="badge rounded-pill bg-success">{{ plat.prix}}</span>
+                    <span class="productPrice" hidden>{{ plat.prix }}</span>
+                  </p>
                 </div>
+                {% endfor %}
               </div>
+            </div>
+            <!-- Tab One End-->
 
-              <div class="col-sm-2 col-4">
-                <div class="card mb-4">
-                  <div class="card-body">
-                    <div class="card-img" role="button">
-                      <img src="{% static 'assets/images/LogoMarbika.png' %}" class="img-fluid rounded-3 mb-2"
-                        alt="Axis Admin Template" />
-                    </div>
-                    <p class="mb-3">
-                      Product Name
-                    </p>
-                  </div>
+            <!-- Tab Two-->
+            <div class="tab-pane fade" id="twoA" role="tabpanel">
+              <div class="row gx-4 flex-wrap" id="boissons-container">
+               {% for boisson in boissons %}
+                <div class="boisson col-4 col-sm-2 mb-4" role="button">
+                  <p class="uuid" hidden>{{ boisson.id }}</p>
+                    <img src="{% static 'assets/images/LogoMarbika.png' %}" background-size: cover;
+                    class="img-fluid " alt="Bootstrap Gallery" />
+                  <p>
+                    <span class="designation">{{ boisson.designation }}</span>
+                    <span class="badge rounded-pill bg-success">{{ boisson.prix_achat }}</span>
+                    <span class="productPrice" hidden>{{ boisson.prix_achat}}</span>
+                  </p>
                 </div>
+                {% endfor %}
               </div>
+            </div>
+            <!-- Tab Two Ends-->
 
-              <div class="col-sm-2 col-4">
-                <div class="card mb-4" role="button">
-                  <div class="card-body">
-                    <div class="card-img">
-                      <img src="{% static 'assets/images/LogoMarbika.png' %}" class="img-fluid rounded-3 mb-2"
-                        alt="Axis Admin Template" />
-                    </div>
-                    <p class="mb-3">
-                      Chawarma
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div class="col-sm-2 col-4">
-                <div class="card mb-4" role="button">
-                  <div class="card-body">
-                    <div class="card-img">
-                      <img src="{% static 'assets/images/LogoMarbika.png' %}" class="img-fluid rounded-3 mb-2"
-                        alt="Axis Admin Template" />
-                    </div>
-                    <p class="mb-3">
-                      Pain au lait
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div class="col-sm-2 col-4">
-                <div class="card mb-4">
-                  <div class="card-body">
-                    <div class="card-img" role="button">
-                      <img src="{% static 'assets/images/LogoMarbika.png' %}" class="img-fluid rounded-3 mb-2"
-                        alt="Axis Admin Template" />
-                    </div>
-                    <p class="mb-3">
-                      Product Name
-                    </p>
-                  </div>
-                </div>
-              </div>
           </div>
         </div>
       </div>
     </div>
-    <!-- Card ends -->
-
   </div>
+
 </div>
 <!-- Row ends -->
 {% block custom_js %}
@@ -144,67 +132,56 @@
 
 <script>
     $(document).ready(function(){
+        // Tableau contenant les Plats et Boissons dans la Commande
+        // Ce Tableau doit etre reinialiser après la soumission de la Commande
+        var tabPlatsBoissons = [];
 
-        // Cree Produit commande dans la liste des commandes
-        function createProductCard(container, imagePath, name, email, role, prix) {
-            // Création des éléments
-            let colDiv = $("<div>").addClass("col-12");
-            let cardDiv = $("<div>").addClass("card mb-4");
-            let cardBodyDiv = $("<div>").addClass("card-body");
-            let flexDiv = $("<div>").addClass("d-flex align-items-center flex-row");
 
-            let img = $("<img>")
-                .attr("src", imagePath)
-                .attr("alt", name)
-                .addClass("rounded-circle img-3xx");
+        // Ajouté l'element dans le DOm
+        function addtoDom(product, type){
+            let img = product.find("img").attr("src")
+            let productName = product.find(".designation").text().trim()
+            let productPrice = product.find(".productPrice").text().trim()
+            let productUuid = product.find(".uuid").text().trim()
+            let dataType = type
 
-            let textDiv = $("<div>").addClass("ms-3");
-            let nameHeading = $("<h5>").addClass("mb-1").text(name);
-            let emailParagraph = $("<p>").addClass("mb-1").text(email);
-            let roleParagraph = $("<p>").addClass("m-0 small").text(role);
-            let prixParagraph = $("<p>").text(prix);
+            // Verifier si produit est deja ajouté dans le DOM
+            if(tabPlatsBoissons.includes(productUuid)){
+                let qte = $("#" + productUuid).val()
+                $("#" + productUuid).val(Number(qte) + 1)
+                calculerMontant();
 
-            let iconDiv = $("<div>").addClass("ms-auto");
-            let iconLink = $("<a>").attr("href", "#").addClass("me-1 icon-box sm bg-secondary rounded-circle");
-            let icon = $("<i>").addClass("bi bi-heart-fill lh-1 text-danger");
+            }else{
+                creerChampPlatBoisson(platBoisson = productName, productUuid, idQuantite=productUuid, productPrice, dataType)
+                tabPlatsBoissons.push(productUuid)
+                calculerMontant();
+            }
+        }
 
-            // Assemblage des éléments
-            textDiv.append(nameHeading, emailParagraph, roleParagraph);
-            iconLink.append(icon);
-            iconDiv.append(prixParagraph, iconLink);
-
-            flexDiv.append(img, textDiv, iconDiv);
-            cardBodyDiv.append(flexDiv);
-            cardDiv.append(cardBodyDiv);
-            colDiv.append(cardDiv);
-
-            // Ajout au conteneur spécifié
-            $(container).append(colDiv);
-        } // Fin CreateProductCard
-
-        createProductCard("#commandes", "{% static 'assets/images/LogoMarbika.png' %}", "Myrtle Grant", "info@testing.com", "Software Engeenier", "130000");
-
-        $("#menu").on("click", ".card", function(){
-            let img = $(this).find("img").attr("src")
-            let productName = $(this).find("p").text().trim()
-
-            console.log("Image: ", img)
-            console.log("Produit: ", productName)
-
-            creerChampPlatBoisson(platBoisson = "Chawarma", idPlatBoisson = "Chawarma")
+        $("#plats-container").on("click", ".plat", function(){
+          // Afficher le champs Reduction et le bouton Submit
+          // Lorsque le formulaire contient au mooins un produit
+          if($("#form_commandes").find("input").length > 1){
+            $("#colReduction").attr("hidden", false)
+            $("#colSubmit").attr("hidden", false)
+          }
+            addtoDom(product=$(this), "plat")
+        })
+        $("#boissons-container").on("click", ".boisson", function(){
+            if($("#form_commandes").find("input").length > 1){
+              $("#colReduction").attr("hidden", false)
+              $("#colSubmit").attr("hidden", false)
+            }
+            addtoDom(product=$(this), "boisson")
         })
 
-
-
-
-
-      function creerChampPlatBoisson(platBoisson = "Chawarma", idPlatBoisson = "Chawarma") {
+      function creerChampPlatBoisson(platBoisson, idPlatBoisson, idQuantite, productPrice, dataType) {
         // Colonne Plat / Boisson
-        let $colPlat = $("<div>", { class: "col-xl-4 col-sm-6 col-12" });
+        let $colPlat = $("<div>", { class: "col-xl-4 col-sm-6 col-12"});
         let $divPlat = $("<div>", { class: "mb-3" });
-        let $labelPlat = $("<label>", { class: "form-label", for: "plat_boisson", text: "Plat / Boisson" });
-        let $inputPlat = $("<input>", { type: "text", class: "form-control", id: "plat_boisson", value: platBoisson });
-        let $inputHidden = $("<input>", { type: "text", class: "form-control", id: "id_plat_boisson", value: idPlatBoisson, hidden: true });
+        let $labelPlat = $("<label>", { class: "form-label", text: "Plat / Boisson" });
+        let $inputPlat = $("<input>", { type: "text", class: "form-control", value: platBoisson });
+        let $inputHidden = $("<input>", { type: "text", class: "form-control productName", value: idPlatBoisson, hidden: true });
 
         $divPlat.append($labelPlat, $inputPlat, $inputHidden);
         $colPlat.append($divPlat);
@@ -212,27 +189,114 @@
         // Colonne Quantité
         let $colQuantite = $("<div>", { class: "col-xl-4 col-sm-6 col-12" });
         let $divQuantite = $("<div>", { class: "mb-3" });
-        let $labelQuantite = $("<label>", { class: "form-label", for: "quantite", text: "Quantité" });
-        let $inputQuantite = $("<input>", { type: "number", min: 1, class: "form-control", id: "quantite", placeholder: "Enter phone number" });
+        let $labelQuantite = $("<label>", { class: "form-label", for: idQuantite, text: "Quantité" });
+        let $inputQuantite = $("<input>", { type: "number", min: 1, name: "productQuantity", class: "form-control quantite", id: idQuantite, placeholder: "Entrez la quantité", value: 1 });
 
         $divQuantite.append($labelQuantite, $inputQuantite);
         $colQuantite.append($divQuantite);
 
         // Colonne Prix
-        let $colPrix = $("<div>", { class: "col-xl-4 col-sm-6 col-12" });
+        let $colPrix = $("<div>", { class: "col-xl-4 col-sm-12 col-12" });
         let $divPrix = $("<div>", { class: "mb-3" });
         let $labelPrix = $("<label>", { class: "form-label", for: "quantite", text: "Prix" });
-        let $inputPrix = $("<input>", { type: "number", class: "form-control", id: "prix", placeholder: "Enter phone number" });
+        let $inputPrix = $("<input>", { type: "number", name: "productPrice", class: "form-control prix", id: "productPrice", placeholder: "Entrez le prix", value: productPrice });
 
         $divPrix.append($labelPrix, $inputPrix);
         $colPrix.append($divPrix);
 
+        let $productsOrdered = $("<div>", { class: "row col-12 d-flex justify-content-between flex-wrap productsOrdered", "data-type": dataType });
+
         let $colSep = $("<div>", { class: "col-12 border my-2" });
+        $productsOrdered.append($colPlat, $colQuantite, $colPrix, $colSep)
 
         // Ajouter les colonnes au conteneur principal
-        $("#colSubmit").before($colPlat, $colQuantite, $colPrix, $colSep);
+        $("#colReduction").before($productsOrdered);
+
+        $("#colReduction, #colSubmit").slideDown(300);
       }
 
+      // Calculer le Montant de la Commande
+      function calculerMontant(){
+        let subTotal = 0;
+        $(".productsOrdered").each(function(){
+          let prix = Number($(this).find(".prix").val()) || 0;
+          let quantite = parseInt($(this).find(".quantite").val()) || 0;
+          subTotal += prix * quantite ;
+          let reduction = Number($("#reduction").val())
+          let total = subTotal - reduction
+
+          $("#montantTotal").text(total.toLocaleString() + " GNF");
+        })
+      }
+
+      // Mettre a jour le montant total a chaque modification de valeur des champs Quantite, Prix et Reduction
+      $(document).on("input", ".quantite, .prix, #reduction", function(){
+        calculerMontant();
+      })
+
+      // Recuperer le token CSRF
+      function getCSRFToken(){
+          const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+          return csrfToken ? csrfToken.value : "";
+      }
+
+      // Soumission de la commande
+      $("#form_commandes").submit(function(e){
+        e.preventDefault();
+        let platsBoissons = [] // Liste des plats et boisson a soumettre
+        $(".productsOrdered").each(function(){
+          let type = $(this).data("type")
+          let designation = $(this).find(".productName").val()
+          let prix = $(this).find(".prix").val()
+          let quantite = $(this).find(".quantite").val()
+
+          platsBoissons.push({type: type, designation: designation, quantite: parseInt(quantite), prix: parseInt(prix)})
+        })
+
+        let reduction = $("#reduction").val() || 0;
+        data = {
+          plat_boissons: platsBoissons,
+          reduction: reduction,
+        }
+        const actionUrl = $(this).attr("action");
+        $.ajax({
+          url: actionUrl,
+          method: "POST",
+          headers: { 'X-CSRFToken': getCSRFToken() },
+          data: JSON.stringify(data),
+          contentType: "application/json",
+          success: function(res){
+            if(res.success){
+              alert("Commande enregistrée avec succès !");
+
+              // Supprimer tous les produits ajoutés
+              $("#form_commandes .productsOrdered").each(function(){
+                $(this).slideUp(300, function(){
+                    $(this).remove(); // Supprimer, Apres l'animation
+                });
+              });
+              //$("#form_commandes").children().not("#colReduction, #colSubmit").remove()
+              //$("#colReduction #colSubmit").attr("hidden", true)
+              $("#colReduction #colSubmit").slideUp(300)
+
+              $("#montantTotal").text("")
+
+              // Réinitialiser d'autres champs
+              $("#form_commandes")[0].reset();
+
+              tabPlatsBoissons = []
+
+            } else{
+              alert("Erreur : " + res.error)
+              console.log("Erreur : ", res.error)
+            }
+          },
+          error: function(xhr){
+            alert("Erreur lors de l'envoi de la commande.");
+          }
+        })
+
+      })
     })
 </script>
 
