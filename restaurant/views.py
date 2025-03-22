@@ -5,7 +5,7 @@ from django.shortcuts import render
 from django.utils.html import escape
 
 from restaurant.forms import PlatForm, BoissonForm, ApprovisionnementBoissonForm
-from restaurant.models import Plat, Boisson
+from restaurant.models import Plat, Boisson, Commande, CommandePlat, CommandeBoisson
 
 tmp = "restaurant/"
 def plats_boissons(request):
@@ -97,8 +97,56 @@ def approvisionner_boisson(request):
         return JsonResponse({"error": "Methode non autorisée"}, status=405)
 
 
-def create_commande(request):
-    pass
-
 def commande(request):
-    return render(request, tmp + "commandes.html")
+    liste_plats = Plat.objects.all()
+    liste_boissons = Boisson.objects.all()
+
+    print("Plat:", liste_plats)
+    print("Boisson:", liste_boissons)
+    context = {
+        "plats": liste_plats,
+        "boissons": liste_boissons,
+        "page_title": "Menu Restaurant"
+    }
+    return render(request, tmp + "commandes.html", context)
+
+
+def passer_commande(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+
+            plats_boissons = data.get("plat_boissons", [])
+            reduction = data.get("reduction", 0)
+
+            current_commande = Commande.objects.create(prix_total=0, reduction=reduction)
+            prix_total = 0
+
+            for item in plats_boissons:
+                if item['type'] == 'plat':
+                    plat = Plat.objects.get(id=item["designation"])
+                    CommandePlat.objects.create(
+                        commande=current_commande,
+                        plat=plat,
+                        quantite=item['quantite'],
+                        prix=item['prix']
+                    )
+                elif item['type'] == 'boisson':
+                    boisson = Boisson.objects.get(id=item["designation"])
+                    CommandeBoisson.objects.create(
+                        commande=current_commande,
+                        boisson=boisson,
+                        quantite=item['quantite'],
+                        prix=item['prix']
+                    )
+
+                prix_total += item['quantite'] * item['prix']
+
+                # Mise a jour du prix total de la Commande
+                current_commande.prix_total = prix_total - int(reduction)
+                current_commande.save()
+            return JsonResponse({"success": True, "msg": "Commande recu"})
+        except Exception as e:
+            print(e)
+            return JsonResponse({"success": False, "error": str(e)}, status=400)
+    return JsonResponse({"success": False, "error": "Méthode non autorisée"}, status=405)
