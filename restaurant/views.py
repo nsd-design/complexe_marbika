@@ -3,6 +3,7 @@ import json
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.utils.html import escape
+from django.views.decorators.http import require_http_methods
 
 from restaurant.forms import PlatForm, BoissonForm, ApprovisionnementBoissonForm
 from restaurant.models import Plat, Boisson, Commande, CommandePlat, CommandeBoisson
@@ -101,14 +102,38 @@ def commande(request):
     liste_plats = Plat.objects.all()
     liste_boissons = Boisson.objects.all()
 
-    print("Plat:", liste_plats)
-    print("Boisson:", liste_boissons)
     context = {
         "plats": liste_plats,
         "boissons": liste_boissons,
         "page_title": "Menu Restaurant"
     }
     return render(request, tmp + "commandes.html", context)
+
+
+@require_http_methods(["GET"])
+def get_commandes(request):
+    if request.method == "GET":
+        commandes = Commande.objects.all().order_by("-created_at")
+
+        # Formater les Donnees pour DataTable
+        data = []
+
+        for commande in commandes:
+            data.append({
+                'id': commande.id,
+                'reference': commande.reference,
+                'date': commande.created_at.strftime("%d/%m/%Y %H:%M"),
+                'montant': commande.prix_total,
+                'reduction': commande.reduction,
+                'montant_a_payer': commande.prix_total - commande.reduction,
+                # Boutons d'action avec HTML (vous pouvez personnaliser)
+                'actions': f'<a href="/restaurant/commandes/details/{commande.id}" class="text-danger details"><i class="bi bi-box-arrow-up-right fs-5"></i></a>'
+            })
+
+        response = {
+            'data': data
+        }
+        return JsonResponse(response)
 
 
 def passer_commande(request):
@@ -120,6 +145,9 @@ def passer_commande(request):
             reduction = data.get("reduction", 0)
 
             current_commande = Commande.objects.create(prix_total=0, reduction=reduction)
+            current_commande.reference = f"CMD-{current_commande.id.hex[:8].upper()}"
+            current_commande.save()
+            print("reference:", current_commande.reference)
             prix_total = 0
 
             for item in plats_boissons:
@@ -131,6 +159,7 @@ def passer_commande(request):
                         quantite=item['quantite'],
                         prix=item['prix']
                     )
+                    prix_total += item['quantite'] * item['prix']
                 elif item['type'] == 'boisson':
                     boisson = Boisson.objects.get(id=item["designation"])
                     CommandeBoisson.objects.create(
@@ -139,14 +168,53 @@ def passer_commande(request):
                         quantite=item['quantite'],
                         prix=item['prix']
                     )
+                    prix_total += item['quantite'] * item['prix']
 
-                prix_total += item['quantite'] * item['prix']
 
-                # Mise a jour du prix total de la Commande
-                current_commande.prix_total = prix_total - int(reduction)
-                current_commande.save()
+            # Mise a jour du prix total de la Commande
+            current_commande.prix_total = prix_total - int(reduction)
+            current_commande.save()
             return JsonResponse({"success": True, "msg": "Commande recu"})
         except Exception as e:
             print(e)
             return JsonResponse({"success": False, "error": str(e)}, status=400)
     return JsonResponse({"success": False, "error": "Méthode non autorisée"}, status=405)
+
+
+@require_http_methods(["GET"])
+def details_commande(request, id_commande):
+    try:
+        commande = Commande.objects.get(id=id_commande)
+        plats = CommandePlat.objects.filter(commande=commande)
+        boissons = CommandeBoisson.objects.filter(commande=commande)
+
+        data = {
+            "reference": commande.reference,
+            "montant": commande.prix_total,
+            "reduction": commande.reduction,
+            "plats": [],
+            "boissons": [],
+        }
+
+        for item in plats:
+            data["plats"].append({
+                "id": item.plat.id,
+                "nom": item.plat.nom_plat,
+                "quantite": item.quantite,
+                "prix": item.prix
+            })
+
+        for item in boissons:
+            data["boissons"].append({
+                "id": item.boisson.id,
+                "nom": item.boisson.designation,
+                "quantite": item.quantite,
+                "prix": item.prix
+            })
+
+        return JsonResponse(data, safe=False)
+    except Exception as e:
+        print('Exception:', str(e))
+
+
+    return JsonResponse({"success": True})

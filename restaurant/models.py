@@ -59,10 +59,10 @@ class Commande(MyBaseModel):
     boisson_commande = models.ManyToManyField(Boisson, through="CommandeBoisson")
     prix_total = models.BigIntegerField(null=True)
     reduction = models.BigIntegerField(null=True)
-
+    reference = models.CharField(max_length=20, unique=True, blank=True)
 
     def __str__(self):
-        return f"{self.plat_commande.nom_plat} - {self.boisson_commande.designation}"
+        return f"{self.reference} - {self.prix_total}"
 
 
 class CommandePlat(MyBaseModel):
@@ -70,6 +70,9 @@ class CommandePlat(MyBaseModel):
     plat = models.ForeignKey(Plat, on_delete=models.CASCADE)
     quantite = models.IntegerField()
     prix = models.BigIntegerField()
+
+    def __str__(self):
+        return f"{self.commande} - {self.plat}"
 
 
 class CommandeBoisson(MyBaseModel):
@@ -79,7 +82,7 @@ class CommandeBoisson(MyBaseModel):
     prix = models.BigIntegerField()
 
     def __str__(self):
-        return f"{self.commande}"
+        return f"{self.commande} - {self.boisson}"
 
 
 class ControleBoisson(MyBaseModel):
