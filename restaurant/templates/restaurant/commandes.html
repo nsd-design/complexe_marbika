@@ -123,6 +123,75 @@
     </div>
   </div>
 
+    <!-- Liste Commandes Card starts -->
+    <div class="card col-sm-12 col-xl-8">
+      <div class="card-header">
+        <h5 class="card-title">Orders Summary</h5>
+      </div>
+      <div class="card-body">
+
+        <!-- Table starts -->
+        <div class="table-bg">
+          <div class="table-responsive">
+            <table id="tabCommandes" class="table truncate">
+              <thead>
+                <tr>
+<!--                  <th>#</th>-->
+                  <th>Reference</th>
+                  <th>Date</th>
+                  <th>Montant</th>
+                  <th>Remise</th>
+                  <th>Montant payé</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <!-- Table ends -->
+
+      </div>
+    </div>
+    <!-- Liste Commandes Card ends -->
+
+    <div class="col-xl-4 col-sm-12">
+        <div class="card mb-4">
+          <div class="card-header">
+            <h5 class="card-title" id="cardTitle">Details de la commande</h5>
+          </div>
+          <div class="card-body scroll350 overflow-auto">
+            <div class="m-auto p-2" style="width: 303px; background-color: #fff">
+              <div class="text-center" id="logoMarbika">
+                <img src="{% static 'assets/images/LogoMarbika.png' %}" alt="Logo Marbika" class="img-fluid m-2" style="width: 100px">
+              </div>
+              <div id="infoCommande" class="mt-2" style="color: #000;">
+                  <p class="my-0 fw-bold">Commande : <span class="fw-normal">CMD-00AB67E1</span></p>
+                  <p>20/03/2025 15:43</p>
+              </div>
+              <table id="tabDetailsCommande" class="col-12 col-xl-12" style="color: #000">
+                <thead style="border-top: 1px dashed black; border-bottom: 1px dashed black; color: #000;">
+                  <tr>
+                    <th class="border-end py-2">Qte</th>
+                    <th class="border-end text-center">Produits</th>
+                    <th class="text-end">Prix U</th>
+                  </tr>
+                </thead>
+                <tbody>
+
+                </tbody>
+              </table>
+                <div id="barcode-container" class="mt-5" hidden="hidden">
+                    <svg id="barcode" class="col-12 col-xl-12" ></svg>
+                </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
 </div>
 <!-- Row ends -->
 {% block custom_js %}
@@ -130,8 +199,36 @@
 <script src="{% static 'assets/js/datatables.min.js' %}"></script>
 {% endblock %}
 
+  <script defer src="{% static 'assets/js/JsBarcode.all.min.js' %}"></script>
 <script>
     $(document).ready(function(){
+      var table = $("#tabCommandes").DataTable({
+        ajax: '/restaurant/commandes/get_commandes/',
+        order: [[1, 'desc']],
+        columns: [
+          { data: 'reference', orderable: false },
+          { data: 'date'},
+          { data: 'montant' },
+          { data: 'reduction' },
+          { data: 'montant_a_payer' },
+          { data: 'actions' },
+        ],
+        language: {
+            processing: "Traitement en cours...",
+            search: "Rechercher&nbsp;:&nbsp;",
+            lengthMenu:    "Afficher _MENU_ &eacute;l&eacute;ments",
+            info:           "Affichage de l'&eacute;lement _START_ &agrave; _END_ sur _TOTAL_ &eacute;l&eacute;ments",
+            infoEmpty:      "Affichage de l'&eacute;lement 0 &agrave; 0 sur 0 &eacute;l&eacute;ments",
+            loadingRecords: "Chargement en cours...",
+            zeroRecords:    "Aucun &eacute;l&eacute;ment &agrave; afficher",
+            emptyTable:     "Aucune donnée disponible dans le tableau",
+            aria: {
+                sortAscending:  ": activer pour trier la colonne par ordre croissant",
+                sortDescending: ": activer pour trier la colonne par ordre décroissant"
+            }
+        },
+      })
+
         // Tableau contenant les Plats et Boissons dans la Commande
         // Ce Tableau doit etre reinialiser après la soumission de la Commande
         var tabPlatsBoissons = [];
@@ -276,10 +373,13 @@
                 });
               });
               //$("#form_commandes").children().not("#colReduction, #colSubmit").remove()
-              //$("#colReduction #colSubmit").attr("hidden", true)
-              $("#colReduction #colSubmit").slideUp(300)
+              //$("#colReduction, #colSubmit").attr("hidden", true)
+              $("#colReduction, #colSubmit").slideUp(300)
 
               $("#montantTotal").text("")
+
+              // Actualiser le Tableau pour ajouter les nouveaux enregistrements
+              table.ajax.reload();
 
               // Réinitialiser d'autres champs
               $("#form_commandes")[0].reset();
@@ -293,11 +393,130 @@
           },
           error: function(xhr){
             alert("Erreur lors de l'envoi de la commande.");
+            console.log(xhr)
           }
         })
 
       })
+
+      // Tableau devant contenir les references des commandes
+      var tabReferences = []
+
+      $(document).on('click','.details', function(e){
+        e.preventDefault();
+
+        // Récupérer l'URL du lien
+        let url = $(this).attr('href')
+
+        // Extraire l'ID depuis l'URL avec une regex
+        let parts = url.split("/")
+        let commande_id = parts[4]
+
+        if(commande_id){
+            $.ajax({
+                url: url,
+                method: "GET",
+                dataType: 'json',
+                success: function(res){
+                    const reference = res.reference
+
+                    $("#cardTitle").text("Details de la commande : " + reference).fadeIn()
+
+                    if(!tabReferences.includes(reference)){
+                      if(res.plats.length > 0){
+                        creerDetailElement(res.plats)
+                      }
+                      if(res.boissons.length > 0){
+                        creerDetailElement(res.boissons)
+                      }
+                      ajouterFooterFacture(res.montant, res.reduction, reference)
+
+                      //creerBarcode(reference)
+                      // Afficher le code-barre
+                      $("#barcode-container").attr("hidden", false)
+                      JsBarcode("#barcode", reference, {
+                        format: "CODE128",
+                        lineColor: "#000",
+                        width: 2,
+                        height: 20,
+                        displayValue: true,
+                        fontSize: 16,
+                        margin: 10
+                      });
+
+                      // Ajouter la reference au tableau pour empecher de dupliquer la commande sur la Facture
+                      tabReferences.push(reference)
+                    }
+
+
+                },
+                error: function(err){
+                    console.log(err)
+                },
+            })
+        }
+      })
+
+
+      function creerDetailElement(tabProduits){
+
+          tabProduits.forEach(produit =>{
+             // La ligne devant contenir les produits Plats et Boisson
+          let ligneProduits = $("<tr>")
+
+          // Les Cellules de la ligne
+          let cellQte = $("<td>")
+          let cellNom = $("<td>").addClass("ps-1")
+          let cellPrix = $("<td>").addClass("text-end")
+
+          cellQte.text(produit.quantite.toString() + " x ")
+          cellNom.text(produit.nom)
+          cellPrix.text(produit.prix.toString() + " GNF")
+
+          // Ajouter les cellules dans ligne parent
+          ligneProduits.append(cellQte, cellNom, cellPrix).attr("id", produit.id)
+          $("#tabDetailsCommande tbody").append(ligneProduits)
+        })
+        $("#tabDetailsCommande tbody").css({
+          "border-bottom": "1px dashed #000"
+        })
+      } // Fin Creer Details commande
+
+
+      function ajouterFooterFacture(montant, reduction, reference){
+        let divFooter = $("<div>").addClass("d-flex justify-content-between mt-5")
+
+        // Libelles
+        let libSousTotal = $("<p>").addClass("m-0").text('Sous-total')
+        let libRemise = $("<p>").addClass("m-0").text("Remise")
+        let libTotalPayer = $("<p>").addClass("m-0").text("Total à payer")
+        let divLib = $("<div>").css({"color": "#000"}).addClass("fw-bold")
+        divLib.append(libSousTotal, libRemise, libTotalPayer)
+
+        // Valeurs
+        let valSousTotal = $("<p>").addClass("m-0").text(montant.toLocaleString() + " GNF")
+        let valRemise = $("<p>").addClass("m-0").text(reduction.toLocaleString() + " GNF")
+        const total = montant - reduction
+        let valTotalPayer = $("<p>").addClass("m-0").text(total.toLocaleString() + " GNF")
+        let divVal = $("<div>").css({"color": "#000"})
+        divVal.append(valSousTotal, valRemise, valTotalPayer)
+
+        divFooter.append(divLib, divVal)
+        $("#tabDetailsCommande").after(divFooter)
+
+        // Créer les elements du code-barre
+        //let barcodeContainer = $("<div>").attr("id", "barcode-container")
+        //let barcode = $("<svg>").attr("id","barcode")
+        //$("#barcode-container").append(barcode)
+
+
+
+      }
+
+
+
     })
 </script>
+
 
 {% endblock %}

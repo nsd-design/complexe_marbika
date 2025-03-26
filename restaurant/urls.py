@@ -8,5 +8,7 @@ urlpatterns = [
     path("boisson", create_boisson, name="create_boisson"),
     path("boisson/approvisionner", approvisionner_boisson, name="appro_boisson"),
     path("commandes/", commande, name="commandes"),
+    path("commandes/get_commandes/", get_commandes, name="get_commandes"),
+    path("commandes/details/<str:id_commande>/", details_commande, name="details_commande"),
     path("commandes/passer_commande", passer_commande, name="passer_commande"),
 ]
