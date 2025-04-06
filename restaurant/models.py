@@ -43,6 +43,16 @@ class Boisson(MyBaseModel):
             prix_achat_unit=prix_achat_unitaire
         )
 
+    def controle_stock(self, quantite):
+        if quantite <= 0:
+            raise ValueError("La quantité doit être positive.")
+        if quantite > self.stock:
+            raise ValueError(f"Stock {self.designation} insuffisant.")
+
+    def vente_boissons(self, quantite):
+        self.stock -= int(quantite)
+        self.save()
+
 
 class ApprovisionnementBoisson(MyBaseModel):
     boisson = models.ForeignKey(Boisson, on_delete=models.CASCADE)
@@ -82,15 +92,24 @@ class CommandeBoisson(MyBaseModel):
     prix = models.BigIntegerField()
 
     def __str__(self):
-        return f"{self.commande} - {self.boisson}"
+        return f"{self.commande} - {self.boisson} - QTE: {self.quantite}"
 
 
 class ControleBoisson(MyBaseModel):
+    status = [(1, "Ouvert"), (2, "Clôturé")]
+    statut = models.SmallIntegerField(choices=status, default=1)
+
+    def __str__(self):
+        return f"{self.id} - {self.created_at} - {self.statut}"
+
+
+class DetailsControleBoissons(MyBaseModel):
     boisson = models.ForeignKey(Boisson, on_delete=models.CASCADE)
     quantite_init = models.IntegerField()
     quantite_vendue = models.IntegerField(null=True)
     quantite_restante = models.IntegerField(null=True)
-
+    controle = models.ForeignKey(ControleBoisson, on_delete=models.CASCADE)
+    manquant = models.IntegerField(default=0)
 
     def __str__(self):
-        return self.boisson.designation
+        return f"{self.boisson}"
