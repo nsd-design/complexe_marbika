@@ -11,4 +11,7 @@ urlpatterns = [
     path("commandes/get_commandes/", get_commandes, name="get_commandes"),
     path("commandes/details/<str:id_commande>/", details_commande, name="details_commande"),
     path("commandes/passer_commande", passer_commande, name="passer_commande"),
+    path("boisson/controle/", controle_boissons, name="controle_boissons"),
+    path("boisson/nouveau_controle/", create_controle_boissons, name="nouveau_controle"),
+    path("boisson/cloture_controle/", cloture_controle, name="cloture_controle"),
 ]

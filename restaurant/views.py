@@ -1,12 +1,17 @@
 import json
 
+from django.core.exceptions import ObjectDoesNotExist
+from django.db import transaction
+from django.db.models import Sum
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.utils.html import escape
+from datetime import datetime
 from django.views.decorators.http import require_http_methods
 
 from restaurant.forms import PlatForm, BoissonForm, ApprovisionnementBoissonForm
-from restaurant.models import Plat, Boisson, Commande, CommandePlat, CommandeBoisson
+from restaurant.models import Plat, Boisson, Commande, CommandePlat, CommandeBoisson, ControleBoisson, \
+    DetailsControleBoissons
 
 tmp = "restaurant/"
 def plats_boissons(request):
@@ -49,8 +54,8 @@ def create_boisson(request):
         try:
             if form.is_valid():
                 designation = form.cleaned_data['designation']
-                prix = form.cleaned_data['prix_boisson']
-                image = form.cleaned_data['prix_achat']
+                prix = form.cleaned_data['prix_achat']
+                image = form.cleaned_data['photo_boisson']
 
                 Boisson.objects.create(
                     designation=designation, prix_achat=prix,
@@ -150,6 +155,12 @@ def passer_commande(request):
             print("reference:", current_commande.reference)
             prix_total = 0
 
+            # Verifier si la quantite de la Boisson commandée est disponible
+            for item in plats_boissons:
+                if item['type'] == 'boisson':
+                    boisson = Boisson.objects.get(id=item["designation"])
+                    boisson.controle_stock(item['quantite'])
+
             for item in plats_boissons:
                 if item['type'] == 'plat':
                     plat = Plat.objects.get(id=item["designation"])
@@ -168,6 +179,7 @@ def passer_commande(request):
                         quantite=item['quantite'],
                         prix=item['prix']
                     )
+                    boisson.vente_boissons(item['quantite'])
                     prix_total += item['quantite'] * item['prix']
 
 
@@ -218,3 +230,137 @@ def details_commande(request, id_commande):
 
 
     return JsonResponse({"success": True})
+
+
+@require_http_methods(["GET"])
+def controle_boissons(request):
+    boissons = Boisson.objects.filter(stock__gt=0)
+    data = []
+    for boisson in boissons:
+        data.append({
+            "designation": f'{boisson.designation}<br><input type="text" class="id_boisson" value="{boisson.id}" hidden>',
+            "stock": boisson.stock,
+            "stock_val": f'<div class="col-12  col-md-6 col-xl-6"><input type="number" name="stock" class="form-control col-12 quantite" value="{boisson.stock}"></div>'
+        })
+    try:
+        controle_ouvert = ControleBoisson.objects.get(statut=1)
+
+        details_controle = DetailsControleBoissons.objects.filter(controle=controle_ouvert)
+
+        if details_controle is None:
+            return JsonResponse({"ouvert": False, "data": data}, status=404)
+
+        # Si un controle ouvert ayant des elements a ete trouvé, renvoyé ses informations
+        details_controle_list = []
+        for detail in details_controle:
+            details_controle_list.append({
+                "boisson": detail.boisson.id,
+                "quantite_init": f'<span class="id_boisson" hidden="hidden">{detail.boisson.id}</span><span>{detail.boisson.designation}</span> \
+                <span class="fw-bold text-white qteInit">{detail.quantite_init}</span>',
+                "quantite_vendue": f'<input type="number" class="form-control qteVendue">',
+                "quantite_restante": f'<input type="number" class="form-control qteRestante">',
+                "manquant": f'<input type="number" class="form-control manquante">',
+                "control_date": detail.controle.created_at.strftime("%d/%m/%Y %H:%M")
+            })
+        control_ouvert_trouve = {
+            "id": controle_ouvert.id,
+            "statut": controle_ouvert.statut,
+            "created_at": controle_ouvert.created_at,
+            "details": details_controle_list,
+        }
+        return JsonResponse({"ouvert": True, "data": control_ouvert_trouve})
+
+    except ControleBoisson.DoesNotExist:
+        return JsonResponse({"ouvert": False, "data": data}, status=404)
+    except Exception as e:
+        print("except:", e)
+        return JsonResponse({"error": str(e)})
+
+
+def create_controle_boissons(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            boissons = data.get("boissons", [])
+
+            if not boissons:
+                return JsonResponse({"success": False, "msg": "Aucune boisson sélectionnée pour le contrôle."},
+                                    status=400)
+
+            with transaction.atomic():
+                # Ouvrir un Nouveau Control
+                new_control = ControleBoisson.objects.create(statut=1)
+                details_control_created = False
+                for boisson in boissons:
+                    id_boisson = escape(boisson.get("id"))
+                    quantite = escape(boisson.get("quantite"))
+                    # Renseigner les Boissons qui ont été controlée
+                    try:
+                        boisson_controle = Boisson.objects.get(id=id_boisson)
+                        # if boisson_controle:
+                        DetailsControleBoissons.objects.create(boisson=boisson_controle, quantite_init=quantite, controle=new_control)
+                        details_control_created = True
+                    except Exception as e:
+                        print(e)
+                        return JsonResponse({"success": False, "msg": str(e)})
+            if not details_control_created:
+                raise ValueError("Aucune boisson valide n'a été enregistrée")
+
+            return JsonResponse({"success": True, "msg": "Nouveau contrôle initialié avec succès !"})
+        except json.JSONDecodeError:
+            return JsonResponse({"success": False, "msg": "Données JSON invalides."}, status=400)
+        except Exception as e:
+            print(e)
+            return JsonResponse({"success": False, "msg": str(e)}, status=500)
+
+
+@require_http_methods(["POST"])
+def cloture_controle(request):
+    try:
+        data = json.loads(request.body)
+        details_a_cloture = data.get("detail_cloture", [])
+
+        if not details_a_cloture:
+            return JsonResponse({"success": False, "msg": "Aucune boisson sélectionnée pour le contrôle"}, status=400)
+
+        with transaction.atomic():
+            control_id = escape(data.get("control_id"))
+
+            try:
+                controle_a_cloture = ControleBoisson.objects.get(id=control_id)
+            except ControleBoisson.DoesNotExist:
+                return JsonResponse({"success": False, "msg": "Données invalides"}, status=404)
+
+            controle_cloture = False
+            for detail in details_a_cloture:
+                id_boisson = escape(detail.get("id_boisson"))
+                qte_vendue = escape(detail.get("qteVendue"))
+                qte_restante = escape(detail.get("qteRestante"))
+                manquante = escape(detail.get("manquante"))
+
+                try:
+                    boisson_controlee = DetailsControleBoissons.objects.get(
+                        boisson=id_boisson,
+                        controle=controle_a_cloture
+                    )
+                    boisson_controlee.quantite_vendue = qte_vendue if qte_vendue else 0
+                    boisson_controlee.quantite_restante = qte_restante if qte_restante else 0
+                    boisson_controlee.manquant = manquante if manquante else 0
+                    boisson_controlee.updated_at = datetime.now()
+                    controle_cloture = True
+                    boisson_controlee.save()
+                except DetailsControleBoissons.DoesNotExist:
+                    raise Exception(f"Détail pour boisson {id_boisson} introuvable")
+
+            if not controle_cloture:
+                raise Exception("Échec de la clôture du contrôle")
+
+            # ✅ Mise à jour du contrôle (statut et date) une fois que tout s’est bien passé
+            controle_a_cloture.statut = 2
+            controle_a_cloture.updated_at = datetime.now()
+            controle_a_cloture.save()
+
+            return JsonResponse({"success": True, "msg": "Contrôle clôturé avec succès"})
+    except Exception as e:
+        print("Erreur:", e)
+        return JsonResponse({"success": False, "msg": str(e)}, status=500)

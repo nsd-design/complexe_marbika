@@ -88,7 +88,7 @@
                 </div>
                 <div class="col-sm-3 col-12">
                   <div class="mb-3">
-                    <label class="form-label" for="id_prix_boisson">Prix</label>
+                    <label class="form-label" for="id_prix_achat">Prix</label>
                     <div class="input-group">
                       {{ from_boisson.prix_achat | as_crispy_field }}
                     </div>
@@ -175,6 +175,86 @@
   </div>
 </div>
 <!-- Row ends -->
+<div class="col-sm-12">
+  <div class="card mb-4">
+    <div class="card-header">
+      <h5 class="card-title">Contrôle des Boissons</h5>
+    </div>
+    <div class="card-body">
+      <div id="btnContainer" class="d-flex justify-content-center flex-column">
+        <div id="container-btnNouveauControle" class="m-auto my-4 d-none flex-column">
+          <p class="text-center text-light">Commencer un nouveau contrôle</p>
+          <i class="bi bi-chevron-double-down text-center fs-4 text-light mb-2"></i>
+          <button class="btn btn-outline-warning" id="btnNouveauControle">
+            Nouveau Contrôle
+          </button>
+        </div>
+        <div id="container-btnClotureControle" class="m-auto my-4 d-none flex-column flex-wrap">
+          <p class="text-center text-light">
+            Vous avez un controle ouvert à la date du : <br> <span id="dateControle"></span>
+          </p>
+          <i class="bi bi-chevron-double-down text-center fs-4 text-light mb-2"></i>
+          <button class="btn btn-outline-info text-white" id="btnClotureControle">
+            Cliquez ici pour clôturer
+          </button>
+        </div>
+      </div>
+
+      <div class="table-outer" hidden="hidden" id="nouveauControleTable">
+        <div class="table-responsive">
+          <table class="table table-striped truncate m-0" id="tabNouveauControle">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Designation</th>
+                <th>Stock</th>
+              </tr>
+            </thead>
+
+            <tbody id="nouveauControleBody">
+              <!-- Les Données seront charées par Ajax -->
+            </tbody>
+          </table>
+        </div>
+        <div class="col-12">
+          <div class="invoice-footer">
+            <div class="text-end mt-3">
+              <button id="submitNouveauControle" class="btn btn-primary mb-2 me-3">Valider</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-outer" hidden="hidden" id="clotureControleTable">
+        <div class="table-responsive">
+          <table class="table table-striped truncate m-0" id="tabClotureControle">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Quantite initiale</th>
+                <th>Vendue</th>
+                <th>Restante</th>
+                <th>Manquante</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody id="tabClotureControleTBody">
+              <!-- Les Données seront charées par Ajax -->
+            </tbody>
+          </table>
+          <input type="text" id="id_controle" hidden="hidden">
+        </div>
+        <div class="col-12">
+          <div class="invoice-footer">
+            <div class="text-end mt-3">
+              <button id="submitClotureControle" class="btn btn-primary mb-2 me-3">Valider</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 {% block custom_js %}
 <script src="{% static 'assets/js/jquery.min.js' %}"></script>
@@ -281,7 +361,213 @@
         // Cacher le message après 3 secondes
         setTimeout(() => $("#response-message-appro").removeClass("show").fadeOut(), 3000);
     });
+
+    // Gestion du Controle des Boisson
+    $.ajax({
+      url: "/restaurant/boisson/controle/",
+      method: "GET",
+      dataType: "json",
+      success: function(res){
+        if(res.ouvert == true){
+
+          // S'il y a deja un controle Ouvert
+          const created_at = res.data.created_at
+          const control_date = new Date(created_at)
+          $("#dateControle").text(control_date.toLocaleString())
+
+          $("#container-btnClotureControle").removeClass("d-none").addClass("d-flex");
+
+          $("#container-btnClotureControle").on('click', function(){
+
+            const data = res.data.details
+
+            $("#id_controle").val(res.data.id)
+
+            // Afficher le tableau de cloture
+            $("#clotureControleTable").attr("hidden", false).fadeIn();
+            $("#container-btnClotureControle").slideUp(300, function(){
+              $(this).remove();
+            })
+
+            // Charger les boissons qui ont ete controlées pour cloturer le controle
+            $("#tabClotureControle").DataTable({
+              data: data,
+              columns: [
+                { data: null,
+                  render: function(data, type, row, meta){
+                    return meta.row + 1;
+                  }
+                },
+                { data: 'quantite_init'},
+                { data: 'quantite_vendue'},
+                { data: 'quantite_restante' },
+                { data: 'manquant' },
+                { data: 'control_date' },
+              ]
+            })
+
+          })
+        }
+      },
+      error: function(err){
+        $("#dateControle").text("27/03/2025 01:12")
+          // Aucun controle ouvert n'a été trouvé, alors on charge les Boissons pour demarer un nouveau controle
+          const data = err.responseJSON.data
+
+          if(err.responseJSON.ouvert == false){
+            $("#container-btnNouveauControle").addClass("d-flex").removeClass("d-none")
+
+            $("#btnNouveauControle").on('click', function(){
+              $("#nouveauControleTable").attr("hidden", false).fadeIn();
+              $("#container-btnNouveauControle").slideUp(300, function(){
+                      $(this).remove(); // Supprimer, Apres l'animation
+              });
+
+              $("#tabNouveauControle").DataTable({
+                data: data,
+                columns: [
+                  { data: null,
+                    render: function(data, type, row, meta){
+                      return meta.row + 1; // Index de la ligne + 1
+                    },
+                  },
+                  { data: 'designation'},
+                  { data: 'stock_val'},
+                ]
+              })
+
+            })
+          }
+        }
+    })
+
+    $("#submitNouveauControle").on('click', function(){
+      let tabBoissons = [];
+      // Recuperer les boissons
+      $("#nouveauControleBody tr").each(function(){
+        let id_boisson = $(this).find(".id_boisson").val()
+        let quantite = $(this).find(".quantite").val()
+
+        if(id_boisson){
+          tabBoissons.push({
+            id: id_boisson,
+            quantite: parseInt(quantite)
+          })
+        }
+      })
+
+      if(tabBoissons.length === 0){
+        alert("Veuillez saisir au moins une boisson avec une quantité valide.");
+        return;
+      }
+
+      // Soumission de la requete pour creer/Enregistrer le Controle
+      $.ajax({
+        url: "/restaurant/boisson/nouveau_controle/",
+        method: "POST",
+        data: JSON.stringify({ boissons: tabBoissons}),
+        contentType: "application/json",
+        headers: { "X-CSRFToken": get_csrf_token() },
+        success: function(res){
+          alert(res.msg);
+          $("#nouveauControleTable").attr("hidden", true).fadeOut();
+          $("#container-btnClotureControle").removeClass("d-none").addClass("d-flex").fadeIn();
+        },
+        error: function(err){
+          alert("Erreur lors de l'envoi des données.");
+          console.error(err);
+        }
+      })
+    })
+
+    function get_csrf_token(){
+      return document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1]
+    }
+
+    // Envoie de la requête pour cloturer le controle
+    $("#submitClotureControle").on('click', function(){
+      // Tableau devant contenir les boissons du controle a cloturé
+      let tabDetailsCloture = []
+      let control_id = $("#id_controle").val()
+      // Recuperer les donnees de la Table
+      $("#tabClotureControleTBody tr").each(function(){
+        let id_boisson = $(this).find(".id_boisson").text()
+        let qteVendue = $(this).find(".qteVendue").val()
+        let qteRestante = $(this).find(".qteRestante").val()
+        let manquante = $(this).find(".manquante").val()
+
+
+        if(id_boisson){
+          console.log("id boisson", id_boisson)
+          tabDetailsCloture.push({
+            id_boisson,
+            qteVendue,
+            qteRestante,
+            manquante,
+          })
+        }
+      }) // End du Each
+
+      $.ajax({
+        url: "/restaurant/boisson/cloture_controle/",
+        method: "POST",
+        headers: { "X-CSRFToken": get_csrf_token() },
+        data: JSON.stringify({ detail_cloture: tabDetailsCloture, control_id}),
+        dataType: "json",
+        contentType: "application/json",
+        success: function(res){
+          console.log("res:", res)
+        },
+        error: function(err){
+          console.log("err:", err)
+        }
+      }) // End ajax
+    }) // End submitClotureControle
+
   })
+
+</script>
+
+<script>
+    $(document).ready(function(){
+        $("#btnClotureControle").on("click", function(){
+            // Calculer la Quantite Restante apres la saisie de la quantite Vendue
+            setTimeout(()=>{
+                const lignes = $("#tabClotureControleTBody tr")
+                console.log("Nombre de lignes trouvees:", lignes.length);
+                // Initialise les handlers apres affichage
+                $("#tabClotureControleTBody tr").each(function(){
+                  const row = $(this);
+
+                  const qteInitiale = parseInt(row.find('.qteInit').text().trim()) || 0;
+                  const inputVendue = row.find('.qteVendue');
+                  const inputRestante = row.find('.qteRestante');
+                  const inputManquante = row.find('.manquante');
+
+                  // Quand la quantite vendue change
+                  inputVendue.off('input').on('input', function(){
+                    const vendue = parseInt($(this).val()) || 0;
+                    const restante = qteInitiale - vendue;
+                    inputRestante.val(restante >= 0 ? restante : 0);
+                    calculerManquant();
+                  })
+
+                  // Quand la quantité restante est modifiée manuellement
+                  inputRestante.off('input').on('input', function(){
+                    calculerManquant();
+                  })
+
+                  function calculerManquant(){
+                    const qVendue = parseInt(inputVendue.val()) || 0;
+                    const qRestante = parseInt(inputRestante.val()) || 0;
+                    const total = qVendue + qRestante;
+                    const manquant = qteInitiale - total
+                    inputManquante.val(manquant < 0 ? Math.abs(manquant) : 0);
+                  }
+                })
+            }, 200) // End setTimeout
+        }) // End Click "btnClotureControle"
+    })
 </script>
 
 {% endblock %}
