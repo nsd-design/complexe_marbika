@@ -77,7 +77,7 @@
 
             <div class="tab-pane fade" id="twoAA" role="tabpanel" aria-labelledby="tab-twoAA">
 
-              <!-- Row starts -->
+              <!-- Form Create Boisson Row starts -->
               <form method="POST" action="{% url 'create_boisson' %}" enctype="multipart/form-data" class="row gx-4" id="boisson-form">
                 {% csrf_token %}
                 <div class="col-sm-3 col-12">
@@ -88,9 +88,17 @@
                 </div>
                 <div class="col-sm-3 col-12">
                   <div class="mb-3">
-                    <label class="form-label" for="id_prix_achat">Prix</label>
+                    <label class="form-label" for="id_prix_achat">Prix d'achat</label>
                     <div class="input-group">
                       {{ from_boisson.prix_achat | as_crispy_field }}
+                    </div>
+                  </div>
+                </div>
+                <div class="col-sm-3 col-12">
+                  <div class="mb-3">
+                    <label class="form-label" for="id_prix_vente">Prix de vente</label>
+                    <div class="input-group">
+                      {{ from_boisson.prix_vente | as_crispy_field }}
                     </div>
                   </div>
                 </div>
@@ -118,7 +126,7 @@
                   </div>
                 </div>
               </form>
-              <!-- Row ends -->
+              <!-- End Form Create Boisson Row ends -->
 
             </div>
             <div class="tab-pane fade" id="threeAA" role="tabpanel" aria-labelledby="tab-threeAA">
@@ -383,7 +391,6 @@
             processData: false, // Ne pas traiter les données (obligatoire pour FormData)
             contentType: false, // Ne pas définir le contentType (obligatoire pour FormData)
             success: function (response) {
-                console.log(response)
                 $("#response-message_boisson").addClass("show bg-success").fadeIn().removeClass("bg-danger").text(response.msg);
                 $("#boisson-form")[0].reset(); // Réinitialise le formulaire
             },
