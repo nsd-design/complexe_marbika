@@ -14,4 +14,6 @@ urlpatterns = [
     path("boisson/controle/", controle_boissons, name="controle_boissons"),
     path("boisson/nouveau_controle/", create_controle_boissons, name="nouveau_controle"),
     path("boisson/cloture_controle/", cloture_controle, name="cloture_controle"),
+    path("historique_controles/", historique_controles, name="historique_controles"),
+    path("controle/details/<str:id_controle>/", get_controle_details, name="get_controle_details"),
 ]

@@ -321,7 +321,7 @@ def cloture_controle(request):
         details_a_cloture = data.get("detail_cloture", [])
 
         if not details_a_cloture:
-            return JsonResponse({"success": False, "msg": "Aucune boisson sélectionnée pour le contrôle"}, status=400)
+            return JsonResponse({"success":  False, "msg": "Aucune boisson sélectionnée pour le contrôle"}, status=400)
 
         with transaction.atomic():
             control_id = escape(data.get("control_id"))
@@ -364,3 +364,42 @@ def cloture_controle(request):
     except Exception as e:
         print("Erreur:", e)
         return JsonResponse({"success": False, "msg": str(e)}, status=500)
+
+@require_http_methods(["GET"])
+def historique_controles(request):
+    list_controles = ControleBoisson.objects.all()
+    if not list_controles:
+        return JsonResponse({"success": False}, status=404)
+
+    controles = list()
+    for controle in list_controles:
+        controles.append({
+            "date": controle.created_at.strftime("%d/%m/%Y %H:%M"),
+            "statut": f'<span class="badge rounded-pill bg-secondary">{controle.get_statut_display()}</span>' if controle.statut == 1 else f'<span class="badge rounded-pill bg-success">{controle.get_statut_display()}</span>',
+            "created_by": controle.created_by,
+            "updated_at": controle.updated_at.strftime("%d/%m/%Y %H:%M") if controle.updated_at else "",
+            "details": f'<a href="/restaurant/controle/details/{controle.id}" \
+             class="text-danger details-controle"><i class="bi bi-box-arrow-up-right fs-5"></i></a>',
+        })
+    return JsonResponse({"success": True, "msg": "OK", "data": controles})
+
+
+@require_http_methods(["GET"])
+def get_controle_details(request, id_controle):
+    list_details: list = []
+    try:
+        details = DetailsControleBoissons.objects.filter(controle=id_controle)
+        for detail in details:
+            list_details.append({
+                "boisson": detail.boisson.designation,
+                "qte_init": detail.quantite_init,
+                "qte_vendue": detail.quantite_vendue,
+                "qte_restante": detail.quantite_restante,
+                "manquant": detail.manquant,
+                "date_controle": detail.created_at.strftime("%d/%m/%Y"),
+                # "created_by": detail.created_by.username,
+            })
+        return JsonResponse({"success": True, "data": list_details}, status=200)
+    except Exception as e:
+        print(e)
+        return JsonResponse({"error": True, "msg": "Erreur lors de la recuperation des données"}, status=500)

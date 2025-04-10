@@ -173,88 +173,173 @@
       </div>
     </div>
   </div>
-</div>
-<!-- Row ends -->
-<div class="col-sm-12">
-  <div class="card mb-4">
-    <div class="card-header">
-      <h5 class="card-title">Contrôle des Boissons</h5>
-    </div>
-    <div class="card-body">
-      <div id="btnContainer" class="d-flex justify-content-center flex-column">
-        <div id="container-btnNouveauControle" class="m-auto my-4 d-none flex-column">
-          <p class="text-center text-light">Commencer un nouveau contrôle</p>
-          <i class="bi bi-chevron-double-down text-center fs-4 text-light mb-2"></i>
-          <button class="btn btn-outline-warning" id="btnNouveauControle">
-            Nouveau Contrôle
-          </button>
-        </div>
-        <div id="container-btnClotureControle" class="m-auto my-4 d-none flex-column flex-wrap">
-          <p class="text-center text-light">
-            Vous avez un controle ouvert à la date du : <br> <span id="dateControle"></span>
-          </p>
-          <i class="bi bi-chevron-double-down text-center fs-4 text-light mb-2"></i>
-          <button class="btn btn-outline-info text-white" id="btnClotureControle">
-            Cliquez ici pour clôturer
-          </button>
-        </div>
+
+  <div class="col-sm-12">
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5 class="card-title">Contrôle des Boissons</h5>
       </div>
-
-      <div class="table-outer" hidden="hidden" id="nouveauControleTable">
-        <div class="table-responsive">
-          <table class="table table-striped truncate m-0" id="tabNouveauControle">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Designation</th>
-                <th>Stock</th>
-              </tr>
-            </thead>
-
-            <tbody id="nouveauControleBody">
-              <!-- Les Données seront charées par Ajax -->
-            </tbody>
-          </table>
+      <div class="card-body">
+        <div id="btnContainer" class="d-flex justify-content-center flex-column">
+          <div id="container-btnNouveauControle" class="m-auto my-4 d-none flex-column">
+            <p class="text-center text-light">Commencer un nouveau contrôle</p>
+            <i class="bi bi-chevron-double-down text-center fs-4 text-light mb-2"></i>
+            <button class="btn btn-outline-warning" id="btnNouveauControle">
+              Nouveau Contrôle
+            </button>
+          </div>
+          <div id="container-btnClotureControle" class="m-auto my-4 d-none flex-column flex-wrap">
+            <p class="text-center text-light">
+              Vous avez un controle ouvert à la date du : <br> <span id="dateControle"></span>
+            </p>
+            <i class="bi bi-chevron-double-down text-center fs-4 text-light mb-2"></i>
+            <button class="btn btn-outline-info text-white" id="btnClotureControle">
+              Cliquez ici pour clôturer
+            </button>
+          </div>
         </div>
-        <div class="col-12">
-          <div class="invoice-footer">
-            <div class="text-end mt-3">
-              <button id="submitNouveauControle" class="btn btn-primary mb-2 me-3">Valider</button>
+
+        <div class="table-outer" hidden="hidden" id="nouveauControleTable">
+          <div class="table-responsive">
+            <table class="table table-striped truncate m-0" id="tabNouveauControle">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Designation</th>
+                  <th>Stock</th>
+                </tr>
+              </thead>
+
+              <tbody id="nouveauControleBody">
+                <!-- Les Données seront charées par Ajax -->
+              </tbody>
+            </table>
+          </div>
+          <div class="col-12">
+            <div class="invoice-footer">
+              <div class="text-end mt-3">
+                <button id="submitNouveauControle" class="btn btn-primary mb-2 me-3">Valider</button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div class="table-outer" hidden="hidden" id="clotureControleTable">
-        <div class="table-responsive">
-          <table class="table table-striped truncate m-0" id="tabClotureControle">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Quantite initiale</th>
-                <th>Vendue</th>
-                <th>Restante</th>
-                <th>Manquante</th>
-                <th>Date</th>
-              </tr>
-            </thead>
-            <tbody id="tabClotureControleTBody">
-              <!-- Les Données seront charées par Ajax -->
-            </tbody>
-          </table>
-          <input type="text" id="id_controle" hidden="hidden">
-        </div>
-        <div class="col-12">
-          <div class="invoice-footer">
-            <div class="text-end mt-3">
-              <button id="submitClotureControle" class="btn btn-primary mb-2 me-3">Valider</button>
+        <div class="table-outer" hidden="hidden" id="clotureControleTable">
+          <div class="table-responsive">
+            <table class="table table-striped truncate m-0" id="tabClotureControle">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Quantite initiale</th>
+                  <th>Vendue</th>
+                  <th>Restante</th>
+                  <th>Manquante</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody id="tabClotureControleTBody">
+                <!-- Les Données seront charées par Ajax -->
+              </tbody>
+            </table>
+            <input type="text" id="id_controle" hidden="hidden">
+          </div>
+          <div class="col-12">
+            <div class="invoice-footer">
+              <div class="text-end mt-3">
+                <button id="submitClotureControle" class="btn btn-primary mb-2 me-3">Valider</button>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
   </div>
+
+<!-- Accordion -->
+  <div class="col-sm-12">
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5 class="card-title">Historique des Contrôles</h5>
+      </div>
+      <div class="card-body">
+        <div class="accordion" id="accordionSpecialTitle">
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingSpecialTitleTwo">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                data-bs-target="#collapseSpecialTitleTwo" aria-expanded="false"
+                aria-controls="collapseSpecialTitleTwo">
+                <div class="d-flex flex-column">
+                  <h5 class="m-0">Les Contrôles</h5>
+                </div>
+              </button>
+            </h2>
+            <div id="collapseSpecialTitleTwo" class="accordion-collapse collapse"
+              aria-labelledby="headingSpecialTitleTwo" data-bs-parent="#accordionSpecialTitle">
+              <div class="accordion-body">
+                <div class="table-outer" id="HistoriqueControle">
+                  <div class="table-responsive">
+                    <table class="table table-striped truncate m-0" id="tabHistoriqueControle">
+                      <thead>
+                        <tr>
+                          <th>#</th>
+                          <th>Date d'init</th>
+                          <th>Statut</th>
+                          <th>Initié par</th>
+                          <th>Derniere Modification</th>
+                          <th>Détails</th>
+                        </tr>
+                      </thead>
+
+                      <tbody id="tableListControles">
+                        <!-- Les Données seront charées par Ajax -->
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+      <!-- End Accordion -->
+
+    <!-- Button trigger modal -->
+    <button hidden="hidden" type="button" class="btn btn-primary" data-bs-toggle="modal"
+      data-bs-target="#staticBackdrop" id="btnModalDetail">
+      Launch static backdrop modal
+    </button>
+
+    <!-- Modal Details Controle -->
+    <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false"
+      tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content overflow-auto" style="max-height: 700px">
+          <div class="modal-header">
+            <h5 class="modal-title" id="staticBackdropLabel">
+              Details du Contrôle à la date du <span id="date-controle"></span>
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body d-flex flex-wrap justify-content-between" id="modalDetailBody">
+
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-dark" data-bs-dismiss="modal">
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- End Modal Details Controle -->
+
+  </div>
 </div>
+<!-- Row ends -->
+
 
 {% block custom_js %}
 <script src="{% static 'assets/js/jquery.min.js' %}"></script>
@@ -568,6 +653,107 @@
             }, 200) // End setTimeout
         }) // End Click "btnClotureControle"
     })
+</script>
+
+<script>
+  $(document).ready(function(){
+    // Charger les boissons qui ont ete controlées pour cloturer le controle
+    $("#tabHistoriqueControle").DataTable({
+      ajax: '/restaurant/historique_controles/',
+      columns: [
+        { data: null,
+          render: function(data, type, row, meta){
+            return meta.row + 1;
+          }
+        },
+        { data: 'date'},
+        { data: 'statut'},
+        { data: 'created_by'},
+        { data: 'updated_at' },
+        { data: 'details' },
+      ]
+    })
+  })
+</script>
+
+<!-- Get Controle Details -->
+<script>
+  $(document).on('click', '.details-controle', function(e){
+
+      e.preventDefault();
+      let url = $(this).attr('href')
+      $.ajax({
+        url: url,
+        method: 'GET',
+        dataType: 'json',
+        success: function(res){
+            $("#btnModalDetail").trigger("click");
+            $("#modalDetailBody").empty();
+            $("#staticBackdrop").off('shown.bs.modal').on('shown.bs.modal', function(){
+              $("#date-controle").text(res.data[0].date_controle.toString())
+              for(let i=0; i < res.data.length; i++){
+                  let boisson = res.data[i].boisson
+
+                  let date_controle = res.data[i].date_controle
+                  let manquant = res.data[i].manquant
+                  let qte_init = res.data[i].qte_init
+                  let qte_restante = res.data[i].qte_restante
+                  let qte_vendue = res.data[i].qte_vendue
+
+                  createDetailCard(boisson, date_controle, manquant, qte_init, qte_restante, qte_vendue)
+              }
+            });
+        },
+        error: function(err){
+          alert(err.responseJSON.msg)
+        }
+      }) // End Ajax
+
+      $('.btn[data-bs-dismiss="modal"]').on('click', function () {
+          // Retirer le focus pour éviter l’erreur d’accessibilité
+          $(this).blur();
+      });
+
+      function createDetailCard(boisson, date_controle, manquant, qte_init, qte_restante, qte_vendue){
+        let container = $("<div>").addClass("col-lg-5 col-sm-5");
+
+        let card = $("<div>")
+          .addClass("border border-info p-3 rounded-2 mb-4");
+
+        let header = $("<div>")
+          .addClass("mb-3 d-flex align-items-start");
+
+        let img = $("<img>")
+          .attr("src", "/static/assets/images/LogoMarbika.png") // ajuster si besoin
+          .addClass("rounded-circle me-2 img-3x")
+          .attr("alt", "Bootstrap Dashboards");
+
+        let userInfo = $("<div>")
+          .addClass("flex-grow-1");
+
+        let designation = $("<strong>").text(boisson);
+        let date = $("<br>").add(
+          $("<small>").addClass("text-muted").text(date_controle.toString())
+        );
+
+        userInfo.append(designation, date);
+        header.append(img, userInfo);
+
+        let body = $("<div>").addClass("notes-body");
+        let qte_initial = $("<h6>").text("Qte Initiale : " + qte_init.toString());
+        let vendue = $("<h6>").text("Vendue : " + qte_vendue.toString());
+        let restant = $("<h6>").text("Restant: " + qte_restante.toString());
+        let qte_manquant = $("<h6>").text("Manquant : " + manquant.toString());
+
+        body.append(qte_initial, vendue, restant, qte_manquant);
+
+        card.append(header, body);
+        container.append(card);
+
+        // Ensuite tu peux l'ajouter au DOM où tu veux, par exemple :
+        $("#modalDetailBody").append(container);
+      }
+  })
 </script>
 
 {% endblock %}
