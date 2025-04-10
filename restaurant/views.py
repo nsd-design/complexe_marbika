@@ -54,11 +54,12 @@ def create_boisson(request):
         try:
             if form.is_valid():
                 designation = form.cleaned_data['designation']
-                prix = form.cleaned_data['prix_achat']
+                prix_achat = form.cleaned_data['prix_achat']
+                prix_vente = form.cleaned_data['prix_vente']
                 image = form.cleaned_data['photo_boisson']
 
                 Boisson.objects.create(
-                    designation=designation, prix_achat=prix,
+                    designation=designation, prix_achat=prix_achat, prix_vente=prix_vente,
                     photo_boisson=image
                 )
 
