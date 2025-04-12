@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load custom_filters %}
+
+{% block page_title %} {{ page_title }} {% endblock %}
+{% block main %}
+<!-- Row starts -->
+<div class="row gx-4">
+    <div class="col-sm-12">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title">Création de Produits</h5>
+            </div>
+            <div class="card-body">
+                <div class="accordion" id="accordionSpecialTitle">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingSpecialTitleTwo">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#collapseSpecialTitleTwo" aria-expanded="false"
+                                    aria-controls="collapseSpecialTitleTwo">
+                                <div class="d-flex flex-column">
+                                    <h5 class="m-0">Nouveau Produit</h5>
+                                </div>
+                            </button>
+                        </h2>
+                        <div id="collapseSpecialTitleTwo" class="accordion-collapse collapse"
+                             aria-labelledby="headingSpecialTitleTwo" data-bs-parent="#accordionSpecialTitle">
+                            <div class="accordion-body">
+
+                                <!-- Row starts -->
+                                <form method="POST" action="{% url 'add_produit' %}" class="row gx-4" id="produit-form">
+                                    {% csrf_token %}
+                                    <div class="col-xl-3 col-sm-4 col-12">
+                                        <div class="mb-3">
+                                            <label class="form-label" for="id_designation">Designation</label>
+                                            {{ form.designation | as_crispy_field }}
+                                        </div>
+                                    </div>
+                                    <div class="col-xl-3 col-sm-4 col-12">
+                                        <div class="mb-3">
+                                            <label class="form-label" for="id_prix_achat">Prix d'achat</label>
+                                            {{ form.prix_achat | as_crispy_field }}
+                                        </div>
+                                    </div>
+                                    <div class="col-xl-3 col-sm-4 col-12">
+                                        <div class="mb-3">
+                                            <label class="form-label" for="id_prix_vente">Prix de vente</label>
+                                            {{ form.prix_vente | as_crispy_field }}
+                                        </div>
+                                    </div>
+
+                                    <!-- Zone d'affichage des messages -->
+                                    <div id="response-message" class="alert bg-success text-white alert-dismissible fade" role="alert">
+
+                                      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"
+                                        aria-label="Close"></button>
+                                    </div>
+
+                                    <div class="col-sm-12 col-12">
+                                        <div class="d-flex gap-2 justify-content-end">
+                                            <!--                      <button type="button" class="btn btn-secondary">Clear</button>-->
+                                            <button type="submit" class="btn btn-primary">Créer</button>
+                                        </div>
+                                    </div>
+                                </form>
+                                <!-- Row ends -->
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+<!-- Row ends -->
+{% block custom_js %}
+<script src="{% static 'assets/js/jquery.min.js' %}"></script>
+<script src="{% static 'assets/js/datatables.min.js' %}"></script>
+{% endblock %}
+
+<script defer src="{% static 'assets/js/JsBarcode.all.min.js' %}"></script>
+
+<script>
+    $(document).ready(function(){
+        function getCSRFToken(){
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+            return csrfToken ? csrfToken.value : "";
+        }
+        $("#produit-form").on('submit', function(event){
+
+            event.preventDefault();
+
+            console.log("product form submitted")
+
+            const actionUrl = $(this).attr('action');
+            let formData = new FormData(this);
+
+
+            // Envoi de la requête AJAX
+            $.ajax({
+                url: actionUrl,
+                method: 'POST',
+                headers: { 'X-CSRFToken': getCSRFToken() },
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(res){
+                    $('#response-message').text(res.msg);
+                    $('#response-message').addClass('show').fadeIn();
+
+                    // Actualiser la Table liste produit via ajax
+                    // ...ici
+
+                    // Faire disparaître le message du success après 3 secondes (3000 ms)
+                    setTimeout(function () {
+                        $('#response-message').removeClass('show').fadeOut();
+                    }, 3000);
+
+                    $('#produit-form')[0].reset();
+                },
+                error: function(xhr){
+                    const errorResponse = xhr.responseJSON ? xhr.responseJSON.msg : 'Erreur serveur.';
+                    $('#response-message').text(`Erreur: ${errorResponse}`);
+                    $('#response-message').removeClass('bg-success')
+                    $('#response-message').addClass('bg-warning show').fadeIn();
+                    // Faire disparaître après 3 secondes (3000 ms)
+                    setTimeout(function () {
+                        $('#response-message').removeClass('show').fadeOut();
+                        $('#response-message').removeClass('bg-warning');
+                    }, 3000);
+                },
+            })
+
+        }) // End Submit Produit-Form
+    }) // Au chargement de la page
+</script>
+
+
+{% endblock %}

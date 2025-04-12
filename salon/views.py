@@ -5,10 +5,11 @@ from django.db.models import F, Sum
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.utils.html import escape
+from django.views.decorators.http import require_http_methods
 
 from employe.models import Employe
-from salon.forms import ServiceForm, CategorieForm, PrixServiceForm, PrestationForm
-from salon.models import CategorieService, Service, PrixService, Prestation
+from salon.forms import ServiceForm, CategorieForm, PrixServiceForm, PrestationForm, ProduitForm
+from salon.models import CategorieService, Service, PrixService, Prestation, Produit
 
 tmp = "salon/"
 
@@ -178,3 +179,37 @@ def add_prestation(request):
             print("add prestation", e)
     else:
         JsonResponse({"error": "Methode non autorisée"}, status=405)
+
+def produits(request):
+    form = ProduitForm()
+    context = {
+        "form": form,
+        "page_title": "Produits",
+    }
+    return render(request, tmp + "produits.html", context)
+
+
+@require_http_methods(["POST"])
+def add_produit(request):
+    try:
+        form_submitted = ProduitForm(request.POST)
+        if form_submitted.is_valid():
+            designation = form_submitted.cleaned_data['designation']
+            prix_achat = form_submitted.cleaned_data['prix_achat']
+            prix_vente = form_submitted.cleaned_data['prix_vente']
+
+            if prix_achat <= 0:
+                return JsonResponse({"error": True, "msg": "Le prix d'achat doit être superieur à 0"}, status=400)
+            if prix_vente <= 0:
+                return JsonResponse({"error": True, "msg": "Le prix de vente doit être superieur à 0"}, status=400)
+
+            Produit.objects.create(
+                designation=designation, prix_achat=prix_achat, prix_vente=prix_vente
+            )
+
+            return JsonResponse({"success": True, "msg": "Produti céé avec succès !"}, status=201)
+        else:
+            return JsonResponse({"error": True, "msg": str(form_submitted.errors)}, status=400)
+    except Exception as e:
+        print(e)
+        return JsonResponse({"error": True, "msg": "Une erreur s'est produite"}, status=400)

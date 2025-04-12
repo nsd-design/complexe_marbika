@@ -40,9 +40,12 @@ class Prestation(MyBaseModel):
 class Produit(MyBaseModel):
     designation = models.CharField(max_length=120)
     qr_code = models.CharField(max_length=255, null=True)
+    stock = models.PositiveIntegerField(default=0)
+    prix_achat = models.BigIntegerField(default=0)
+    prix_vente = models.BigIntegerField(default=0)
 
     def __str__(self):
-        return self.designation
+        return f"{self.designation} - {self.prix_achat} - {self.prix_vente}"
 
 
 class PrixProduit(MyBaseModel):
@@ -55,14 +58,21 @@ class PrixProduit(MyBaseModel):
 
 class Vente(MyBaseModel):
     TYPE_DE_VENTE = [(1, "Cash"), (2, "Crédit")]
-    produit = models.ManyToManyField(Produit)
-    pvu = models.IntegerField()
     reduction = models.IntegerField(null=True)
     type_vente = models.SmallIntegerField(choices=TYPE_DE_VENTE, default=1)
 
     def __str__(self):
-        return self.produit.designation
+        return self.id
 
+
+class ProduitVendu(models.Model):
+    vente = models.ForeignKey(Vente, on_delete=models.CASCADE, related_name="produits_vendus")
+    produit = models.ForeignKey(Produit, on_delete=models.CASCADE)
+    quantite = models.IntegerField()
+    prix_vente_unitaire = models.BigIntegerField()
+
+    def __str__(self):
+        return f"{self.produit.designation} x {self.quantite} - {self.prix_vente_unitaire} GNF"
 
 class Approvisionnement(MyBaseModel):
     produit = models.ForeignKey(Produit, on_delete=models.CASCADE)
