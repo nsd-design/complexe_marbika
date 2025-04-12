@@ -203,6 +203,7 @@ def details_commande(request, id_commande):
 
         data = {
             "reference": commande.reference,
+            "date_creation": commande.created_at.strftime("%d/%m/%Y %H:%M"),
             "montant": commande.prix_total,
             "reduction": commande.reduction,
             "plats": [],

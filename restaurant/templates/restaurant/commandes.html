@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load crispy_forms_tags %}
+{% load custom_filters %}
 
 {% block page_title %} {{ page_title }} {% endblock %}
 {% block main %}
@@ -65,17 +66,11 @@
                         <li class="nav-item" role="presentation">
                             <a class="nav-link active" id="tab-oneA" data-bs-toggle="tab" href="#oneA" role="tab"
                                aria-controls="oneA" aria-selected="true">Plats
-                                <span class="badge rounded-pill bg-info ms-2">9</span></a>
+                            </a>
                         </li>
                         <li class="nav-item" role="presentation">
                             <a class="nav-link" id="tab-twoA" data-bs-toggle="tab" href="#twoA" role="tab"
-                               aria-controls="twoA" aria-selected="false">Boissons<span
-                                    class="badge rounded-pill bg-danger ms-2">7</span></a>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <a class="nav-link" id="tab-threeA" data-bs-toggle="tab" href="#threeA" role="tab"
-                               aria-controls="threeA" aria-selected="false">Tab Three
-                                <span class="badge rounded-pill bg-success ms-2">3</span></a>
+                               aria-controls="twoA" aria-selected="false">Boissons</a>
                         </li>
                     </ul>
                     <div class="tab-content" id="customTabContent2">
@@ -96,7 +91,7 @@
                                     {% endif %}
                                     <p>
                                         <span class="designation">{{ plat.nom_plat}}</span>
-                                        <span class="badge rounded-pill bg-success">{{ plat.prix}}</span>
+                                        <span class="badge rounded-pill bg-success">{{ plat.prix | currency }}</span>
                                         <span class="productPrice" hidden>{{ plat.prix }}</span>
                                     </p>
                                 </div>
@@ -122,8 +117,8 @@
                                     {% endif %}
                                     <p>
                                         <span class="designation">{{ boisson.designation }}</span>
-                                        <span class="badge rounded-pill bg-success">{{ boisson.prix_achat }}</span>
-                                        <span class="productPrice" hidden>{{ boisson.prix_achat}}</span>
+                                        <span class="badge rounded-pill bg-success">{{ boisson.prix_vente | currency }}</span>
+                                        <span class="productPrice" hidden>{{ boisson.prix_vente}}</span>
                                     </p>
                                 </div>
                                 {% endfor %}
@@ -140,7 +135,7 @@
     <!-- Liste Commandes Card starts -->
     <div class="card col-sm-12 col-xl-8">
         <div class="card-header">
-            <h5 class="card-title">Orders Summary</h5>
+            <h5 class="card-title">Commandes</h5>
         </div>
         <div class="card-body">
 
@@ -174,7 +169,7 @@
     <div class="col-xl-4 col-sm-12">
         <div class="card mb-4">
             <div class="card-header">
-                <h5 class="card-title" id="cardTitle">Details de la commande</h5>
+                <h5 class="card-title" id="cardTitle">Ticket</h5>
             </div>
             <div class="card-body scroll350 overflow-auto">
                 <div class="m-auto p-2" style="width: 303px; background-color: #fff">
@@ -183,8 +178,8 @@
                              style="width: 100px">
                     </div>
                     <div id="infoCommande" class="mt-2" style="color: #000;">
-                        <p class="my-0 fw-bold">Commande : <span class="fw-normal">CMD-00AB67E1</span></p>
-                        <p>20/03/2025 15:43</p>
+                        <p class="my-0 fw-bold">Commande : <span class="fw-normal" id="referenceCMD"></span></p>
+                        <p id="dateCommande"></p>
                     </div>
                     <table id="tabDetailsCommande" class="col-12 col-xl-12" style="color: #000">
                         <thead style="border-top: 1px dashed black; border-bottom: 1px dashed black; color: #000;">
@@ -453,8 +448,9 @@
                 dataType: 'json',
                 success: function(res){
                     const reference = res.reference
+                    const date_commande = res.date_creation
 
-                    $("#cardTitle").text("Details de la commande : " + reference).fadeIn()
+                    //$("#cardTitle").text("Details de la commande : " + reference).fadeIn()
 
                     if(!tabReferences.includes(reference)){
                       if(res.plats.length > 0){
@@ -463,7 +459,7 @@
                       if(res.boissons.length > 0){
                         creerDetailElement(res.boissons)
                       }
-                      ajouterFooterFacture(res.montant, res.reduction, reference)
+                      ajouterFooterFacture(res.montant, res.reduction, reference, date_commande)
 
                       //creerBarcode(reference)
                       // Afficher le code-barre
@@ -505,7 +501,7 @@
 
           cellQte.text(produit.quantite.toString() + " x ")
           cellNom.text(produit.nom)
-          cellPrix.text(produit.prix.toString() + " GNF")
+          cellPrix.text(produit.prix.toLocaleString() + " GNF")
 
           // Ajouter les cellules dans ligne parent
           ligneProduits.append(cellQte, cellNom, cellPrix).attr("id", produit.id)
@@ -517,7 +513,10 @@
       } // Fin Creer Details commande
 
 
-      function ajouterFooterFacture(montant, reduction, reference){
+      function ajouterFooterFacture(montant, reduction, reference, date_commande){
+        // Ajout de la reference de la commande sur le ticket
+        $("#referenceCMD").text(reference)
+        $("#dateCommande").text(date_commande)
         let divFooter = $("<div>").addClass("d-flex justify-content-between mt-5")
 
         // Libelles
