@@ -192,11 +192,13 @@ def produits(request):
 @require_http_methods(["POST"])
 def add_produit(request):
     try:
-        form_submitted = ProduitForm(request.POST)
+        form_submitted = ProduitForm(request.POST, request.FILES)
         if form_submitted.is_valid():
             designation = form_submitted.cleaned_data['designation']
             prix_achat = form_submitted.cleaned_data['prix_achat']
             prix_vente = form_submitted.cleaned_data['prix_vente']
+            image = form_submitted.cleaned_data['image']
+            stock_init = form_submitted.cleaned_data['stock']
 
             if prix_achat <= 0:
                 return JsonResponse({"error": True, "msg": "Le prix d'achat doit être superieur à 0"}, status=400)
@@ -204,7 +206,7 @@ def add_produit(request):
                 return JsonResponse({"error": True, "msg": "Le prix de vente doit être superieur à 0"}, status=400)
 
             Produit.objects.create(
-                designation=designation, prix_achat=prix_achat, prix_vente=prix_vente
+                designation=designation, prix_achat=prix_achat, prix_vente=prix_vente, stock=stock_init, image=image
             )
 
             return JsonResponse({"success": True, "msg": "Produti céé avec succès !"}, status=201)
@@ -213,3 +215,29 @@ def add_produit(request):
     except Exception as e:
         print(e)
         return JsonResponse({"error": True, "msg": "Une erreur s'est produite"}, status=400)
+
+
+@require_http_methods(["GET"])
+def get_produits(request):
+    list_produits: list = []
+    try:
+        produits = Produit.objects.all()
+
+        if produits is None:
+            return JsonResponse({"succes": True, "msg": "Aucun produit n'a été trouvé"})
+
+        for produit in produits:
+            pau = float(produit.prix_achat)
+            pvu = float(produit.prix_vente)
+            list_produits.append({
+                "id": produit.id,
+                "designation": produit.designation,
+                "prix_achat": "{:,.0f} GNF".format(pau).replace(",", " "),
+                "prix_vente": "{:,.0f} GNF".format(pvu).replace(",", " "),
+                "sotock": f'<span class="badge border border-success text-success">{produit.stock}</span>' if int(produit.stock) > 0 else f'<span class="badge rounded-pill bg-secondary">{produit.stock}</span>',
+            })
+
+        return JsonResponse({"success": True, "data": list_produits})
+    except Exception as e:
+        print(e)
+        return JsonResponse({"error": True, "msg": str(e)})

@@ -29,7 +29,7 @@
                             <div class="accordion-body">
 
                                 <!-- Row starts -->
-                                <form method="POST" action="{% url 'add_produit' %}" class="row gx-4" id="produit-form">
+                                <form method="POST" action="{% url 'add_produit' %}" class="row gx-4" id="produit-form" enctype="multipart/form-data">
                                     {% csrf_token %}
                                     <div class="col-xl-3 col-sm-4 col-12">
                                         <div class="mb-3">
@@ -47,6 +47,18 @@
                                         <div class="mb-3">
                                             <label class="form-label" for="id_prix_vente">Prix de vente</label>
                                             {{ form.prix_vente | as_crispy_field }}
+                                        </div>
+                                    </div>
+                                    <div class="col-xl-3 col-sm-4 col-12">
+                                        <div class="mb-3">
+                                            <label class="form-label" for="id_stock">Stock Initial</label>
+                                            {{ form.stock | as_crispy_field }}
+                                        </div>
+                                    </div>
+                                    <div class="col-xl-3 col-sm-4 col-12">
+                                        <div class="mb-3">
+                                            <label class="form-label" for="id_stock">Image</label>
+                                            {{ form.image | as_crispy_field }}
                                         </div>
                                     </div>
 
@@ -72,7 +84,34 @@
                 </div>
             </div>
         </div>
+    </div>
 
+    <div class="col-sm-12">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title">Liste des Produits</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-outer">
+                    <div class="table-responsive">
+                        <table class="table align-middle table-hover m-0 truncate" id="table-produits">
+                            <thead>
+                            <tr>
+                                <th>#</th>
+                                <th class="text-center">Designation</th>
+                                <th>Prix Achat U</th>
+                                <th>Prix Vente U</th>
+                                <th>Stock</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <!-- Contenu chargé par Ajax-->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
 </div>
@@ -86,6 +125,24 @@
 
 <script>
     $(document).ready(function(){
+
+        const tableProduits = $("#table-produits").DataTable({
+            ajax: '/salon/produits/list/',
+            columns: [
+                {
+                    data: null,
+                    render: function(data, type, row, meta){
+                        return meta.row + 1;
+                      }
+                },
+                { data: 'designation'},
+                { data: 'prix_achat' },
+                { data: 'prix_vente' },
+                { data: 'sotock' },
+            ],
+
+        })
+
         function getCSRFToken(){
             const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
             return csrfToken ? csrfToken.value : "";
@@ -121,6 +178,7 @@
                     }, 3000);
 
                     $('#produit-form')[0].reset();
+                    tableProduits.ajax.reload();
                 },
                 error: function(xhr){
                     const errorResponse = xhr.responseJSON ? xhr.responseJSON.msg : 'Erreur serveur.';

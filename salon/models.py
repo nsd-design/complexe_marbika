@@ -43,6 +43,7 @@ class Produit(MyBaseModel):
     stock = models.PositiveIntegerField(default=0)
     prix_achat = models.BigIntegerField(default=0)
     prix_vente = models.BigIntegerField(default=0)
+    image = models.ImageField(null=True, blank=True, upload_to="produits/")
 
     def __str__(self):
         return f"{self.designation} - {self.prix_achat} - {self.prix_vente}"

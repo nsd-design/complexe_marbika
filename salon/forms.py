@@ -58,4 +58,4 @@ class ProduitForm(forms.ModelForm):
 
     class Meta:
         model = Produit
-        fields = ["designation", "prix_achat", "prix_vente"]
+        fields = ["designation", "prix_achat", "prix_vente", "stock", "image"]
