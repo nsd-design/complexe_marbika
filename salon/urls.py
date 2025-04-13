@@ -13,4 +13,5 @@ urlpatterns = [
     path("prestations/<str:service_id>/", get_prix_service, name="get_prix_service"),
     path("produits/", produits, name="produits"),
     path("produits/add/", add_produit, name="add_produit"),
+    path("produits/list/", get_produits, name="get_produits"),
 ]

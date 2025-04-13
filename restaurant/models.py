@@ -7,7 +7,7 @@ from employe.models import MyBaseModel
 
 class Plat(MyBaseModel):
     nom_plat = models.CharField(120)
-    photo_plat = models.ImageField(null=True, blank=True)
+    photo_plat = models.ImageField(null=True, blank=True, upload_to="plats/")
     prix = models.BigIntegerField(null=True)
     qr_code = models.CharField(max_length=255, null=True)
 
@@ -19,7 +19,7 @@ class Boisson(MyBaseModel):
     designation = models.CharField(max_length=100)
     prix_achat = models.BigIntegerField(null=True)
     qr_code = models.CharField(max_length=255, null=True)
-    photo_boisson = models.ImageField(null=True, blank=True)
+    photo_boisson = models.ImageField(null=True, blank=True, upload_to="boissons/")
     prix_vente = models.BigIntegerField(null=True)
     stock = models.PositiveIntegerField(default=0)
 
