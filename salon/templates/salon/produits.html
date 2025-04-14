@@ -77,7 +77,60 @@
                                     </div>
                                 </form>
                                 <!-- Row ends -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="approvisionnement">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#collapseApprovisionnement" aria-expanded="false"
+                                    aria-controls="collapseApprovisionnement">
+                                <div class="d-flex flex-column">
+                                    <h5 class="m-0">Approvisionnement Produits</h5>
+                                </div>
+                            </button>
+                        </h2>
+                        <div id="collapseApprovisionnement" class="accordion-collapse collapse"
+                             aria-labelledby="approvisionnement" data-bs-parent="#accordionSpecialTitle">
+                            <div class="accordion-body">
 
+                                <!-- Row starts -->
+                                <form method="POST" action="{% url 'approvisionner' %}" class="row gx-4" id="form-appro" enctype="multipart/form-data">
+                                    {% csrf_token %}
+                                    <div class="col-xl-3 col-sm-4 col-12">
+                                        <div class="mb-3">
+                                            <label class="form-label" for="id_produit">Prouit</label>
+                                            {{ appro_form.produit | as_crispy_field }}
+                                        </div>
+                                    </div>
+                                    <div class="col-xl-3 col-sm-4 col-12">
+                                        <div class="mb-3">
+                                            <label class="form-label" for="id_quantite">Quantité</label>
+                                            {{ appro_form.quantite | as_crispy_field }}
+                                        </div>
+                                    </div>
+                                    <div class="col-xl-3 col-sm-4 col-12">
+                                        <div class="mb-3">
+                                            <label class="form-label" for="id_pau">Prix d'achat</label>
+                                            {{ appro_form.pau | as_crispy_field }}
+                                        </div>
+                                    </div>
+
+                                    <!-- Zone d'affichage des messages -->
+                                    <div id="response-message-appro" class="alert bg-success text-white alert-dismissible fade" role="alert">
+
+                                      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"
+                                        aria-label="Close"></button>
+                                    </div>
+
+                                    <div class="col-sm-12 col-12">
+                                        <div class="d-flex gap-2 justify-content-end">
+                                            <!--                      <button type="button" class="btn btn-secondary">Clear</button>-->
+                                            <button type="submit" class="btn btn-primary">Créer</button>
+                                        </div>
+                                    </div>
+                                </form>
+                                <!-- Row ends -->
                             </div>
                         </div>
                     </div>
@@ -114,6 +167,37 @@
         </div>
     </div>
 
+    <!-- Historiques Appro -->
+    <div class="col-sm-12">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title">Historique des Approvisionnements</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-outer">
+                    <div class="table-responsive">
+                        <table class="table align-middle table-hover m-0 truncate" id="table-appro">
+                            <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Produit</th>
+                                <th>Quantité</th>
+                                <th>Prix Achat U</th>
+                                <th>Nouveau Stock</th>
+                                <th>Date Appro</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <!-- Contenu chargé par Ajax-->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Historiques Appro -->
+
 </div>
 <!-- Row ends -->
 {% block custom_js %}
@@ -127,7 +211,10 @@
     $(document).ready(function(){
 
         const tableProduits = $("#table-produits").DataTable({
-            ajax: '/salon/produits/list/',
+            ajax: {
+                url: '/salon/produits/list/',
+                dataSrc: 'data.list_produits',
+            },
             columns: [
                 {
                     data: null,
@@ -138,9 +225,30 @@
                 { data: 'designation'},
                 { data: 'prix_achat' },
                 { data: 'prix_vente' },
-                { data: 'sotock' },
+                { data: 'stock' },
             ],
 
+        })
+
+        let tableAppro = $("#table-appro").DataTable({
+            ajax: {
+                url: '/salon/produits/list/',
+                dataSrc: 'data.list_appro'
+            },
+
+            columns: [
+                {
+                    data: null,
+                    render: function(data, type, row, meta){
+                        return meta.row + 1;
+                      }
+                },
+                { data: 'produit'},
+                { data: 'quantite'},
+                { data: 'pau'},
+                { data: 'stock'},
+                { data: 'date_appro'},
+            ]
         })
 
         function getCSRFToken(){
@@ -148,14 +256,10 @@
             return csrfToken ? csrfToken.value : "";
         }
         $("#produit-form").on('submit', function(event){
-
             event.preventDefault();
-
-            console.log("product form submitted")
 
             const actionUrl = $(this).attr('action');
             let formData = new FormData(this);
-
 
             // Envoi de la requête AJAX
             $.ajax({
@@ -178,7 +282,9 @@
                     }, 3000);
 
                     $('#produit-form')[0].reset();
-                    tableProduits.ajax.reload();
+
+                    // Actualiser la Table liste produit via ajax
+                    //tableProduits.ajax.reload();
                 },
                 error: function(xhr){
                     const errorResponse = xhr.responseJSON ? xhr.responseJSON.msg : 'Erreur serveur.';
@@ -194,6 +300,48 @@
             })
 
         }) // End Submit Produit-Form
+
+        $("#form-appro").on('submit', function(){
+            event.preventDefault();
+            const actionUrl = $(this).attr('action');
+            let formData = new FormData(this);
+
+            $.ajax({
+                url: actionUrl,
+                method: 'POST',
+                headers: { 'X-CSRFToken': getCSRFToken() },
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(res){
+                    $('#response-message-appro').text(res.msg);
+                    $('#response-message-appro').addClass('show').fadeIn();
+
+                    // Faire disparaître le message du success après 3 secondes (3000 ms)
+                    setTimeout(function () {
+                        $('#response-message-appro').removeClass('show').fadeOut();
+                    }, 3000);
+
+                    $('#form-appro')[0].reset();
+
+                    // Actualiser la Table liste produit via ajax pour afficher le nouveau Stock et le PAU
+                    tableProduits.ajax.reload();
+                },
+                error: function(xhr){
+                    const errorResponse = xhr.responseJSON ? xhr.responseJSON.msg : 'Erreur serveur.';
+                    $('#response-message-appro').text(`Erreur: ${errorResponse}`);
+                    $('#response-message-appro').removeClass('bg-success')
+                    $('#response-message-appro').addClass('bg-warning show').fadeIn();
+                    // Faire disparaître après 3 secondes (3000 ms)
+                    setTimeout(function () {
+                        $('#response-message-appro').removeClass('show').fadeOut();
+                        $('#response-message-appro').removeClass('bg-warning');
+                    }, 3000);
+                },
+            })
+
+        }) // End Submit Appro Form
+
     }) // Au chargement de la page
 </script>
 
