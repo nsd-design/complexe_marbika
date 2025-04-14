@@ -8,8 +8,8 @@ from django.utils.html import escape
 from django.views.decorators.http import require_http_methods
 
 from employe.models import Employe
-from salon.forms import ServiceForm, CategorieForm, PrixServiceForm, PrestationForm, ProduitForm
-from salon.models import CategorieService, Service, PrixService, Prestation, Produit
+from salon.forms import ServiceForm, CategorieForm, PrixServiceForm, PrestationForm, ProduitForm, ApproProduitForm
+from salon.models import CategorieService, Service, PrixService, Prestation, Produit, Approvisionnement
 
 tmp = "salon/"
 
@@ -184,6 +184,7 @@ def produits(request):
     form = ProduitForm()
     context = {
         "form": form,
+        "appro_form": ApproProduitForm(),
         "page_title": "Produits",
     }
     return render(request, tmp + "produits.html", context)
@@ -220,8 +221,11 @@ def add_produit(request):
 @require_http_methods(["GET"])
 def get_produits(request):
     list_produits: list = []
+    list_appro: list = []
     try:
         produits = Produit.objects.all()
+
+        approvisionnements = Approvisionnement.objects.all()
 
         if produits is None:
             return JsonResponse({"succes": True, "msg": "Aucun produit n'a été trouvé"})
@@ -234,10 +238,44 @@ def get_produits(request):
                 "designation": produit.designation,
                 "prix_achat": "{:,.0f} GNF".format(pau).replace(",", " "),
                 "prix_vente": "{:,.0f} GNF".format(pvu).replace(",", " "),
-                "sotock": f'<span class="badge border border-success text-success">{produit.stock}</span>' if int(produit.stock) > 0 else f'<span class="badge rounded-pill bg-secondary">{produit.stock}</span>',
+                "stock": f'<span class="badge border border-success text-success">{produit.stock}</span>' if int(produit.stock) > 0 else f'<span class="badge rounded-pill bg-secondary">{produit.stock}</span>',
             })
 
-        return JsonResponse({"success": True, "data": list_produits})
+        for appro in approvisionnements:
+            list_appro.append({
+                "id_appro": appro.id,
+                "produit": appro.produit.designation,
+                "pau": appro.pau,
+                "quantite": appro.quantite,
+                "stock": appro.produit.stock,
+                "date_appro": appro.created_at.strftime("%d/%m/%Y"),
+            })
+
+        data = {"list_produits": list_produits, "list_appro": list_appro}
+        print("DATA:", data)
+        return JsonResponse({"success": True, "data": data})
     except Exception as e:
         print(e)
         return JsonResponse({"error": True, "msg": str(e)})
+
+
+@require_http_methods(["POST"])
+def approvisionner_produit(request):
+    try:
+        appro_form_submitted = ApproProduitForm(request.POST)
+        if appro_form_submitted.is_valid():
+            produit = appro_form_submitted.cleaned_data['produit']
+            quantite = appro_form_submitted.cleaned_data['quantite']
+            pau = appro_form_submitted.cleaned_data['pau']
+
+            produit_a_approvisionner = Produit.objects.get(id=produit.id)
+            # Approvisionnement du Produit
+            produit_a_approvisionner.approvisionner_produit(int(quantite), pau)
+
+            return JsonResponse({"success": True, "msg": "Approvisionnement effectué !"}, status=200)
+
+        else:
+            return JsonResponse({"error": True, "msg": "Données invalides"}, status=400)
+    except Exception as e:
+        print(e)
+        return JsonResponse({"error": True, "msg": "Echec, une erreur s'est produite"}, status=400)

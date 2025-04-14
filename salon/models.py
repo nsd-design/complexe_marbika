@@ -46,7 +46,32 @@ class Produit(MyBaseModel):
     image = models.ImageField(null=True, blank=True, upload_to="produits/")
 
     def __str__(self):
-        return f"{self.designation} - {self.prix_achat} - {self.prix_vente}"
+        return f"{self.designation} - {self.prix_achat} - {self.prix_vente} | Stock {self.stock}"
+
+    def approvisionner_produit(self, quantite, prix_achat_u):
+        if quantite <= 0 or prix_achat_u <= 0:
+            raise ValueError("La quantité et le prix d'achat doivent être positifs.")
+
+        ancien_total = self.prix_achat * self.stock if self.prix_achat else 0
+        nouveau_total = prix_achat_u * quantite
+        self.stock += quantite
+
+        # Nouveau prix moyen pondéré
+        self.prix_achat = int((ancien_total + nouveau_total) / self.stock)
+        self.save()
+
+        #  Enregistrement dans l'historique des Approvisionnements
+        Approvisionnement.objects.create(
+            produit=self, quantite=quantite, pau=prix_achat_u
+        )
+
+
+    def controle_stock_produit(self, quantite):
+        if quantite <= 0:
+            raise ValueError("La quantité doit être positive.")
+
+        if quantite > self.stock:
+            raise ValueError(f"Stock {self.designation} insuffisant.")
 
 
 class PrixProduit(MyBaseModel):
