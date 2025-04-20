@@ -184,7 +184,7 @@ def passer_commande(request):
                     prix_total += item['quantite'] * item['prix']
 
 
-            # Mise a jour du prix total de la Commande
+            # Mise à jour du prix total de la Commande
             current_commande.prix_total = prix_total - int(reduction)
             current_commande.save()
             return JsonResponse({"success": True, "msg": "Commande recu"})

@@ -1,6 +1,6 @@
 import json
 
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
 from django.db.models import F, Sum
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
@@ -9,7 +9,8 @@ from django.views.decorators.http import require_http_methods
 
 from employe.models import Employe
 from salon.forms import ServiceForm, CategorieForm, PrixServiceForm, PrestationForm, ProduitForm, ApproProduitForm
-from salon.models import CategorieService, Service, PrixService, Prestation, Produit, Approvisionnement
+from salon.models import CategorieService, Service, PrixService, Prestation, Produit, Approvisionnement, Vente, \
+    ProduitVendu
 
 tmp = "salon/"
 
@@ -252,7 +253,6 @@ def get_produits(request):
             })
 
         data = {"list_produits": list_produits, "list_appro": list_appro}
-        print("DATA:", data)
         return JsonResponse({"success": True, "data": data})
     except Exception as e:
         print(e)
@@ -279,3 +279,68 @@ def approvisionner_produit(request):
     except Exception as e:
         print(e)
         return JsonResponse({"error": True, "msg": "Echec, une erreur s'est produite"}, status=400)
+
+
+# Affiche le template où la vente des produits doit être fait
+@require_http_methods(["GET"])
+def shop_produits(request):
+    liste_produits = Produit.objects.all()
+    context = {
+        "liste_produits": liste_produits,
+        "page_title": "Vente Produits",
+    }
+    return render(request, tmp + "vente_produits.html", context)
+
+
+@require_http_methods(["POST"])
+def vente_produits(request):
+    try:
+        data = json.loads(request.body)
+
+        products_ordered = data.get("produits", [])
+        reduction = data.get("reduction", 0)
+        type_vente = data.get("typeVente")
+        print("product ordered :", products_ordered)
+        if not type_vente:
+            return JsonResponse({"error": True, "msg": "Specifier le Type de Vente"}, status=400)
+
+        with transaction.atomic():
+            vente_produit_created = False # Flag pour savoir s'il y a eu erreur pendant l'execution de ce block
+            # Init New Vente
+            current_order = Vente.objects.create(reduction=reduction, type_vente=type_vente, montant_total=0)
+            current_order.reference = f"VP-{current_order.id.hex[:8].upper()}"
+            current_order.save()
+            montant_total = 0
+
+            for prod in products_ordered:
+                id_produit = escape(prod.get("designation"))
+                quantite = escape(prod.get("quantite"))
+                pvu = escape(prod.get('prix'))
+                produit = Produit.objects.get(id=id_produit)
+                # Verifier si la quantite de Produits commandée est disponible
+                # Sinon, une exception est levée dans la method 'controle_stock_produit'
+                produit.controle_stock_produit(int(quantite))
+
+                # Enregistré le Produit vendu et l'assigner à la Vente Initialisée
+                ProduitVendu.objects.create(
+                    vente=current_order, produit=produit,
+                    quantite=quantite, prix_vente_unitaire=pvu
+                )
+                # Mise à jour du STOCK
+                produit.update_stock(quantite)
+
+                montant_total += int(pvu) * int(quantite)
+
+                vente_produit_created = True # True, pour dire le Produit a bien été vendu, sinon il reste sur Fasle
+                # Et toutes les operations dans ce block sont annulées
+        # Mise à jour du prix total de la
+        current_order.montant_total = montant_total - int(reduction)
+        current_order.save()
+        if not vente_produit_created:
+            raise ValueError("Impossible d'effectuer la Vente une erreur s'est produite.")
+
+        return JsonResponse({"success": True, "msg": "Vente effectuée avec succès"}, status=200)
+
+    except Exception as e:
+        print(e)
+        return JsonResponse({"error": True, "msg": str(e)}, status=400)

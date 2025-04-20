@@ -1,0 +1,547 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load custom_filters %}
+
+{% block page_title %} {{ page_title }} {% endblock %}
+{% block main %}
+<!-- Row starts -->
+<div class="row gx-4">
+    <div class="col-sm-5">
+
+        <!-- Card starts -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title">Commandes</h5>
+            </div>
+            <div class="card-body overflow-auto" style="max-height: 400px">
+                <div class="graph-body auto-align-graph">
+
+                    <div id="commandes" class="">
+                        <!-- Row starts -->
+                        <form method="POST" action="{% url 'vente_produits' %}" class="row gx-4" id="form_vente_produits">
+                            {% csrf_token %}
+
+                            <div class="col-sm-12 col-12" id="colReduction" hidden="hidden">
+                                <div class="mb-4">
+                                    <div class="m-0">
+                                        <label class="form-label" for="reduction">Rémise</label>
+                                        <div class="input-group">
+                                            <input type="number" name="remise" class="form-control" id="reduction">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-12 col-12" id="colTypeVente" hidden="hidden">
+                                <div class="mb-4">
+                                    <div class="m-0">
+                                        <label class="form-label" for="reduction">Type de vente</label>
+                                        <div class="d-grid gap-2">
+                                          <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="type_vente" value="1" id="flexRadioDefault1">
+                                            <label class="form-check-label" for="flexRadioDefault1">Vente Cash</label>
+                                          </div>
+                                          <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="type_vente" value="2" id="flexRadioDefault2">
+                                            <label class="form-check-label" for="flexRadioDefault2">Crédit</label>
+                                          </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-12 col-12" id="colTotal">
+                                <div class="mb-4">
+                                    <div class="m-0 d-flex justify-content-between border-bottom">
+                                        <p>Total :</p>
+                                        <h5 id="montantTotal"></h5>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-12 col-12" id="colSubmit" hidden="hidden">
+                                <div class="d-flex gap-2 justify-content-end">
+                                    <button type="submit" class="btn btn-primary">Valider</button>
+                                    <button type="button" id="annuler-commande" class="btn btn-outline-secondary ms-3">Annuler</button>
+                                </div>
+                            </div>
+                        </form>
+                        <!-- Row ends -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Card ends -->
+    </div>
+
+    <div class="col-sm-7">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title">Shop</h5>
+            </div>
+            <div class="card-body">
+                <div class="custom-tabs-container">
+                    <ul class="nav nav-tabs" id="customTab2" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link active" id="tab-oneA" data-bs-toggle="tab" href="#oneA" role="tab"
+                               aria-controls="oneA" aria-selected="true">Produits
+                            </a>
+                        </li>
+                    </ul>
+                    <div class="tab-content" id="customTabContent2">
+
+                        <!-- Tab One-->
+                        <div class="tab-pane fade show active" id="oneA" role="tabpanel">
+                            <div class="row gx-4" id="produits-container">
+                                {% for produit in liste_produits %}
+                                <div class="produit col-4 col-sm-2 mb-4" role="button">
+                                    <p class="uuid" hidden>{{ produit.id }}</p>
+                                    {% if produit.image %}
+                                    <img src="{{ produit.image.url }}"
+                                         style="background-size: cover; border-radius: 10px"
+                                         class="img-fluid " alt="{{produit.image.name}}"/>
+                                    {% else %}
+                                    <img src="{% static 'assets/images/LogoMarbika.png' %}" style="background-size: cover;"
+                                         class="img-fluid " alt="Bootstrap Gallery"/>
+                                    {% endif %}
+                                    <p>
+                                        <span class="designation">{{ produit.designation}}</span>
+                                        <span class="badge rounded-pill bg-success">{{ produit.prix_vente | currency }}</span>
+                                        <span class="productPrice" hidden>{{ produit.prix_vente }}</span>
+                                    </p>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <!-- Tab One End-->
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liste Ventes Card starts -->
+    <div class="card col-sm-12 col-xl-8">
+        <div class="card-header">
+            <h5 class="card-title">Historique des Ventes</h5>
+        </div>
+        <div class="card-body">
+
+            <!-- Table starts -->
+            <div class="table-bg">
+                <div class="table-responsive">
+                    <table id="tabCommandes" class="table truncate">
+                        <thead>
+                        <tr>
+                            <!--                  <th>#</th>-->
+                            <th>Reference</th>
+                            <th>Date</th>
+                            <th>Montant</th>
+                            <th>Remise</th>
+                            <th>Montant payé</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <!-- Table ends -->
+
+        </div>
+    </div>
+    <!-- Liste Ventes Card ends -->
+
+    <div class="col-xl-4 col-sm-12">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title" id="cardTitle">Ticket</h5>
+            </div>
+            <div class="card-body scroll350 overflow-auto">
+                <div class="m-auto p-2" style="width: 303px; background-color: #fff">
+                    <div class="text-center" id="logoMarbika">
+                        <img src="{% static 'assets/images/LogoMarbika.png' %}" alt="Logo Marbika" class="img-fluid m-2"
+                             style="width: 100px">
+                    </div>
+                    <div id="infoCommande" class="mt-2" style="color: #000;">
+                        <p class="my-0 fw-bold">Commande : <span class="fw-normal" id="referenceCMD"></span></p>
+                        <p id="dateCommande"></p>
+                    </div>
+                    <table id="tabDetailsCommande" class="col-12 col-xl-12" style="color: #000">
+                        <thead style="border-top: 1px dashed black; border-bottom: 1px dashed black; color: #000;">
+                        <tr>
+                            <th class="border-end py-2">Qte</th>
+                            <th class="border-end text-center">Produits</th>
+                            <th class="text-end">Prix U</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+
+                        </tbody>
+                    </table>
+                    <div id="barcode-container" class="mt-5" hidden="hidden">
+                        <svg id="barcode" class="col-12 col-xl-12"></svg>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+<!-- Row ends -->
+{% block custom_js %}
+<script src="{% static 'assets/js/jquery.min.js' %}"></script>
+<script src="{% static 'assets/js/datatables.min.js' %}"></script>
+{% endblock %}
+
+<script defer src="{% static 'assets/js/JsBarcode.all.min.js' %}"></script>
+<script>
+    $(document).ready(function(){
+    $("input[name='type_vente']").on("change", function () {
+    let selected = $(this).val();
+    console.log("Type de vente changé:", selected);
+});
+      var table = $("#tabCommandes").DataTable({
+        ajax: '/restaurant/commandes/get_commandes/',
+        order: [[1, 'desc']],
+        columns: [
+          { data: 'reference', orderable: false },
+          { data: 'date'},
+          { data: 'montant' },
+          { data: 'reduction' },
+          { data: 'montant_a_payer' },
+          { data: 'actions' },
+        ],
+        language: {
+            processing: "Traitement en cours...",
+            search: "Rechercher&nbsp;:&nbsp;",
+            lengthMenu:    "Afficher _MENU_ &eacute;l&eacute;ments",
+            info:           "Affichage de l'&eacute;lement _START_ &agrave; _END_ sur _TOTAL_ &eacute;l&eacute;ments",
+            infoEmpty:      "Affichage de l'&eacute;lement 0 &agrave; 0 sur 0 &eacute;l&eacute;ments",
+            loadingRecords: "Chargement en cours...",
+            zeroRecords:    "Aucun &eacute;l&eacute;ment &agrave; afficher",
+            emptyTable:     "Aucune donnée disponible dans le tableau",
+            aria: {
+                sortAscending:  ": activer pour trier la colonne par ordre croissant",
+                sortDescending: ": activer pour trier la colonne par ordre décroissant"
+            }
+        },
+      })
+
+        // Tableau contenant les Plats et Boissons dans la Commande
+        // Ce Tableau doit etre reinialiser après la soumission de la Commande
+        var tabProduits = [];
+
+
+        // Ajouté l'element dans le DOm
+        function addtoDom(product){
+            let img = product.find("img").attr("src")
+            let productName = product.find(".designation").text().trim()
+            let productPrice = product.find(".productPrice").text().trim()
+            let productUuid = product.find(".uuid").text().trim()
+
+            // Verifier si produit est deja ajouté dans le DOM
+            if(tabProduits.includes(productUuid)){
+                let qte = $("#" + productUuid).val()
+                $("#" + productUuid).val(Number(qte) + 1)
+                calculerMontant();
+
+            }else{
+                creerChampsProduit(produit = productName, productUuid, idQuantite=productUuid, productPrice)
+                tabProduits.push(productUuid)
+                calculerMontant();
+            }
+        }
+
+        $("#produits-container").on("click", ".produit", function(){
+          // Afficher le champs Reduction et le bouton Submit
+          // Lorsque le formulaire contient au mooins un produit
+          if($("#form_vente_produits").find("input").length > 1){
+            $("#colReduction").attr("hidden", false)
+            $("#colTypeVente").attr("hidden", false)
+            $("#colSubmit").attr("hidden", false)
+          }
+            addtoDom(product=$(this))
+        })
+
+
+      function creerChampsProduit(produit, idProduit, idQuantite, productPrice) {
+        // Colonne Plat / Boisson
+        let $colProduit = $("<div>", { class: "col-xl-4 col-sm-6 col-12"});
+        let $divProduit = $("<div>", { class: "mb-3" });
+        let $labelProduit = $("<label>", { class: "form-label", text: "Produit" });
+        let $inputPlat = $("<input>", { type: "text", class: "form-control", value: produit });
+        let $inputHidden = $("<input>", { type: "text", class: "form-control productName", value: idProduit, hidden: true });
+
+        $divProduit.append($labelProduit, $inputPlat, $inputHidden);
+        $colProduit.append($divProduit);
+
+        // Colonne Quantité
+        let $colQuantite = $("<div>", { class: "col-xl-4 col-sm-6 col-12" });
+        let $divQuantite = $("<div>", { class: "mb-3" });
+        let $labelQuantite = $("<label>", { class: "form-label", for: idQuantite, text: "Quantité" });
+        let $inputQuantite = $("<input>", { type: "number", min: 1, name: "productQuantity", class: "form-control quantite", id: idQuantite, placeholder: "Entrez la quantité", value: 1 });
+
+        $divQuantite.append($labelQuantite, $inputQuantite);
+        $colQuantite.append($divQuantite);
+
+        // Colonne Prix
+        let $colPrix = $("<div>", { class: "col-xl-4 col-sm-12 col-12" });
+        let $divPrix = $("<div>", { class: "mb-3" });
+        let $labelPrix = $("<label>", { class: "form-label", for: "quantite", text: "Prix V.U" });
+        let $inputPrix = $("<input>", { type: "number", name: "productPrice", class: "form-control prix", id: "productPrice", placeholder: "Entrez le prix", value: productPrice });
+
+        $divPrix.append($labelPrix, $inputPrix);
+        $colPrix.append($divPrix);
+
+        let $productsOrdered = $("<div>", { class: "row col-12 d-flex justify-content-between flex-wrap productsOrdered" });
+
+        let $colSep = $("<div>", { class: "col-12 border my-2" });
+        $productsOrdered.append($colProduit, $colQuantite, $colPrix, $colSep)
+
+        // Ajouter les colonnes au conteneur principal
+        $("#colReduction").before($productsOrdered);
+
+        $("#colReduction, #colTypeVente, #colSubmit").slideDown(300);
+      }
+
+      // Calculer le Montant de la Commande
+      function calculerMontant(){
+        let subTotal = 0;
+        $(".productsOrdered").each(function(){
+          let prix = Number($(this).find(".prix").val()) || 0;
+          let quantite = parseInt($(this).find(".quantite").val()) || 0;
+          subTotal += prix * quantite ;
+          let reduction = Number($("#reduction").val())
+          let total = subTotal - reduction
+
+          $("#montantTotal").text(total.toLocaleString() + " GNF");
+        })
+      }
+
+      // Mettre a jour le montant total a chaque modification de valeur des champs Quantite, Prix et Reduction
+      $(document).on("input", ".quantite, .prix, #reduction", function(){
+        calculerMontant();
+      })
+
+      // Recuperer le token CSRF
+      function getCSRFToken(){
+          const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+          return csrfToken ? csrfToken.value : "";
+      }
+
+      // Soumission de la commande
+      $("#form_vente_produits").on('submit', function(e){
+        e.preventDefault();
+        let tab_selected_produits = [] // Liste des plats et boisson a soumettre
+        $(".productsOrdered").each(function(){
+          let designation = $(this).find(".productName").val()
+          let prix = $(this).find(".prix").val()
+          let quantite = $(this).find(".quantite").val()
+
+          tab_selected_produits.push({designation: designation, quantite: parseInt(quantite), prix: parseInt(prix)})
+        })
+
+        let reduction = $("#reduction").val() || 0;
+        let typeVente = $("input[name='type_vente']:checked").val()
+
+
+        data = {
+          produits: tab_selected_produits,
+          reduction: reduction,
+          typeVente: typeVente,
+        }
+
+        if(!data.typeVente){
+            alert("Specifier le Type de Vente")
+            return
+        }
+        const actionUrl = $(this).attr("action");
+        $.ajax({
+          url: actionUrl,
+          method: "POST",
+          headers: { 'X-CSRFToken': getCSRFToken() },
+          data: JSON.stringify(data),
+          contentType: "application/json",
+          success: function(res){
+            if(res.success){
+              alert("Vente effectuée avec succès !");
+
+              // Supprimer tous les produits ajoutés
+              $("#form_vente_produits .productsOrdered").each(function(){
+                $(this).slideUp(300, function(){
+                    $(this).remove(); // Supprimer, Apres l'animation
+                });
+              });
+              //$("#form_vente_produits").children().not("#colReduction, #colSubmit").remove()
+              //$("#colReduction, #colSubmit").attr("hidden", true)
+              $("#colReduction, #colSubmit, #colTypeVente").slideUp(300)
+
+              $("#montantTotal").text("")
+
+              // Actualiser le Tableau pour ajouter les nouveaux enregistrements
+              table.ajax.reload();
+
+              // Réinitialiser d'autres champs
+              $("#form_vente_produits")[0].reset();
+
+              tabProduits = []
+
+            } else{
+              alert("Erreur : " + res.error)
+              console.log("Erreur : ", res.error)
+            }
+          },
+          error: function(xhr){
+            alert(xhr.responseJSON.msg);
+            console.log(xhr)
+          }
+        })
+      })
+
+      // Annuler la commande
+      $("#annuler-commande").on('click', function(){
+        // Supprimer tous les produits ajoutés
+          $("#form_vente_produits .productsOrdered").each(function(){
+            $(this).slideUp(300, function(){
+                $(this).remove(); // Supprimer, Apres l'animation
+            });
+          });
+          //$("#form_vente_produits").children().not("#colReduction, #colSubmit").remove()
+          //$("#colReduction, #colSubmit").attr("hidden", true)
+          $("#colReduction, #colSubmit").slideUp(300)
+
+          $("#montantTotal").text("")
+          // Réinitialiser d'autres champs
+          $("#form_vente_produits")[0].reset();
+
+          tabPlatsBoissons = []
+      })
+
+      // Tableau devant contenir les references des commandes
+      var tabReferences = []
+
+      $(document).on('click','.details', function(e){
+        e.preventDefault();
+
+        // Récupérer l'URL du lien
+        let url = $(this).attr('href')
+
+        // Extraire l'ID depuis l'URL avec une regex
+        let parts = url.split("/")
+        let commande_id = parts[4]
+
+        if(commande_id){
+            $.ajax({
+                url: url,
+                method: "GET",
+                dataType: 'json',
+                success: function(res){
+                    const reference = res.reference
+                    const date_commande = res.date_creation
+
+                    //$("#cardTitle").text("Details de la commande : " + reference).fadeIn()
+
+                    if(!tabReferences.includes(reference)){
+                      if(res.plats.length > 0){
+                        creerDetailElement(res.plats)
+                      }
+                      if(res.boissons.length > 0){
+                        creerDetailElement(res.boissons)
+                      }
+                      ajouterFooterFacture(res.montant, res.reduction, reference, date_commande)
+
+                      //creerBarcode(reference)
+                      // Afficher le code-barre
+                      $("#barcode-container").attr("hidden", false)
+                      JsBarcode("#barcode", reference, {
+                        format: "CODE128",
+                        lineColor: "#000",
+                        width: 2,
+                        height: 20,
+                        displayValue: true,
+                        fontSize: 16,
+                        margin: 10
+                      });
+
+                      // Ajouter la reference au tableau pour empecher de dupliquer la commande sur la Facture
+                      tabReferences.push(reference)
+                    }
+
+
+                },
+                error: function(err){
+                    console.log(err)
+                },
+            })
+        }
+      })
+
+
+      function creerDetailElement(tabProduits){
+
+          tabProduits.forEach(produit =>{
+             // La ligne devant contenir les produits Plats et Boisson
+          let ligneProduits = $("<tr>")
+
+          // Les Cellules de la ligne
+          let cellQte = $("<td>")
+          let cellNom = $("<td>").addClass("ps-1")
+          let cellPrix = $("<td>").addClass("text-end")
+
+          cellQte.text(produit.quantite.toString() + " x ")
+          cellNom.text(produit.nom)
+          cellPrix.text(produit.prix.toLocaleString() + " GNF")
+
+          // Ajouter les cellules dans ligne parent
+          ligneProduits.append(cellQte, cellNom, cellPrix).attr("id", produit.id)
+          $("#tabDetailsCommande tbody").append(ligneProduits)
+        })
+        $("#tabDetailsCommande tbody").css({
+          "border-bottom": "1px dashed #000"
+        })
+      } // Fin Creer Details commande
+
+
+      function ajouterFooterFacture(montant, reduction, reference, date_commande){
+        // Ajout de la reference de la commande sur le ticket
+        $("#referenceCMD").text(reference)
+        $("#dateCommande").text(date_commande)
+        let divFooter = $("<div>").addClass("d-flex justify-content-between mt-5")
+
+        // Libelles
+        let libSousTotal = $("<p>").addClass("m-0").text('Sous-total')
+        let libRemise = $("<p>").addClass("m-0").text("Remise")
+        let libTotalPayer = $("<p>").addClass("m-0").text("Total à payer")
+        let divLib = $("<div>").css({"color": "#000"}).addClass("fw-bold")
+        divLib.append(libSousTotal, libRemise, libTotalPayer)
+
+        // Valeurs
+        let valSousTotal = $("<p>").addClass("m-0").text(montant.toLocaleString() + " GNF")
+        let valRemise = $("<p>").addClass("m-0").text(reduction.toLocaleString() + " GNF")
+        const total = montant - reduction
+        let valTotalPayer = $("<p>").addClass("m-0").text(total.toLocaleString() + " GNF")
+        let divVal = $("<div>").css({"color": "#000"})
+        divVal.append(valSousTotal, valRemise, valTotalPayer)
+
+        divFooter.append(divLib, divVal)
+        $("#tabDetailsCommande").after(divFooter)
+
+        // Créer les elements du code-barre
+        //let barcodeContainer = $("<div>").attr("id", "barcode-container")
+        //let barcode = $("<svg>").attr("id","barcode")
+        //$("#barcode-container").append(barcode)
+
+
+
+      }
+
+
+
+    })
+</script>
+
+
+{% endblock %}
