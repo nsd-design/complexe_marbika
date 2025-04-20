@@ -71,7 +71,11 @@ class Produit(MyBaseModel):
             raise ValueError("La quantité doit être positive.")
 
         if quantite > self.stock:
-            raise ValueError(f"Stock {self.designation} insuffisant.")
+            raise ValueError(f"{self.designation}, Stock insuffisant.")
+
+    def update_stock(self, quantite):
+        self.stock -= int(quantite)
+        self.save()
 
 
 class PrixProduit(MyBaseModel):
@@ -86,12 +90,14 @@ class Vente(MyBaseModel):
     TYPE_DE_VENTE = [(1, "Cash"), (2, "Crédit")]
     reduction = models.IntegerField(null=True)
     type_vente = models.SmallIntegerField(choices=TYPE_DE_VENTE, default=1)
+    montant_total = models.BigIntegerField(null=True)
+    reference = models.CharField(max_length=20, unique=True, blank=True)
 
     def __str__(self):
-        return self.id
+        return self.reference
 
 
-class ProduitVendu(models.Model):
+class ProduitVendu(MyBaseModel):
     vente = models.ForeignKey(Vente, on_delete=models.CASCADE, related_name="produits_vendus")
     produit = models.ForeignKey(Produit, on_delete=models.CASCADE)
     quantite = models.IntegerField()
