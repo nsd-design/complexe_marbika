@@ -5,8 +5,11 @@ from salon.models import Service, PrixService
 
 
 class Client(MyBaseModel):
-    nom_complet = models.CharField(max_length=200)
-    telephone = models.CharField(max_length=20)
+    nom_complet = models.CharField(max_length=200, null=True, blank=True)
+    telephone = models.CharField(max_length=20, null=True, blank=True)
+
+    def __str__(self):
+        return f'{self.nom_complet} - {self.telephone}'
 
 
 class Reservation(MyBaseModel):

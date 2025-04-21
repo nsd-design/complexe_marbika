@@ -1,7 +1,6 @@
 import uuid
 from django.db import models
 
-
 from employe.models import MyBaseModel, Employe
 
 
@@ -48,7 +47,7 @@ class Produit(MyBaseModel):
     def __str__(self):
         return f"{self.designation} - {self.prix_achat} - {self.prix_vente} | Stock {self.stock}"
 
-    def approvisionner_produit(self, quantite, prix_achat_u):
+    def approvisionner_produit(self, quantite, prix_achat_u, description):
         if quantite <= 0 or prix_achat_u <= 0:
             raise ValueError("La quantité et le prix d'achat doivent être positifs.")
 
@@ -62,7 +61,7 @@ class Produit(MyBaseModel):
 
         #  Enregistrement dans l'historique des Approvisionnements
         Approvisionnement.objects.create(
-            produit=self, quantite=quantite, pau=prix_achat_u
+            produit=self, quantite=quantite, pau=prix_achat_u, description = description
         )
 
 
@@ -92,6 +91,7 @@ class Vente(MyBaseModel):
     type_vente = models.SmallIntegerField(choices=TYPE_DE_VENTE, default=1)
     montant_total = models.BigIntegerField(null=True)
     reference = models.CharField(max_length=20, unique=True, blank=True)
+    client = models.ForeignKey('client.client', on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         return self.reference
@@ -110,6 +110,8 @@ class Approvisionnement(MyBaseModel):
     produit = models.ForeignKey(Produit, on_delete=models.CASCADE)
     quantite = models.IntegerField()
     pau = models.BigIntegerField()
+    description = models.CharField(max_length=255, null=True)
+
 
     def __str__(self):
         return f"{self.produit.designation} - {self.quantite}"

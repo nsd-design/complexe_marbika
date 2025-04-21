@@ -7,6 +7,7 @@ from django.shortcuts import render, redirect
 from django.utils.html import escape
 from django.views.decorators.http import require_http_methods
 
+from client.models import Client
 from employe.models import Employe
 from salon.forms import ServiceForm, CategorieForm, PrixServiceForm, PrestationForm, ProduitForm, ApproProduitForm
 from salon.models import CategorieService, Service, PrixService, Prestation, Produit, Approvisionnement, Vente, \
@@ -207,9 +208,10 @@ def add_produit(request):
             if prix_vente <= 0:
                 return JsonResponse({"error": True, "msg": "Le prix de vente doit être superieur à 0"}, status=400)
 
-            Produit.objects.create(
+            new_product = Produit.objects.create(
                 designation=designation, prix_achat=prix_achat, prix_vente=prix_vente, stock=stock_init, image=image
             )
+            new_product.approvisionner_produit(quantite=stock_init, prix_achat_u=prix_achat, description="Stock initial")
 
             return JsonResponse({"success": True, "msg": "Produti céé avec succès !"}, status=201)
         else:
@@ -298,16 +300,23 @@ def vente_produits(request):
         data = json.loads(request.body)
 
         products_ordered = data.get("produits", [])
-        reduction = data.get("reduction", 0)
-        type_vente = data.get("typeVente")
+        reduction = escape(data.get("reduction", 0))
+        type_vente = escape(data.get("typeVente"))
+        id_client = escape(data.get("id_client"))
         print("product ordered :", products_ordered)
         if not type_vente:
             return JsonResponse({"error": True, "msg": "Specifier le Type de Vente"}, status=400)
 
         with transaction.atomic():
             vente_produit_created = False # Flag pour savoir s'il y a eu erreur pendant l'execution de ce block
+
+            # Check if Client exists
+            current_client = Client.objects.get(id=id_client) if id_client else None
             # Init New Vente
-            current_order = Vente.objects.create(reduction=reduction, type_vente=type_vente, montant_total=0)
+            current_order = Vente.objects.create(reduction=reduction,
+                                                 type_vente=type_vente, montant_total=0,
+                                                 client=current_client
+                                                 )
             current_order.reference = f"VP-{current_order.id.hex[:8].upper()}"
             current_order.save()
             montant_total = 0
@@ -344,3 +353,22 @@ def vente_produits(request):
     except Exception as e:
         print(e)
         return JsonResponse({"error": True, "msg": str(e)}, status=400)
+
+
+@require_http_methods(["GET"])
+def get_clients(request):
+    list_clients: list = []
+
+    try:
+        clients = Client.objects.all()
+        for client in clients:
+            list_clients.append({
+                "id": client.id,
+                "nom_complet":client.nom_complet,
+                "telephone": client.telephone
+            })
+        print("List clients :", list_clients)
+        return JsonResponse({"success": True, "data": list_clients})
+    except Exception as e:
+        print(e)
+        return JsonResponse({"error": True, "msg": str(e)})
