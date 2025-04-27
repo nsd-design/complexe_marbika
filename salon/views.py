@@ -343,7 +343,7 @@ def vente_produits(request):
                 vente_produit_created = True # True, pour dire le Produit a bien été vendu, sinon il reste sur Fasle
                 # Et toutes les operations dans ce block sont annulées
         # Mise à jour du prix total de la
-        current_order.montant_total = montant_total - int(reduction)
+        current_order.montant_total = montant_total
         current_order.save()
         if not vente_produit_created:
             raise ValueError("Impossible d'effectuer la Vente une erreur s'est produite.")
@@ -371,3 +371,30 @@ def get_clients(request):
     except Exception as e:
         print(e)
         return JsonResponse({"error": True, "msg": str(e)})
+
+
+# reference, date, montant, remise, montant paye, actions
+@require_http_methods(["GET"])
+def get_ventes(request):
+    try:
+        list_ventes: list = []
+        ventes = Vente.objects.all().order_by("-created_at")
+
+        for vente in ventes:
+            montant_total = float(vente.montant_total)
+            montant_paye = float(vente.montant_total - vente.reduction)
+            list_ventes.append({
+                "id": vente.id,
+                "reference": vente.reference,
+                "client": vente.client.nom_complet if vente.client else "Anonyme",
+                "date": vente.created_at.strftime("%d/%m/%Y %H:%M"),
+                "montant_total": "{:,.0f} GNF".format(montant_total).replace(",", " "),
+                "reduction": "{:,.0f} GNF".format(float(vente.reduction)).replace(",", " "),
+                "montant_paye": "{:,.0f} GNF".format(montant_paye).replace(",", " "),
+                "type_vente": f'<span class="badge rounded-pill bg-success">{vente.get_type_vente_display()}</span>' if int(vente.type_vente) == 1 else f'<span class="badge rounded-pill bg-secondary">{vente.get_type_vente_display()}</span>',
+                'actions': f'<a href="/salon/produits/shop/{vente.id}" class="text-danger details"><i class="bi bi-box-arrow-up-right fs-5"></i></a>',
+            })
+        print("Ventes :", list_ventes)
+        return JsonResponse({"success": True, "data": list_ventes})
+    except Exception as e:
+        print(e)

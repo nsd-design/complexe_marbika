@@ -225,20 +225,22 @@
             <!-- Table starts -->
             <div class="table-bg">
                 <div class="table-responsive">
-                    <table id="tabCommandes" class="table truncate">
+                    <table id="tabVentes" class="table truncate">
                         <thead>
                         <tr>
                             <!--                  <th>#</th>-->
                             <th>Reference</th>
+                            <th>Client</th>
                             <th>Date</th>
                             <th>Montant</th>
                             <th>Remise</th>
                             <th>Montant payé</th>
+                            <th>Type de Vente</th>
                             <th>Actions</th>
                         </tr>
                         </thead>
                         <tbody>
-
+                        <!-- Données chargées par Ajax -->
                         </tbody>
                     </table>
                 </div>
@@ -296,19 +298,17 @@
 <script defer src="{% static 'assets/js/JsBarcode.all.min.js' %}"></script>
 <script>
     $(document).ready(function(){
-        $("input[name='type_vente']").on("change", function () {
-            let selected = $(this).val();
-            console.log("Type de vente changé:", selected);
-        });
-      var table = $("#tabCommandes").DataTable({
-        ajax: '/restaurant/commandes/get_commandes/',
+      var table = $("#tabVentes").DataTable({
+        ajax: '/salon/produits/liste_ventes/',
         order: [[1, 'desc']],
         columns: [
           { data: 'reference', orderable: false },
+          { data: 'client' },
           { data: 'date'},
-          { data: 'montant' },
+          { data: 'montant_total' },
           { data: 'reduction' },
-          { data: 'montant_a_payer' },
+          { data: 'montant_paye' },
+          { data: 'type_vente' },
           { data: 'actions' },
         ],
         language: {
