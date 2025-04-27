@@ -5,8 +5,11 @@ from salon.models import Service, PrixService
 
 
 class Client(MyBaseModel):
+    sexes = [(1, "Homme"), (2, "Femme")]
+
     nom_complet = models.CharField(max_length=200, null=True, blank=True)
     telephone = models.CharField(max_length=20, null=True, blank=True)
+    sexe = models.SmallIntegerField(choices=sexes, null=True)
 
     def __str__(self):
         return f'{self.nom_complet} - {self.telephone}'

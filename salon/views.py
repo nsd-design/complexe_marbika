@@ -367,7 +367,6 @@ def get_clients(request):
                 "nom_complet":client.nom_complet,
                 "telephone": client.telephone
             })
-        print("List clients :", list_clients)
         return JsonResponse({"success": True, "data": list_clients})
     except Exception as e:
         print(e)
