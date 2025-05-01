@@ -69,4 +69,4 @@ class ApproProduitForm(forms.ModelForm):
 
     class Meta:
         model = Approvisionnement
-        fields = ["produit", "quantite", "pau"]
+        fields = ["produit", "quantite", "pau", "description"]
