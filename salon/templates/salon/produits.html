@@ -115,6 +115,12 @@
                                             {{ appro_form.pau | as_crispy_field }}
                                         </div>
                                     </div>
+                                    <div class="col-xl-3 col-sm-4 col-12">
+                                        <div class="mb-3">
+                                            <label class="form-label" for="id_description">Description</label>
+                                            {{ appro_form.description | as_crispy_field }}
+                                        </div>
+                                    </div>
 
                                     <!-- Zone d'affichage des messages -->
                                     <div id="response-message-appro" class="alert bg-success text-white alert-dismissible fade" role="alert">
@@ -185,6 +191,7 @@
                                 <th>Prix Achat U</th>
                                 <th>Nouveau Stock</th>
                                 <th>Date Appro</th>
+                                <th>Description</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -248,6 +255,7 @@
                 { data: 'pau'},
                 { data: 'stock'},
                 { data: 'date_appro'},
+                { data: 'description'},
             ]
         })
 
@@ -283,8 +291,10 @@
 
                     $('#produit-form')[0].reset();
 
-                    // Actualiser la Table liste produit via ajax
-                    //tableProduits.ajax.reload();
+                    // Actualiser la Table liste Historiques Appro via ajax
+                    tableProduits.ajax.reload();
+                    tableAppro.ajax.reload()
+
                 },
                 error: function(xhr){
                     const errorResponse = xhr.responseJSON ? xhr.responseJSON.msg : 'Erreur serveur.';
@@ -324,7 +334,8 @@
 
                     $('#form-appro')[0].reset();
 
-                    // Actualiser la Table liste produit via ajax pour afficher le nouveau Stock et le PAU
+                    // Actualiser la Table liste produit et Historique Appro via ajax pour afficher le nouveau Stock et le PAU
+                    tableAppro.ajax.reload();
                     tableProduits.ajax.reload();
                 },
                 error: function(xhr){

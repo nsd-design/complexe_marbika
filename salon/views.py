@@ -209,7 +209,7 @@ def add_produit(request):
                 return JsonResponse({"error": True, "msg": "Le prix de vente doit être superieur à 0"}, status=400)
 
             new_product = Produit.objects.create(
-                designation=designation, prix_achat=prix_achat, prix_vente=prix_vente, stock=stock_init, image=image
+                designation=designation, prix_achat=prix_achat, prix_vente=prix_vente, image=image
             )
             new_product.approvisionner_produit(quantite=stock_init, prix_achat_u=prix_achat, description="Stock initial")
 
@@ -252,6 +252,7 @@ def get_produits(request):
                 "quantite": appro.quantite,
                 "stock": appro.produit.stock,
                 "date_appro": appro.created_at.strftime("%d/%m/%Y"),
+                "description": appro.description,
             })
 
         data = {"list_produits": list_produits, "list_appro": list_appro}
@@ -269,10 +270,11 @@ def approvisionner_produit(request):
             produit = appro_form_submitted.cleaned_data['produit']
             quantite = appro_form_submitted.cleaned_data['quantite']
             pau = appro_form_submitted.cleaned_data['pau']
+            description = appro_form_submitted.cleaned_data['description']
 
             produit_a_approvisionner = Produit.objects.get(id=produit.id)
             # Approvisionnement du Produit
-            produit_a_approvisionner.approvisionner_produit(int(quantite), pau)
+            produit_a_approvisionner.approvisionner_produit(int(quantite), pau, description=description)
 
             return JsonResponse({"success": True, "msg": "Approvisionnement effectué !"}, status=200)
 
