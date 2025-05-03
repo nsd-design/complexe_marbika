@@ -62,18 +62,24 @@
                       {% csrf_token %}
                       <div class="col-xl-12 col-sm-12 col-12">
                           <div class="col-xl-6 col-sm-4 col-12">
-                            <div class="mb-3">
+                              <div class="mb-3">
                                 <label class="form-label" for="id_designation">Nom du Service</label>
-                                {{ service_form.designation | as_crispy_field }}
-                            </div>
+                                <div id="div_id_designation" class="mb-3">
+                                    <input type="text" name="designation" maxlength="120" class="textinput form-control" required="" id="id_designation">
+                                </div>
+                             </div>
                           </div>
+
+                          <!-- Liste Catégories -->
                           <div class="col-xl-6 col-sm-4 col-12">
-                            <div class="mb-3">
-                                <label class="form-label" for="id_categorie">Catégorie</label>
-                                {{ service_form.categorie | as_crispy_field }}
-                            </div>
+                              <div class="mb-3">
+                                  <label class="form-label" for="categorie-service">Sélectionnez une Catégorie</label>
+                                  <select class="select form-select" id="categorie-service"
+                                            aria-label="Default select example">
+                                  </select>
+                              </div>
                           </div>
-                          <div class="col-sm-3 col-12 self-align-center ms-2">
+                          <div class="col-sm-3 col-12 self-align-center ms-2 mt-4">
                             <button type="submit" class="btn btn-primary mb-2">Créer</button>
                           </div>
                       </div>
@@ -129,17 +135,7 @@
                                     </tr>
                                     </thead>
                                     <tbody>
-                                    {% for category in categories %}
-                                    <tr>
-                                        <td>
-                                            {{ category.nom_categorie }}
-                                        </td>
-                                        <td>
-                                            <a class="btn btn-danger btn-sm" href="#"><i class="bi bi-pencil"></i>
-                                            </a>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
+                                    <!-- Charger via Ajax -->
 
                                     </tbody>
                                 </table>
@@ -168,20 +164,7 @@
                                     </tr>
                                     </thead>
                                     <tbody>
-                                    {% for service in services %}
-                                    <tr>
-                                        <td>
-                                            {{ service.designation }}
-                                        </td>
-                                        <td>
-                                            {{ service.categorie }}
-                                        </td>
-                                        <td>
-                                            <a class="btn btn-danger btn-sm" href="#"><i class="bi bi-pencil"></i>
-                                            </a>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
+                                    <!-- Données chargées via Ajax -->
 
                                     </tbody>
                                 </table>
@@ -211,7 +194,12 @@
     $(document).ready(function(){
 
       // Gestion Categories
-      $("#table-category").DataTable({
+      var tableCategory =  $("#table-category").DataTable({
+          ajax: '/salon/categorie/get_categories/',
+          columns: [
+            { data: 'category' },
+            { data: 'action' },
+          ],
           language: {
               processing: "Traitement en cours...",
               search: "Rechercher&nbsp;:&nbsp;",
@@ -233,7 +221,7 @@
             return csrfToken ? csrfToken.value : "";
       }
 
-      $("#category-form").submit(function(e){
+      $("#category-form").on("submit", function(e){
         e.preventDefault();
 
         const actionUrl = $(this).attr("action");
@@ -257,19 +245,16 @@
             $('#response-message').text(res.msg);
             $('#response-message').addClass('show');
 
-            // Ajouter le nouvel Employe a la table
-              var newRow = `
-                  <tr>
-                      <td>${res.nom_categorie}</td>
-                  </tr>
-              `
-              // Ajouter la nouvelle ligne a la table sans recharger la page
-              $("#table-category tbody").prepend(newRow);
+              // Recharger la table Category pour avoir les nouvelles DATA
+              tableCategory.ajax.reload();
 
             // Faire disparaître après 3 secondes (3000 ms)
             setTimeout(function () {
                 $('#response-message').removeClass('show').fadeOut();
             }, 3000);
+
+            // Ajouter la categorie dans le Select de Categorie lors de la creation de Service
+            chargerCategories()
 
             $("#category-form")[0].reset();
 
@@ -289,7 +274,13 @@
 
 
       // Gestion Services
-      $("#table-service").DataTable({
+      var tableService = $("#table-service").DataTable({
+          ajax: '/salon/services/get_services/',
+          columns: [
+            { data: 'designation' },
+            { data: 'categorie' },
+            { data: 'actions' },
+          ],
           language: {
               processing: "Traitement en cours...",
               search: "Rechercher&nbsp;:&nbsp;",
@@ -305,12 +296,12 @@
               }
           }
       });
-      $("#service-form").submit(function(e){
+      $("#service-form").on('submit', function(e){
         e.preventDefault();
 
         const formData = {
             designation: $("#id_designation").val().trim(),
-            categorie: $("#id_categorie").val().trim(),
+            categorie: $("#categorie-service").val().trim(),
         }
 
         if(!formData.designation || !formData.categorie){
@@ -325,28 +316,21 @@
             url: $(this).attr('action'),
             method: 'POST',
             headers: { 'X-CSRFToken': getCSRFToken() },
-            data: $(this).serialize(),
-
+            data: JSON.stringify(formData),
+            contentType: "application/json",
             success: function(res){
-                 $("#response-message-service").text(res.msg);
-                 $("#response-message-service").addClass('show');
-                 $("#service-form")[0].reset();
-                 // Ajouter le nouvel Employe a la table
-                  var newRow = `
-                      <tr>
-                          <td>${res.designation}</td>
-                          <td>${res.categorie}</td>
-                          <td>
-                            <a class="btn btn-danger btn-sm" href="#"><i class="bi bi-pencil"></i>
-                            </a>
-                          </td>
-                      </tr>
-                  `
-                  // Ajouter la nouvelle ligne a la table sans recharger la page
-                  $("#table-service tbody").prepend(newRow);
-                 setTimeout(function () {
-                     $("#response-message-service").removeClass('show').fadeOut();
-                 }, 3000);
+                if(res.success){
+                  $("#response-message-service").text(res.msg);
+                  $("#response-message-service").addClass('show');
+                  $("#service-form")[0].reset();
+
+                  // Recharger la table Service
+                  tableService.ajax.reload();
+
+                  setTimeout(function () {
+                       $("#response-message-service").removeClass('show').fadeOut();
+                  }, 3000);
+                }
 
             },
             error: function(err){
@@ -356,11 +340,30 @@
 
                 setTimeout(function () {
                      $("#response-message-service").removeClass('show').fadeOut();
-                 }, 3000);
+                }, 3000);
             },
 
         })
       })
+
+      function chargerCategories(){
+        const $select = $('#categorie-service');
+        $.ajax({
+            url: '/salon/categorie/get_categories/',
+            method: 'GET',
+            success: function(data){
+                $select.empty(); // Vider l'ancien contenu
+                 $select.append(new Option("-- Sélectionnez une Catégorie --", "", true, true));
+                data.data.forEach(function(category){
+                    $select.append(new Option(category.category, category.id));
+                });
+            },
+            error: function(err){
+                console.log(err)
+            }
+        });
+        }
+        chargerCategories();
 
     })
 </script>
