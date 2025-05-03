@@ -21,11 +21,30 @@ def services(request):
     context = {
         "service_form": ServiceForm(),
         "categorie_form": CategorieForm(),
-        "categories": categories,
-        "services": services_list,
         "page_title": "Services",
     }
     return render(request, tmp + "services.html", context)
+
+
+@require_http_methods(["GET"])
+def get_services(request):
+    try:
+        list_services: list = []
+        services_l = Service.objects.all()
+
+        for service in services_l:
+            list_services.append({
+                "id": service.id,
+                "designation": service.designation,
+                "categorie": service.categorie.nom_categorie,
+                "actions": f'<a class="btn btn-danger btn-sm" href="{service.id}"><i class="bi bi-pencil"></i></a>'
+            })
+        return JsonResponse({"success": True, "data": list_services}, status=200)
+    except Service.DoesNotExist:
+        return JsonResponse({"error": True, "msg": "Aucun service trouvé."}, status=404)
+    except Exception as e:
+        print(e)
+        return JsonResponse({"error": True, "msg": "Erreur inattendue"}, status=400)
 
 
 def add_category(request):
@@ -34,11 +53,11 @@ def add_category(request):
             data = json.loads(request.body)
             required_fields = ['category']
             for field in required_fields:
-                if not escape(data.get(field)):
+                if not data.get(field):
                     return JsonResponse({"error": f"{field} est obligatoire"}, status=400)
 
             category = CategorieService.objects.create(
-                nom_categorie=data['category'],
+                nom_categorie=escape(data['category']),
             )
             category.save()
 
@@ -51,33 +70,54 @@ def add_category(request):
             return JsonResponse({"error": "Données invalides."}, status=400)
 
 
+@require_http_methods(["GET"])
+def get_categories(request):
+    try:
+        list_categories: list = []
+
+        categories = CategorieService.objects.all()
+        for category in categories:
+            list_categories.append({
+                "id": category.id,
+                "category": category.nom_categorie,
+                "action": f'<a class="btn btn-danger btn-sm" href="{category.id}"><i class="bi bi-pencil"></i></a>'
+            })
+
+        return JsonResponse({"success": True, "data": list_categories}, status=200)
+
+    except CategorieService.DoesNotExist:
+        return JsonResponse({"error": True, "msg": "Aucune Catégorie trouvée"}, status=404)
+    except Exception as e:
+        print(e)
+        return JsonResponse({"error": True, "msg": "Erreur inattendue"})
+
+
 def add_service(request):
     if request.method == "POST":
         try:
-            form = ServiceForm(request.POST)
-            if form.is_valid():
-                designation = form.cleaned_data['designation']
-                categorie = form.cleaned_data['categorie']
-                new_service = Service.objects.create(
-                    designation=designation,
-                    categorie=categorie
-                )
-                return JsonResponse({"msg": "Service créé avec succès",
-                                     "uuid": new_service.id,
-                                     "designation": new_service.designation,
-                                     "categorie": new_service.categorie.nom_categorie
-                                     }, status=201)
-            else:
-                return JsonResponse({"error": form.errors}, status=400)
+            data = json.loads(request.body)
+            required_fields = ['designation', 'category']
+            for field in required_fields:
+                if not escape(data.get(field)):
+                    return JsonResponse({"error": f"{field} est obligatoire"}, status=400)
 
+            designation = escape(data['designation'])
+            id_categorie = escape(data['categorie'])
+
+            category = CategorieService.objects.get(id=id_categorie)
+            Service.objects.create(
+                designation=designation,
+                categorie=category
+            )
+            return JsonResponse({"success": True, "msg": "Service créé avec succès",}, status=201)
         except IntegrityError:
             return JsonResponse({"error": "Erreur: Ce Service existe déjà"})
 
         except Exception as e:
             print(e)
-            return JsonResponse({"error": "Une erreur inattendue s'est produite."}, status=500)
-
-    return redirect("services")
+            return JsonResponse({"error": True, "msg": "Une erreur inattendue s'est produite."}, status=500)
+    else:
+        return redirect("services")
 
 
 def prix_services(request):
