@@ -6,6 +6,7 @@ from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
 from django.utils.html import escape
+from django.views.decorators.http import require_http_methods
 
 from employe.forms import EmployeForm
 from employe.models import Employe
@@ -20,15 +21,29 @@ def dashmin(request):
 
 
 def employe(request):
-    employes = Employe.objects.all()
     form = EmployeForm()
+
     context = {
-        "employes": employes,
         "form": form,
         "page_title": "Employés",
     }
     return render(request, tmp_base + "add_employe.html", context)
 
+
+@require_http_methods(["GET"])
+def get_employes(request):
+    employes = Employe.objects.all()
+    list_employes: list = []
+    for employe in employes:
+        list_employes.append({
+            "id": employe.id,
+            "full_name": employe.first_name + " " + employe.last_name,
+            "telephone": employe.telephone,
+            "email": employe.email,
+            "action": f'<a class="btn btn-danger btn-sm" href="#"><i class="bi bi-pencil"></i></a>'
+        })
+
+    return JsonResponse({"success": True, "data": list_employes})
 
 def add_employe(request):
     if request.method == "POST":

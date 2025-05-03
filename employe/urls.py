@@ -1,8 +1,9 @@
 from django.urls import path
 
-from employe.views import add_employe, employe
+from employe import views
 
 urlpatterns = [
-    path("", employe, name="employe"),
-    path("add/", add_employe, name="add_employe"),
+    path("", views.employe, name="employe"),
+    path("list/", views.get_employes, name="get_employes"),
+    path("add/", views.add_employe, name="add_employe"),
 ]

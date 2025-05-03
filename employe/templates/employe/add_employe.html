@@ -85,9 +85,10 @@
             <div class="card-body">
                 <div class="table-outer">
                     <div class="table-responsive">
-                        <table class="table align-middle table-hover m-0 truncate" id="table-emplye">
+                        <table class="table align-middle table-hover m-0 truncate" id="table-employe">
                             <thead>
                             <tr>
+                                <th>#</th>
                                 <th>Employee</th>
                                 <th class="text-center">Téléphone</th>
                                 <th>Email</th>
@@ -95,19 +96,7 @@
                             </tr>
                             </thead>
                             <tbody>
-                            {% for employe in employes %}
-                            <tr>
-                                <td>
-                                    <p>{{ employe.first_name}} {{ employe.last_name }}</p>
-                                </td>
-                                <td class="text-center">{{ employe.telephone }}</td>
-                                <td>{{ employe.email }}</td>
-                                <td>
-                                    <a class="btn btn-danger btn-sm" href="#"><i class="bi bi-pencil"></i>
-                                    </a>
-                                </td>
-                            </tr>
-                            {% endfor %}
+                            <!-- Contenu chargé par Ajax-->
 
                             </tbody>
                         </table>
@@ -126,7 +115,20 @@
 <script>
     $(document).ready(function(){
 
-        $("#table-emplye").DataTable({
+        var tableEmploye = $("#table-employe").DataTable({
+            ajax: '/employe/list/',
+            columns: [
+                {
+                    data: null,
+                    render: function(data, type, row, meta){
+                        return meta.row + 1;
+                      }
+                },
+                { data: 'full_name' },
+                { data: 'telephone' },
+                { data: 'email' },
+                { data: 'action' },
+            ],
             language: {
                 processing: "Traitement en cours...",
                 search: "Rechercher&nbsp;:&nbsp;",
@@ -190,8 +192,9 @@
                             <td>${res.email}</td>
                         </tr>
                     `
-                    // Ajouter la nouvelle ligne a la table sans recharger la page
-                    $("#table-emplye tbody").prepend(newRow);
+                    // Recharger les nouvelles data dans la table
+                    //$("#table-emplye tbody").prepend(newRow);
+                    tableEmploye.ajax.reload();
 
                     // Faire disparaître après 3 secondes (3000 ms)
                     setTimeout(function () {
