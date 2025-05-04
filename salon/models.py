@@ -14,6 +14,7 @@ class CategorieService(MyBaseModel):
 class Service(MyBaseModel):
     designation = models.CharField(max_length=120)
     categorie = models.ForeignKey(CategorieService, on_delete=models.CASCADE)
+    prix_service = models.BigIntegerField(null=True)
 
     def __str__(self):
         return self.designation
