@@ -194,6 +194,76 @@
   </div>
 </div>
 
+<!-- Bouton modal Update Service-->
+<button type="button" id="modalUpdateService" class="btn btn-primary" hidden="hidden" data-bs-toggle="modal" data-bs-target="#staticBackdrop"></button>
+<!-- Modal Update Service -->
+<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static"
+     data-bs-keyboard="false"
+     tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="staticBackdropLabel">
+                    Céer un nouveau Client
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Row starts -->
+                <form method="POST" action="{% url 'update_service' %}" id="formUpdateService">
+                      {% csrf_token %}
+                      <div class="col-xl-12 col-sm-12 col-12">
+                          <div class="col-12">
+                              <div class="mb-3">
+                                <label class="form-label" for="id_designation">Nom du Service</label>
+                                <div id="div_designation" class="mb-3">
+                                    <input type="text" name="id_service_up"  id="id-service-up" hidden="hidden">
+                                    <input type="text" name="designation" maxlength="120" class="textinput form-control" required="" id="designation-up">
+                                </div>
+                             </div>
+                          </div>
+                          <div class="col-12">
+                              <div class="mb-3">
+                                <label class="form-label" for="prix_service">Prix service</label>
+                                <div id="div_prix_service-up" class="mb-3">
+                                    <input type="number" name="prix_service" class="textinput form-control" required="" id="prix_service-up">
+                                </div>
+                             </div>
+                          </div>
+
+                          <!-- Liste Catégories -->
+                          <div class="col-12">
+                              <div class="mb-3">
+                                  <label class="form-label" for="categorie-service-up">Sélectionnez une Catégorie</label>
+                                  <select class="select form-select" id="categorie-service-up"
+                                            aria-label="Default select example">
+                                  </select>
+                              </div>
+                          </div>
+                          <div class="col-sm-3 col-12 self-align-center ms-2 mt-4">
+                            <button type="submit" class="btn btn-primary mb-2">Valider</button>
+                          </div>
+                      </div>
+                      <!-- Zone d'affichage des messages -->
+                      <div id="update-response" class="alert bg-success text-white alert-dismissible fade" role="alert">
+
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"
+                          aria-label="Close"></button>
+                      </div>
+                    </form>
+                <!-- Row ends -->
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal">
+                    Fermer
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End Modal Update Service -->
 
 {% block custom_js %}
 <script src="{% static 'assets/js/jquery.min.js' %}"></script>
@@ -264,7 +334,7 @@
             }, 3000);
 
             // Ajouter la categorie dans le Select de Categorie lors de la creation de Service
-            chargerCategories()
+            chargerCategories($('#categorie-service'))
 
             $("#category-form")[0].reset();
 
@@ -358,8 +428,89 @@
         })
       })
 
-      function chargerCategories(){
-        const $select = $('#categorie-service');
+      // Get Service by id
+      $(document).on("click", ".update-service", function(){
+        serviceId = $(this).attr("id")
+
+        $.ajax({
+            url: '/salon/services/get/',
+            method: 'GET',
+            data: { id: serviceId },
+            success: function(data){
+
+                $("#designation-up").val(data.data.designation)
+                $("#prix_service-up").val(data.data.prix_service)
+                $("#id-service-up").val(data.data.id)
+
+                chargerCategories($('#categorie-service-up'), data.data.id_category);
+
+                $("#modalUpdateService").trigger('click')
+
+            },
+            error: function(err){
+                console.log("Error:",err)
+            }
+
+        })
+      })
+
+      // Update Service
+      $("#formUpdateService").on('submit', function(e){
+        e.preventDefault();
+
+        console.log("id serv", $("#id-service-up").val())
+
+        const formData = {
+            idService: $("#id-service-up").val().trim(),
+            designation: $("#designation-up").val().trim(),
+            categorie: $("#categorie-service-up").val().trim(),
+            prix_service: $("#prix_service-up").val().trim(),
+        }
+
+        if(!formData.designation || !formData.categorie){
+            $("#update-response").text("Tous les champs sont obligatoires");
+            $("#update-response").addClass('show');
+            // Faire disparaître après 3 secondes (3000 ms)
+            setTimeout(function () {
+                 $("#update-response").removeClass('show').fadeOut();
+            }, 3000);
+        }
+        $.ajax({
+            url: $(this).attr('action'),
+            method: 'POST',
+            headers: { 'X-CSRFToken': getCSRFToken() },
+            data: JSON.stringify(formData),
+            contentType: "application/json",
+            success: function(res){
+                if(res.success){
+                  $("#update-response").text(res.msg);
+                  $("#update-response").addClass('show');
+                  $("#formUpdateService")[0].reset();
+
+                  // Recharger la table Service
+                  tableService.ajax.reload();
+
+                  setTimeout(function () {
+                       $("#update-response").removeClass('show').fadeOut();
+                  }, 3000);
+                }
+
+            },
+            error: function(err){
+                $("#response-message-service").text(err.error);
+                $("#response-message-service").removeClass('bg-success');
+                $("#response-message-service").addClass('bg-danger').addClass('show');
+
+                setTimeout(function () {
+                     $("#response-message-service").removeClass('show').fadeOut();
+                }, 5000);
+            },
+
+        })
+      })
+
+      function chargerCategories(idSelect, selectedCategorie=""){
+        const $select = idSelect;
         $.ajax({
             url: '/salon/categorie/get_categories/',
             method: 'GET',
@@ -369,13 +520,17 @@
                 data.data.forEach(function(category){
                     $select.append(new Option(category.category, category.id));
                 });
+
+                if(selectedCategorie !=""){
+                    $select.val(String(selectedCategorie))
+                }
             },
             error: function(err){
                 console.log(err)
             }
         });
-        }
-        chargerCategories();
+      }
+      chargerCategories($('#categorie-service'));
 
     })
 </script>

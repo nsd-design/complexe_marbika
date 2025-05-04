@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 
 from django.db import IntegrityError, transaction
 from django.db.models import F, Sum
@@ -39,7 +40,7 @@ def get_services(request):
                 "designation": service.designation,
                 "categorie": service.categorie.nom_categorie,
                 "prix_service": "{:,.0f} GNF".format(prix).replace(",", " "),
-                "actions": f'<a class="btn btn-danger btn-sm" href="{service.id}"><i class="bi bi-pencil"></i></a>'
+                "actions": f'<i class="bi bi-pencil btn btn-primary update-service" id="{service.id}"></i>'
             })
         return JsonResponse({"success": True, "data": list_services}, status=200)
     except Service.DoesNotExist:
@@ -47,6 +48,62 @@ def get_services(request):
     except Exception as e:
         print(e)
         return JsonResponse({"error": True, "msg": "Erreur inattendue"}, status=400)
+
+
+@require_http_methods(["GET"])
+def get_service(request):
+    id_service = request.GET.get('id')
+    if not id_service:
+        return JsonResponse({"error": True, "msg": "Aucun Service n'a été fourni pour l'update."}, status=400)
+
+    try:
+        service = Service.objects.get(id=id_service)
+        data = {
+            "id": service.id,
+            "designation": service.designation,
+            "categorie": service.categorie.nom_categorie,
+            "id_category": service.categorie.id,
+            "prix_service": service.prix_service
+        }
+        return JsonResponse({"success":True, "data": data}, status=200)
+
+    except Service.DoesNotExist:
+        return JsonResponse({"error": True, "msg": "Service introuvable"})
+    except Exception as e:
+        print(e)
+        return JsonResponse({"error": True, "msg": str(e)})
+
+
+@require_http_methods(["POST"])
+def update_service(request):
+    data = json.loads(request.body)
+    id_service = escape(data['idService'])
+    designation = escape(data['designation'])
+    id_category = escape(data['categorie'])
+    prix = escape(data['prix_service'])
+
+    try:
+        service = Service.objects.get(id=id_service)
+        category = CategorieService.objects.get(id=id_category)
+
+        service.designation = designation
+        service.categorie = category
+        service.prix_service = prix
+        service.updated_at = datetime.now()
+
+        service.save()
+
+        return JsonResponse({"success": True, "msg": "Modification effectuée avec succès !"})
+
+    except Service.DoesNotExist:
+        return JsonResponse({"error": True, "msg": "Erreur, ce Service n'existe pas"})
+    except CategorieService.DoesNotExist:
+        return JsonResponse({"error": True, "msg": "Erreur, cette Categorie n'existe pas"})
+
+    except Exception as e:
+        print(e)
+        return JsonResponse({"error": True, "msg": "Une erreur s'est produite."})
+
 
 
 def add_category(request):
