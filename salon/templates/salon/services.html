@@ -69,6 +69,14 @@
                                 </div>
                              </div>
                           </div>
+                          <div class="col-xl-6 col-sm-4 col-12">
+                              <div class="mb-3">
+                                <label class="form-label" for="prix_service">Prix service</label>
+                                <div id="div_prix_service" class="mb-3">
+                                    <input type="number" name="prix_service" class="textinput form-control" required="" id="prix_service">
+                                </div>
+                             </div>
+                          </div>
 
                           <!-- Liste Catégories -->
                           <div class="col-xl-6 col-sm-4 col-12">
@@ -159,7 +167,8 @@
                                     <thead>
                                     <tr>
                                         <th>Designation</th>
-                                        <th>Categorie</th>
+                                        <th>Catégorie</th>
+                                        <th>Prix</th>
                                         <th>Actions</th>
                                     </tr>
                                     </thead>
@@ -184,6 +193,7 @@
 
   </div>
 </div>
+
 
 {% block custom_js %}
 <script src="{% static 'assets/js/jquery.min.js' %}"></script>
@@ -279,6 +289,7 @@
           columns: [
             { data: 'designation' },
             { data: 'categorie' },
+            { data: 'prix_service' },
             { data: 'actions' },
           ],
           language: {
@@ -302,6 +313,7 @@
         const formData = {
             designation: $("#id_designation").val().trim(),
             categorie: $("#categorie-service").val().trim(),
+            prix_service: $("#prix_service").val().trim(),
         }
 
         if(!formData.designation || !formData.categorie){

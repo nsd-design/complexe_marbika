@@ -33,10 +33,12 @@ def get_services(request):
         services_l = Service.objects.all()
 
         for service in services_l:
+            prix = float(service.prix_service) if service.prix_service else 0.0
             list_services.append({
                 "id": service.id,
                 "designation": service.designation,
                 "categorie": service.categorie.nom_categorie,
+                "prix_service": "{:,.0f} GNF".format(prix).replace(",", " "),
                 "actions": f'<a class="btn btn-danger btn-sm" href="{service.id}"><i class="bi bi-pencil"></i></a>'
             })
         return JsonResponse({"success": True, "data": list_services}, status=200)
@@ -96,18 +98,20 @@ def add_service(request):
     if request.method == "POST":
         try:
             data = json.loads(request.body)
-            required_fields = ['designation', 'category']
+            required_fields = ['designation', 'category', 'prix_service']
             for field in required_fields:
                 if not escape(data.get(field)):
                     return JsonResponse({"error": f"{field} est obligatoire"}, status=400)
 
             designation = escape(data['designation'])
             id_categorie = escape(data['categorie'])
+            prix_service = escape(data['prix_service'])
 
             category = CategorieService.objects.get(id=id_categorie)
             Service.objects.create(
                 designation=designation,
-                categorie=category
+                categorie=category,
+                prix_service=prix_service,
             )
             return JsonResponse({"success": True, "msg": "Service créé avec succès",}, status=201)
         except IntegrityError:
