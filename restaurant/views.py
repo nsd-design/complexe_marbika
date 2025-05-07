@@ -5,6 +5,7 @@ from django.db import transaction
 from django.db.models import Sum
 from django.http import JsonResponse
 from django.shortcuts import render
+from django.utils import timezone
 from django.utils.html import escape
 from datetime import datetime
 from django.views.decorators.http import require_http_methods
@@ -348,7 +349,7 @@ def cloture_controle(request):
                     boisson_controlee.quantite_vendue = qte_vendue if qte_vendue else 0
                     boisson_controlee.quantite_restante = qte_restante if qte_restante else 0
                     boisson_controlee.manquant = manquante if manquante else 0
-                    boisson_controlee.updated_at = datetime.now()
+                    boisson_controlee.updated_at = timezone.now()
                     controle_cloture = True
                     boisson_controlee.save()
                 except DetailsControleBoissons.DoesNotExist:
@@ -359,7 +360,7 @@ def cloture_controle(request):
 
             # ✅ Mise à jour du contrôle (statut et date) une fois que tout s’est bien passé
             controle_a_cloture.statut = 2
-            controle_a_cloture.updated_at = datetime.now()
+            controle_a_cloture.updated_at = timezone.now()
             controle_a_cloture.save()
 
             return JsonResponse({"success": True, "msg": "Contrôle clôturé avec succès"})
@@ -369,7 +370,7 @@ def cloture_controle(request):
 
 @require_http_methods(["GET"])
 def historique_controles(request):
-    list_controles = ControleBoisson.objects.all()
+    list_controles = ControleBoisson.objects.all().order_by("-created_at")
     if not list_controles:
         return JsonResponse({"success": False}, status=404)
 
