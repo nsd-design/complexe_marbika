@@ -154,7 +154,7 @@ def passer_commande(request):
             current_commande = Commande.objects.create(prix_total=0, reduction=reduction)
             current_commande.reference = f"CMD-{current_commande.id.hex[:8].upper()}"
             current_commande.save()
-            print("reference:", current_commande.reference)
+            # print("reference:", current_commande.reference)
             prix_total = 0
 
             # Verifier si la quantite de la Boisson commandée est disponible

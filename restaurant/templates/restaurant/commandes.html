@@ -288,13 +288,23 @@
         let $divPlat = $("<div>", { class: "mb-3" });
         let $labelPlat = $("<label>", { class: "form-label", text: "Plat / Boisson" });
         let $inputPlat = $("<input>", { type: "text", class: "form-control", value: platBoisson });
+
         let $inputHidden = $("<input>", { type: "text", class: "form-control productName", value: idPlatBoisson, hidden: true });
+
+        let $colBtnRemove = $("<div>", { class: "align-self-end col-2"});
+        let $divBtnRemove = $("<div>", { class: "mb-3"});
+        let $btnRemove = $("<button>", { class: "btn btn-outline-primary removeArticle" });
+        let $iconRemove = $("<i>", { class: "bi bi-dash-circle" });
+
+        $btnRemove.append($iconRemove);
+        $divBtnRemove.append($btnRemove);
+        $colBtnRemove.append($divBtnRemove);
 
         $divPlat.append($labelPlat, $inputPlat, $inputHidden);
         $colPlat.append($divPlat);
 
         // Colonne Quantité
-        let $colQuantite = $("<div>", { class: "col-xl-4 col-sm-6 col-12" });
+        let $colQuantite = $("<div>", { class: "col-xl-2 col-sm-3 col-12" });
         let $divQuantite = $("<div>", { class: "mb-3" });
         let $labelQuantite = $("<label>", { class: "form-label", for: idQuantite, text: "Quantité" });
         let $inputQuantite = $("<input>", { type: "number", min: 1, name: "productQuantity", class: "form-control quantite", id: idQuantite, placeholder: "Entrez la quantité", value: 1 });
@@ -303,7 +313,7 @@
         $colQuantite.append($divQuantite);
 
         // Colonne Prix
-        let $colPrix = $("<div>", { class: "col-xl-4 col-sm-12 col-12" });
+        let $colPrix = $("<div>", { class: "col-xl-4 col-sm-8 col-8" });
         let $divPrix = $("<div>", { class: "mb-3" });
         let $labelPrix = $("<label>", { class: "form-label", for: "quantite", text: "Prix" });
         let $inputPrix = $("<input>", { type: "number", name: "productPrice", class: "form-control prix", id: "productPrice", placeholder: "Entrez le prix", value: productPrice });
@@ -314,7 +324,7 @@
         let $productsOrdered = $("<div>", { class: "row col-12 d-flex justify-content-between flex-wrap productsOrdered", "data-type": dataType });
 
         let $colSep = $("<div>", { class: "col-12 border my-2" });
-        $productsOrdered.append($colPlat, $colQuantite, $colPrix, $colSep)
+        $productsOrdered.append($colPlat, $colQuantite, $colPrix, $colBtnRemove, $colSep, )
 
         // Ajouter les colonnes au conteneur principal
         $("#colReduction").before($productsOrdered);
@@ -487,6 +497,19 @@
         }
       })
 
+      // Retirer un Plat / Boisson de la Commande
+      $(document).on("click", ".removeArticle", function () {
+        const productBlock = $(this).closest(".productsOrdered"); // on cible le bloc complet
+        const productId = productBlock.find(".quantite").attr("id"); // on récupère l'id du champ quantité
+
+        tabPlatsBoissons = tabPlatsBoissons.filter( id => id != productId)
+        productBlock.remove(); // suppression du bloc
+        calculerMontant()
+        if(tabPlatsBoissons.length <= 0){
+            $("#annuler-commande").trigger("click")
+        }
+      });
+
 
       function creerDetailElement(tabProduits){
 
@@ -541,9 +564,6 @@
         //let barcodeContainer = $("<div>").attr("id", "barcode-container")
         //let barcode = $("<svg>").attr("id","barcode")
         //$("#barcode-container").append(barcode)
-
-
-
       }
 
 
