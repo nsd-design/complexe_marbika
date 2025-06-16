@@ -188,11 +188,13 @@ def passer_commande(request):
             # Mise à jour du prix total de la Commande
             current_commande.prix_total = prix_total - int(reduction)
             current_commande.save()
-            return JsonResponse({"success": True, "msg": "Commande recu"})
+            return JsonResponse({"success": True, "msg": "Commande reçue"})
+        except ValueError as e:
+            return JsonResponse({"error": True, "msg": str(e)}, status=400)
         except Exception as e:
             print(e)
-            return JsonResponse({"success": False, "error": str(e)}, status=400)
-    return JsonResponse({"success": False, "error": "Méthode non autorisée"}, status=405)
+            return JsonResponse({"error": True, "msg": str(e)}, status=400)
+    return JsonResponse({"error": True, "msg": "Méthode non autorisée"}, status=405)
 
 
 @require_http_methods(["GET"])

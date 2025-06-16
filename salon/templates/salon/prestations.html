@@ -158,27 +158,23 @@
 
         });
 
+        // Recuperer les Service depuis la View 'prestations'
+        const servicePrix = {
+            {% for service in services %}
+                "{{ service.id }}": "{{ service.prix_service }}",
+            {% endfor %}
+        }
+
+        // Charger le prix service selon le service selectionné
         $("#id_service").on('change',function(){
             const service_id = $(this).val();
-            const url = "{% url 'get_prix_service' 0 %}".replace('0', service_id);
-            $.ajax({
-                url: url,
-                method: "GET",
-                success: function(res){
-                    $("#id_montant_a_payer").val(res.prix_service)
-                },
-                error: function(err){
-                    $("#response-message").addClass('bg-danger show').fadeIn();
-                    $("#response-message").text(err.responseJSON.error);
-                    $("#response-message").removeClass('bg-success');
+            const current_prix =  servicePrix[service_id]
 
-                    $("#id_montant_a_payer").val("")
+            if(current_prix){
+                $("#id_montant_a_payer").val(current_prix)
 
-                    setTimeout(function () {
-                        $("#response-message").removeClass('show').fadeOut();
-                    }, 3000);
-                }
-            })
+            } else $("#id_montant_a_payer").val("")
+
         });
 
         function getCSRFToken(){

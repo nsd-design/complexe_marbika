@@ -6,7 +6,7 @@ from employe.models import MyBaseModel
 
 
 class Plat(MyBaseModel):
-    nom_plat = models.CharField(120)
+    nom_plat = models.CharField(max_length=120)
     photo_plat = models.ImageField(null=True, blank=True, upload_to="plats/")
     prix = models.BigIntegerField(null=True)
     qr_code = models.CharField(max_length=255, null=True)
