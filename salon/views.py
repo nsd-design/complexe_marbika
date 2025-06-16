@@ -230,8 +230,11 @@ def prestations(request):
         total_paye = prestations_list.aggregate(total=Sum("montant_paye"))['total']
         total_paye = "{:,.0f} GNF".format(total_paye).replace(",", " ")
 
+    services = Service.objects.all()
+
     context= {
         "form": PrestationForm(),
+        "services":  services if services else [],
         "page_title": "Prestations",
         "prestation_list": prestations_list if prestations_list.exists else None,
         "total_paye": total_paye
