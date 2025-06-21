@@ -40,14 +40,14 @@ class PrixServiceForm(forms.ModelForm):
 class PrestationForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        
+
         # Supprimer les Labels par defaut
         for field_name in self.fields:
             self.fields[field_name].label = ''
 
     class Meta:
         model = Prestation
-        fields = ['service', 'montant_a_payer', 'montant_reduit', 'fait_par']
+        fields = ['service', 'prix_service', 'init_prestation']
 
 
 class ProduitForm(forms.ModelForm):

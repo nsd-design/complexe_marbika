@@ -10,9 +10,9 @@ from django.views.decorators.http import require_http_methods
 
 from client.models import Client
 from employe.models import Employe
-from salon.forms import ServiceForm, CategorieForm, PrixServiceForm, PrestationForm, ProduitForm, ApproProduitForm
-from salon.models import CategorieService, Service, PrixService, Prestation, Produit, Approvisionnement, Vente, \
-    ProduitVendu
+from salon.forms import ServiceForm, CategorieForm, PrixServiceForm, ProduitForm, ApproProduitForm, PrestationForm
+from salon.models import CategorieService, Service, PrixService, Produit, Approvisionnement, Vente, \
+    ProduitVendu, Prestation
 
 tmp = "salon/"
 
