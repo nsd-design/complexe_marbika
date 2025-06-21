@@ -1,7 +1,8 @@
 import uuid
 from django.db import models
 
-from employe.models import MyBaseModel, Employe
+from client.models import Client
+from employe.models import MyBaseModel
 
 
 class CategorieService(MyBaseModel):
@@ -27,14 +28,24 @@ class PrixService(MyBaseModel):
     def __str__(self):
         return f"{self.service.designation} - {self.prix_service}"
 
-class Prestation(MyBaseModel):
-    service = models.ForeignKey(Service, on_delete=models.SET_NULL, null=True)
-    montant_a_payer = models.BigIntegerField()
-    montant_reduit = models.BigIntegerField(default=0)
-    fait_par = models.ForeignKey(Employe, null=True, on_delete=models.SET_NULL)
+
+class InitPrestation(MyBaseModel):
+    reference = models.CharField(max_length=20, unique=True, blank=True)
+    montant_total = models.BigIntegerField()
+    remise = models.BigIntegerField(default=0)
+    fait_par = models.ForeignKey("employe.Employe", null=True, on_delete=models.SET_NULL, related_name="prestations_realisees")
 
     def __str__(self):
-        return f"{self.service.designation} - {self.fait_par.first_name} {self.fait_par.last_name}"
+        return self.reference
+
+
+class Prestation(MyBaseModel):
+    service = models.ForeignKey(Service, on_delete=models.SET_NULL, null=True)
+    prix_service = models.BigIntegerField()
+    init_prestation = models.ForeignKey(InitPrestation, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.service.designation} - {self.fait_par.first_name} {self.fait_par.last_name} - InitPrest: {self.init_prestation}"
 
 
 class Produit(MyBaseModel):
@@ -92,7 +103,7 @@ class Vente(MyBaseModel):
     type_vente = models.SmallIntegerField(choices=TYPE_DE_VENTE, default=1)
     montant_total = models.BigIntegerField(null=True)
     reference = models.CharField(max_length=20, unique=True, blank=True)
-    client = models.ForeignKey('client.client', on_delete=models.SET_NULL, null=True, blank=True)
+    client = models.ForeignKey(Client, on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         return self.reference
@@ -125,3 +136,17 @@ class Depense(MyBaseModel):
 
     def __str__(self):
         return f"{self.montant} - {self.motif}"
+
+
+class InitAbonnementService(MyBaseModel):
+    client = models.ForeignKey(Client, on_delete=models.CASCADE)
+    montant_total = models.BigIntegerField()
+    nb_seances = models.IntegerField()
+    is_active = models.BooleanField(default=True)
+    remise = models.BigIntegerField(null=True)
+
+
+class DetailsAbonnementService(MyBaseModel):
+    service = models.ForeignKey(Service, null=True, on_delete=models.SET_NULL, related_name="subscribed_service")
+    prix_service = models.BigIntegerField()
+    abonnement = models.ForeignKey(InitAbonnementService, on_delete=models.CASCADE)

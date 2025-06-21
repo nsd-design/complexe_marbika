@@ -1,7 +1,6 @@
 from django.db import models
 
 from employe.models import MyBaseModel
-from salon.models import Service, PrixService
 
 
 class Client(MyBaseModel):
@@ -39,14 +38,6 @@ class Piscine(MyBaseModel):
     prix_unitaire = models.BigIntegerField()
     reduction = models.BigIntegerField(null=True)
     note = models.CharField(max_length=255, null=True)
-
-
-class AbonnementService(MyBaseModel):
-    client = models.ForeignKey(Client, on_delete=models.CASCADE)
-    prix_services = models.ManyToManyField(PrixService)
-    nb_seances = models.IntegerField()
-    is_active = models.BooleanField(default=True)
-    reduction = models.BigIntegerField(null=True)
 
 
 class AbonnementGym(MyBaseModel):
