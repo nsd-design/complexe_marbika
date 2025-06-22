@@ -1,5 +1,5 @@
 from django import forms
-from .models import CategorieService, Service, Prestation, PrixService, Produit, Approvisionnement
+from .models import CategorieService, Service, Prestation, PrixService, Produit, Approvisionnement, InitPrestation
 
 
 class CategorieForm(forms.ModelForm):
@@ -36,6 +36,18 @@ class PrixServiceForm(forms.ModelForm):
     class Meta:
         model = PrixService
         fields = ['prix_service', 'service']
+
+
+class InitPrestationForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Supprimer les Labels par defaut
+        for field_name in self.fields:
+            self.fields[field_name].label = ''
+
+    class Meta:
+        model = InitPrestation
+        fields = ['reference', 'montant_total', 'remise', 'fait_par']
 
 class PrestationForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
