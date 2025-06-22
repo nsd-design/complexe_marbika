@@ -34,6 +34,7 @@ class InitPrestation(MyBaseModel):
     montant_total = models.BigIntegerField()
     remise = models.BigIntegerField(default=0)
     fait_par = models.ForeignKey("employe.Employe", null=True, on_delete=models.SET_NULL, related_name="prestations_realisees")
+    client = models.ForeignKey(Client, null=True, on_delete=models.SET_NULL)
 
     def __str__(self):
         return self.reference
