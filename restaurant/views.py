@@ -373,8 +373,6 @@ def cloture_controle(request):
 @require_http_methods(["GET"])
 def historique_controles(request):
     list_controles = ControleBoisson.objects.all().order_by("-created_at")
-    if not list_controles:
-        return JsonResponse({"success": False}, status=404)
 
     controles = list()
     for controle in list_controles:

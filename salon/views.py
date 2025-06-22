@@ -12,7 +12,7 @@ from client.models import Client
 from employe.models import Employe
 from salon.forms import ServiceForm, CategorieForm, PrixServiceForm, ProduitForm, ApproProduitForm, PrestationForm
 from salon.models import CategorieService, Service, PrixService, Produit, Approvisionnement, Vente, \
-    ProduitVendu, Prestation
+    ProduitVendu, Prestation, InitPrestation
 
 tmp = "salon/"
 
@@ -222,8 +222,8 @@ def add_prix_service(request):
 def prestations(request):
     total_paye = 0
 
-    prestations_list = Prestation.objects.annotate(
-        montant_paye=F("montant_a_payer") - F("montant_reduit")
+    prestations_list = InitPrestation.objects.annotate(
+        montant_paye=F("montant_total") - F("remise")
     ).order_by("-created_at")
 
     if prestations_list:
@@ -231,10 +231,12 @@ def prestations(request):
         total_paye = "{:,.0f} GNF".format(total_paye).replace(",", " ")
 
     services = Service.objects.all()
+    prestataires = Employe.objects.all()
 
     context= {
         "form": PrestationForm(),
         "services":  services if services else [],
+        "prestataires": prestataires if prestataires.exists else [],
         "page_title": "Prestations",
         "prestation_list": prestations_list if prestations_list.exists else None,
         "total_paye": total_paye

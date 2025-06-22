@@ -28,46 +28,108 @@
               aria-labelledby="headingSpecialTitleOne" data-bs-parent="#accordionSpecialTitle">
               <div class="accordion-body">
                 <!-- Row starts -->
-                <form method="POST" action="{% url 'add_prestations' %}" class="row gx-4" id="prestation-form">
-                    {% csrf_token %}
-                    <div class="col-xl-3 col-sm-4 col-12">
-                        <div class="mb-3">
-                            <label class="form-label" for="id_service">Selectionnez un Service</label>
-                            {{ form.service | as_crispy_field }}
-                        </div>
+                <div class="row">
+                    <!-- Liste Clients -->
+                    <div class="my-2 col-12 col-md-8 col-lg-8">
+                        <label class="form-label" for="clients-select">Liste des Clients</label>
+                        <select class="form-select bg-secondary" id="clients-select"
+                                aria-label="Default select example">
+                            <option value="">-- Selectionner un Client --</option>
+                        </select>
                     </div>
-
-                    <div class="col-xl-3 col-sm-4 col-12">
-                        <div class="mb-3">
-                            <label class="form-label" for="id_fait_par">Prestateur</label>
-                            {{ form.fait_par | as_crispy_field }}
-                        </div>
+                  <div class="col-12">
+                    <div class="table-outer">
+                      <div class="table-responsive">
+                        <table class="table truncate" id="tabCreatePrestations">
+                          <thead>
+                            <tr>
+                              <th colspan="7" class="pt-3 pb-3">
+                                Choisissez les Services
+                              </th>
+                            </tr>
+                            <tr>
+                              <th>Services</th>
+                              <th>Prestataires</th>
+                              <th>Prix</th>
+                              <th >Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody id="tBodyCreatePrestations">
+                            <tr class="rowPrestation">
+                              <td>
+                                <!-- Form group starts Liste des Services -->
+                                <select class="form-select selServices">
+                                </select>
+                                <!-- Form group ends -->
+                              </td>
+                              <td>
+                                <!-- Form group starts Liste des Prestataires -->
+                                <select class="form-select selPrestataires">
+                                </select>
+                                <!-- Form group ends -->
+                              </td>
+                              <td>
+                                <!-- Form group starts -->
+                                <div class="input-group m-0">
+                                  <input type="text" class="form-control prix">
+                                  <span class="input-group-text">
+                                    <span>GNF</span>
+                                  </span>
+                                </div>
+                                <!-- Form group ends -->
+                              </td>
+                              <td>
+                                <div class="custom-icon-group">
+                                  <button class="btn btn-outline-dark removeRow">
+                                    <i class="bi bi-trash"></i>
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr id="ligneRemise">
+                              <td>
+                                <button class="btn btn-danger" id="ajouterLignePrestation">
+                                  Ajouter
+                                </button>
+                              </td>
+                              <td colspan="6">
+                                <div class="row justify-content-end">
+                                  <div class="col-auto">
+                                    <label class="col-form-label" for="remise">Remise</label>
+                                  </div>
+                                  <div class="col-auto">
+                                    <input type="text" class="form-control" id="remise" >
+                                  </div>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td colspan="5">&nbsp;</td>
+                              <td>
+                                <p class="m-0">Sous-total</p>
+                                <p class="m-0">Remise</p>
+                                <h5 class="mt-2 text-danger">Total GNF</h5>
+                              </td>
+                              <td>
+                                <p class="m-0">GNF</p>
+                                <p class="m-0">GNF</p>
+                                <h5 class="mt-2 text-success">GNF</h5>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
-
-                    <div class="col-xl-3 col-sm-4 col-12">
-                        <div class="mb-3">
-                            <label class="form-label" for="id_montant_a_payer">Montant a Payer</label>
-                            {{ form.montant_a_payer | as_crispy_field }}
-                        </div>
+                  </div>
+                  <div class="col-12">
+                    <div class="invoice-footer">
+                      <div class="text-end mt-3">
+                        <a href="invoice-list.html" class="btn btn-primary me-2">Valider</a>
+                        <button id="cancel" class="btn btn-secondary">Annuler</button>
+                      </div>
                     </div>
-
-                    <div class="col-xl-3 col-sm-4 col-12">
-                        <div class="mb-3">
-                            <label class="form-label" for="id_montant_reduit">Reduction</label>
-                            {{ form.montant_reduit | as_crispy_field }}
-                        </div>
-                    </div>
-
-                    <!-- Zone d'affichage des messages -->
-                    <div id="response-message" class="alert bg-success text-white alert-dismissible fade" role="alert">
-                      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"
-                        aria-label="Close"></button>
-                    </div>
-
-                    <div class="col-sm-12 col-12">
-                        <button type="submit" class="btn btn-primary">Créer</button>
-                    </div>
-                </form>
+                  </div>
+                </div>
                 <!-- Row ends -->
               </div>
             </div>
@@ -127,6 +189,7 @@
 {% block custom_js %}
 <script src="{% static 'assets/js/jquery.min.js' %}"></script>
 <script src="{% static 'assets/js/datatables.min.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 {% endblock %}
 <script>
     $(document).ready(function(){
@@ -158,24 +221,58 @@
 
         });
 
-        // Recuperer les Service depuis la View 'prestations'
-        const servicePrix = {
-            {% for service in services %}
-                "{{ service.id }}": "{{ service.prix_service }}",
-            {% endfor %}
-        }
+        // Recuperer les Services depuis la View 'prestations'
+        let tabServices = []
+        {% for service in services %}
+            tabServices.push({
+                "id": "{{ service.id }}",
+                "designation": "{{ service.designation }}",
+                "objService": "{{ service }}",
+                "prix": "{{ service.prix_service }}",
+            })
+        {% endfor %}
 
-        // Charger le prix service selon le service selectionné
-        $("#id_service").on('change',function(){
-            const service_id = $(this).val();
-            const current_prix =  servicePrix[service_id]
+        // Charger La liste de select des Services
+        const $selServices = $(".selServices").first()
+        $selServices.empty(); // Vider l'ancien contenu
+        $selServices.append(new Option("-- Sélectionnez un Service --", "", true, true));
 
-            if(current_prix){
-                $("#id_montant_a_payer").val(current_prix)
-
-            } else $("#id_montant_a_payer").val("")
-
+        tabServices.forEach(function(service){
+            $selServices.append(new Option(service.designation, service.id));
         });
+
+        // Recuperer les Prestataires depuis la View 'prestations'
+        const $selPrestataires = $(".selPrestataires").first()
+        let tabPrestataires = []
+        function fillPrestationSelect(prestationSelect){
+            {% for prestataire in prestataires %}
+                tabPrestataires.push({
+                    "full_name": "{{ prestataire.first_name }} {{ prestataire.last_name}}",
+                    "objPrestataire": "{{ prestataire }}",
+                    "{{ prestataire.id }}": "{{ prestataire.id }}",
+                })
+            {% endfor %}
+
+            prestationSelect.empty(); // Vider l'ancien contenu
+            prestationSelect.append(new Option("-- Sélectionnez un Prestataire --", "", true, true));
+
+            tabPrestataires.forEach(function(prestataire){
+                prestationSelect.append(new Option(prestataire.full_name, prestataire.objPrestataire));
+            });
+        }
+        fillPrestationSelect($selPrestataires)
+
+        // Charger le prix du service selon le service selectionné
+        $("#tBodyCreatePrestations").on("change", ".selServices", function(){
+            const idService = $(this).val()
+            const $tr = $(this).closest("tr");
+
+            // Retrouver l'objet de la ligne de service dans tabServices
+            let serviceTrouve = tabServices.find(service => service.id == idService)
+
+            const $inputPrix = $tr.find(".prix")
+            $inputPrix.val(serviceTrouve.prix)
+        })
 
         function getCSRFToken(){
             const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
@@ -195,24 +292,6 @@
                     // Reinitialiser le formulaire
                     $("#prestation-form")[0].reset();
 
-                    // Ajouter le nouvel Employe a la table
-                  var newRow = `
-                      <tr>
-                          <td></td>
-                          <td>${res.prestation.service}</td>
-                          <td>${res.prestation.prestateur}</td>
-                          <td>${res.prestation.montant}</td>
-                          <td>${res.prestation.reduction}</td>
-                          <td>${res.prestation.net_paye}</td>
-                          <td>
-                            <a class="btn btn-danger btn-sm" href="#"><i class="bi bi-pencil"></i>
-                            </a>
-                          </td>
-                      </tr>
-                  `
-                  // Ajouter la nouvelle ligne a la table sans recharger la page
-                  $("#table-prestation tbody").prepend(newRow);
-
                    setTimeout(function () {
                     $("#response-message").removeClass('show').fadeOut();
                    }, 3000);
@@ -223,6 +302,53 @@
             })
         })
 
+        // Ajouter une nouvelle ligne de Prestation
+        $("#ajouterLignePrestation").on("click", function(){
+            const $clonedRowPrestation = $(".rowPrestation").first().clone(true)
+            const $inputPrix = $clonedRowPrestation.find(".prix")
+            $inputPrix.val("")
+            $("#ligneRemise").before($clonedRowPrestation)
+        })
+
+        // Supprimer une ligne de prestation
+        $("#tBodyCreatePrestations").on("click", ".removeRow", function(){
+            const $currentRow = $(this).closest("tr");
+
+            $currentRow.slideUp(300, function(){
+                $currentRow.remove(); // Supprimer, Apres l'animation
+            });
+        })
+
+        // Annuler
+        $("#cancel").on("click", function(){
+            location.reload()
+        })
+
+        // Initialisation de Select2 avec recherche
+        function chargerClients(){
+            const $select = $('#clients-select');
+            $.ajax({
+                url: '/salon/produits/list_clients/',
+                method: 'GET',
+                success: function(data){
+                    $select.empty(); // Vider l'ancien contenu
+                     $select.append(new Option("-- Selectionner un Client --", "", true, true));
+                    data.data.forEach(function(client){
+                        $select.append(new Option(`${client.nom_complet} - ${client.telephone ? client.telephone : ""}`, client.id));
+                    });
+                    $select.select2({
+
+                        allowClear: true
+                    });
+
+                    $select.trigger('change'); // Mettre à jour le Select2
+                },
+                error: function(err){
+                    console.log(err)
+                }
+            });
+        }
+        chargerClients();
     })
 </script>
 {% endblock %}
