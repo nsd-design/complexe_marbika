@@ -47,7 +47,7 @@ class InitPrestationForm(forms.ModelForm):
 
     class Meta:
         model = InitPrestation
-        fields = ['reference', 'montant_total', 'remise', 'fait_par']
+        fields = ['reference', 'montant_total', 'remise']
 
 class PrestationForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):

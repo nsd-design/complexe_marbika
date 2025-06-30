@@ -243,6 +243,7 @@ def prestations(request):
     }
     return render(request, tmp + "prestations.html", context)
 
+
 def get_prix_service(request, service_id):
     if request.method == 'GET':
         try:
@@ -257,36 +258,59 @@ def get_prix_service(request, service_id):
     return JsonResponse({"error": "Méthode non autorisée"}, status=405)
 
 
+@require_http_methods(["POST"])
 def add_prestation(request):
-    if request.method == "POST":
-        try:
-            form = PrestationForm(request.POST)
-            if form.is_valid():
-                service = form.cleaned_data['service']
-                fait_par = form.cleaned_data['fait_par']
-                montant_a_payer = form.cleaned_data['montant_a_payer']
-                montant_reduit = form.cleaned_data['montant_reduit']
+    try:
+        data = json.loads(request.body)
 
-                new_prestation = Prestation.objects.create(
-                    service=service,
-                    montant_a_payer=montant_a_payer,
-                    montant_reduit=montant_reduit,
-                    fait_par=fait_par
-                )
-                pres = {
-                    "service": new_prestation.service.designation,
-                    "prestateur": new_prestation.fait_par.email,
-                    "montant": new_prestation.montant_a_payer,
-                    "reduction": new_prestation.montant_reduit,
-                    "net_paye": new_prestation.montant_a_payer - new_prestation.montant_reduit
-                }
+        prestations_faites = data.get("prestations", [])
+        remise = escape(data.get("remise", 0))
+        id_client = escape(data.get("client"))
 
-                return JsonResponse({"msg": "Prestation enregistrée", "prestation": pres})
+        with transaction.atomic():
+            prestation_saved = False # Flag pour savoir si chacune des prestations a été enregistré sans interruption
 
-        except Exception as e:
-            print("add prestation", e)
-    else:
-        JsonResponse({"error": "Methode non autorisée"}, status=405)
+            # Check if Client exists
+            current_client = Client.objects.get(id=id_client) if id_client else None
+
+            # Init New Prestation
+            init_prestation = InitPrestation(montant_total=0, remise=remise, client=current_client)
+            init_prestation.reference = f"PS-{init_prestation.id.hex[:8].upper()}"
+            init_prestation.save()
+
+            montant_total = 0
+
+            for prestation in prestations_faites:
+
+                id_service = escape(prestation.get("idService"))
+                prix_service = escape(prestation.get("prixService"))
+                id_prestataire = escape(prestation.get('prestataire'))
+                current_service = Service.objects.get(id=id_service)
+
+                prestataire = Employe.objects.get(id=id_prestataire)
+
+                # Enregistré la Prestation
+                Prestation.objects.create(service=current_service, prix_service=prix_service, init_prestation=init_prestation,
+                                          fait_par=prestataire
+                                          )
+
+                montant_total += int(prix_service)
+
+                prestation_saved = True # True, pour dire la Prestation a bien été enregistré, sinon il reste sur False
+                # Et toutes les operations dans ce block sont annulées
+
+        # Mise à jour du prix total de la Prestation
+        init_prestation.montant_total = montant_total
+        init_prestation.save()
+        if not prestation_saved:
+            return JsonResponse({"error": True, "msg": "Impossible de valider la Prestation, une erreur s'est produite."})
+
+        return JsonResponse({"success": True, "msg": "Prestation enregistrée avec succès"}, status=200)
+
+    except Exception as e:
+        print(e)
+        return JsonResponse({"error": True, "msg": str(e)}, status=400)
+
 
 def produits(request):
     form = ProduitForm()

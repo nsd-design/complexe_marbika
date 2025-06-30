@@ -33,7 +33,6 @@ class InitPrestation(MyBaseModel):
     reference = models.CharField(max_length=20, unique=True, blank=True)
     montant_total = models.BigIntegerField()
     remise = models.BigIntegerField(default=0)
-    fait_par = models.ForeignKey("employe.Employe", null=True, on_delete=models.SET_NULL, related_name="prestations_realisees")
     client = models.ForeignKey(Client, null=True, on_delete=models.SET_NULL)
 
     def __str__(self):
@@ -44,6 +43,8 @@ class Prestation(MyBaseModel):
     service = models.ForeignKey(Service, on_delete=models.SET_NULL, null=True)
     prix_service = models.BigIntegerField()
     init_prestation = models.ForeignKey(InitPrestation, on_delete=models.CASCADE)
+    fait_par = models.ForeignKey("employe.Employe", null=True, on_delete=models.SET_NULL,
+                                 related_name="prestations_realisees")
 
     def __str__(self):
         return f"{self.service.designation} - {self.fait_par.first_name} {self.fait_par.last_name} - InitPrest: {self.init_prestation}"

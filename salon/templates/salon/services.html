@@ -323,7 +323,7 @@
           dataType: 'json',
           success: function(res){
             $('#response-message').text(res.msg);
-            $('#response-message').addClass('show');
+            $('#response-message').addClass('show').fadeIn();
 
               // Recharger la table Category pour avoir les nouvelles DATA
               tableCategory.ajax.reload();
@@ -342,7 +342,7 @@
           error: function(xhr){
               const errorResponse = xhr.responseJSON ? xhr.responseJSON.error : 'Erreur serveur.';
               $('#response-message').text(`Erreur: ${errorResponse}`);
-              $('#response-message').removeClass('bg-success').addClass('bg-warning').addClass('show');
+              $('#response-message').removeClass('bg-success').addClass('bg-warning').addClass('show').fadeIn();
               // Faire disparaître après 3 secondes (3000 ms)
               setTimeout(function () {
                   $('#response-message').removeClass('show').fadeOut();
@@ -403,7 +403,7 @@
             success: function(res){
                 if(res.success){
                   $("#response-message-service").text(res.msg);
-                  $("#response-message-service").addClass('show');
+                  $("#response-message-service").addClass('show').fadeIn();
                   $("#service-form")[0].reset();
 
                   // Recharger la table Service
@@ -484,7 +484,7 @@
             success: function(res){
                 if(res.success){
                   $("#update-response").text(res.msg);
-                  $("#update-response").addClass('show');
+                  $("#update-response").addClass('show').fadeIn();
                   $("#formUpdateService")[0].reset();
 
                   // Recharger la table Service
@@ -499,7 +499,7 @@
             error: function(err){
                 $("#response-message-service").text(err.error);
                 $("#response-message-service").removeClass('bg-success');
-                $("#response-message-service").addClass('bg-danger').addClass('show');
+                $("#response-message-service").addClass('bg-danger').addClass('show').fadeIn();
 
                 setTimeout(function () {
                      $("#response-message-service").removeClass('show').fadeOut();
