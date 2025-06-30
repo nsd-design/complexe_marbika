@@ -29,13 +29,21 @@
               <div class="accordion-body">
                 <!-- Row starts -->
                 <div class="row">
+
                     <!-- Liste Clients -->
-                    <div class="my-2 col-12 col-md-8 col-lg-8">
+                    <div class="my-2 col-12 col-md-4 col-lg-4">
                         <label class="form-label" for="clients-select">Liste des Clients</label>
                         <select class="form-select bg-secondary" id="clients-select"
                                 aria-label="Default select example">
                             <option value="">-- Selectionner un Client --</option>
                         </select>
+                    </div>
+                    <!-- End Liste Clients-->
+                    <!-- Zone d'affichage des messages -->
+                    <div id="response-message-service" class="alert text-white alert-dismissible fade" role="alert">
+                        
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"
+                          aria-label="Close"></button>
                     </div>
                   <div class="col-12">
                     <div class="table-outer">
@@ -45,6 +53,7 @@
                             <tr>
                               <th colspan="7" class="pt-3 pb-3">
                                 Choisissez les Services
+                                {% csrf_token %}
                               </th>
                             </tr>
                             <tr>
@@ -55,10 +64,10 @@
                             </tr>
                           </thead>
                           <tbody id="tBodyCreatePrestations">
-                            <tr class="rowPrestation">
+                            <tr class="rowPrestation" id="row-1">
                               <td>
                                 <!-- Form group starts Liste des Services -->
-                                <select class="form-select selServices">
+                                <select class="form-select selServices" id="1">
                                 </select>
                                 <!-- Form group ends -->
                               </td>
@@ -71,7 +80,7 @@
                               <td>
                                 <!-- Form group starts -->
                                 <div class="input-group m-0">
-                                  <input type="text" class="form-control prix">
+                                  <input type="number" disabled class="form-control prix">
                                   <span class="input-group-text">
                                     <span>GNF</span>
                                   </span>
@@ -98,7 +107,7 @@
                                     <label class="col-form-label" for="remise">Remise</label>
                                   </div>
                                   <div class="col-auto">
-                                    <input type="text" class="form-control" id="remise" >
+                                    <input type="number" value="0" class="form-control" id="remise" min="0" >
                                   </div>
                                 </div>
                               </td>
@@ -108,12 +117,12 @@
                               <td>
                                 <p class="m-0">Sous-total</p>
                                 <p class="m-0">Remise</p>
-                                <h5 class="mt-2 text-danger">Total GNF</h5>
+                                <h5 class="mt-2 text-danger">Total</h5>
                               </td>
                               <td>
-                                <p class="m-0">GNF</p>
-                                <p class="m-0">GNF</p>
-                                <h5 class="mt-2 text-success">GNF</h5>
+                                <p class="m-0" id="subtotalValue">GNF</p>
+                                <p class="m-0" id="remiseValue">GNF</p>
+                                <h5 class="mt-2 text-success" id="totalValue">GNF</h5>
                               </td>
                             </tr>
                           </tbody>
@@ -122,11 +131,11 @@
                     </div>
                   </div>
                   <div class="col-12">
-                    <div class="invoice-footer">
-                      <div class="text-end mt-3">
-                        <a href="invoice-list.html" class="btn btn-primary me-2">Valider</a>
-                        <button id="cancel" class="btn btn-secondary">Annuler</button>
-                      </div>
+                     <div class="invoice-footer">
+                          <div class="text-end mt-3">
+                            <button id="submitPrestations" class="btn btn-primary me-2">Valider</button>
+                            <button id="cancel" class="btn btn-secondary">Annuler</button>
+                          </div>
                     </div>
                   </div>
                 </div>
@@ -151,7 +160,7 @@
                         <tr>
                             <th>#</th>
                             <th>Services</th>
-                            <th>Prestateurs</th>
+                            <th>Prestataires</th>
                             <th>Montant</th>
                             <th>Reduction</th>
                             <th>Net Payé</th>
@@ -221,6 +230,25 @@
 
         });
 
+        // Calculer le montant de la Prestation
+        function calculerMontant(){
+            let subtotal = 0
+            $(".rowPrestation").each(function(){
+                let prix_service = Number($(this).find(".prix").val()) || 0
+                let remise = Number($("#remise").val()) || 0
+
+                subtotal += prix_service
+                let total = subtotal - remise
+
+                $("#subtotalValue").text(subtotal.toLocaleString() + " GNF")
+                $("#remiseValue").text(remise.toLocaleString() + " GNF")
+                $("#totalValue").text(total.toLocaleString() + " GNF")
+            })
+        }
+
+        // Cette variable sera utilisée comme ID des Select de Service, elle est incrémentée à chaque nouvel ajout de ligne de prestation
+        var idSelService = 0;
+
         // Recuperer les Services depuis la View 'prestations'
         let tabServices = []
         {% for service in services %}
@@ -233,13 +261,19 @@
         {% endfor %}
 
         // Charger La liste de select des Services
-        const $selServices = $(".selServices").first()
-        $selServices.empty(); // Vider l'ancien contenu
-        $selServices.append(new Option("-- Sélectionnez un Service --", "", true, true));
+        function fillSelectService(){
+            const $selServices = $(".selServices").first()
+            idSelService += 1;
+            $selServices.attr("id", idSelService)
+            $selServices.attr("name", idSelService)
+            $selServices.empty(); // Vider l'ancien contenu
+            $selServices.append(new Option("-- Sélectionnez un Service --", "", true, true));
 
-        tabServices.forEach(function(service){
-            $selServices.append(new Option(service.designation, service.id));
-        });
+            tabServices.forEach(function(service){
+                $selServices.append(new Option(service.designation, service.id));
+            });
+        }
+        fillSelectService()
 
         // Recuperer les Prestataires depuis la View 'prestations'
         const $selPrestataires = $(".selPrestataires").first()
@@ -249,7 +283,7 @@
                 tabPrestataires.push({
                     "full_name": "{{ prestataire.first_name }} {{ prestataire.last_name}}",
                     "objPrestataire": "{{ prestataire }}",
-                    "{{ prestataire.id }}": "{{ prestataire.id }}",
+                    "id": "{{ prestataire.id }}",
                 })
             {% endfor %}
 
@@ -257,21 +291,36 @@
             prestationSelect.append(new Option("-- Sélectionnez un Prestataire --", "", true, true));
 
             tabPrestataires.forEach(function(prestataire){
-                prestationSelect.append(new Option(prestataire.full_name, prestataire.objPrestataire));
+                prestationSelect.append(new Option(prestataire.full_name, prestataire.id));
             });
         }
         fillPrestationSelect($selPrestataires)
+
+        // Va contenir l'id des lignes de prestations
+        var tabRowId = ["row-1"] // initialiser avec l'id de la ligne "tr" presente dès le chargement de la page
 
         // Charger le prix du service selon le service selectionné
         $("#tBodyCreatePrestations").on("change", ".selServices", function(){
             const idService = $(this).val()
             const $tr = $(this).closest("tr");
+            const $idSelectedService = $(this).attr("id")
 
             // Retrouver l'objet de la ligne de service dans tabServices
             let serviceTrouve = tabServices.find(service => service.id == idService)
 
             const $inputPrix = $tr.find(".prix")
             $inputPrix.val(serviceTrouve.prix)
+
+            // Mettre a jour les Montant total, le sous-total et la remise
+            calculerMontant()
+
+        })
+
+        $("#remise").on("keyup", function(){
+            // Mettre a jour les Montant total, le sous-total et la remise à chaque modification de la remise
+            if($("#remise").val()){
+                calculerMontant()
+            }
         })
 
         function getCSRFToken(){
@@ -279,44 +328,41 @@
             return csrfToken ? csrfToken.value : "";
         }
 
-        $("#prestation-form").submit(function(e){
-            e.preventDefault();
-            $.ajax({
-                url: $(this).attr('action'),
-                method: "POST",
-                headers: { 'X-CSRFToken': getCSRFToken() },
-                data: $(this).serialize(),
-                success: function(res){
-                    $("#response-message").text(res.msg);
-                    $("#response-message").addClass('show');
-                    // Reinitialiser le formulaire
-                    $("#prestation-form")[0].reset();
-
-                   setTimeout(function () {
-                    $("#response-message").removeClass('show').fadeOut();
-                   }, 3000);
-                },
-                error: function(err){
-                    //$("#id_montant_a_payer").val("")
-                },
-            })
-        })
 
         // Ajouter une nouvelle ligne de Prestation
         $("#ajouterLignePrestation").on("click", function(){
             const $clonedRowPrestation = $(".rowPrestation").first().clone(true)
             const $inputPrix = $clonedRowPrestation.find(".prix")
             $inputPrix.val("")
+
+            const $selService = $clonedRowPrestation.find(".selServices")
+            idSelService += 1;
+            $selService.attr("id", idSelService)
+            $selService.attr("name", idSelService)
+
+            let rowId = "row-" + idSelService // Forme l'id de la ligne "tr", l'incrémentation est faite à chaque ajout de nouvelle ligne
+            $clonedRowPrestation.attr("id", rowId)
+
+            // Contient l'ID des Row "tr" de prestations
+            tabRowId.push(rowId)
+
             $("#ligneRemise").before($clonedRowPrestation)
         })
 
         // Supprimer une ligne de prestation
-        $("#tBodyCreatePrestations").on("click", ".removeRow", function(){
-            const $currentRow = $(this).closest("tr");
+        $(document).on("click", ".removeRow", function(){
+            const $currentRow = $(this).closest(".rowPrestation");
+            const $rowId = $currentRow.attr("id")
+            if(tabRowId.length > 1){
+                $currentRow.remove(); // Supprimer la ligne, "row du tableau"
+                tabRowId = tabRowId.filter(id => id != $rowId)
+            }else if(tabRowId.length == 1){
+                $("#cancel").trigger('click')
+            }
 
-            $currentRow.slideUp(300, function(){
-                $currentRow.remove(); // Supprimer, Apres l'animation
-            });
+            setTimeout(()=>{
+                calculerMontant()
+            }, 300)
         })
 
         // Annuler
@@ -332,12 +378,11 @@
                 method: 'GET',
                 success: function(data){
                     $select.empty(); // Vider l'ancien contenu
-                     $select.append(new Option("-- Selectionner un Client --", "", true, true));
+                     $select.append(new Option("-- Sélectionner un Client --", "", true, true));
                     data.data.forEach(function(client){
                         $select.append(new Option(`${client.nom_complet} - ${client.telephone ? client.telephone : ""}`, client.id));
                     });
                     $select.select2({
-
                         allowClear: true
                     });
 
@@ -349,6 +394,78 @@
             });
         }
         chargerClients();
+
+        // Soumettre l'enregistrement d'une Prestation
+        $("#submitPrestations").on("click", function(){
+            let tabPrestations = []
+
+            $(".rowPrestation").each(function(){
+                let id_selService = $(this).find(".selServices").attr("id")
+                let $currentSelect = $(this).find("select").attr("id");
+                let id_service = $(this).find(".selServices").val()
+                let prix_service = $(this).find(".prix").val()
+                let prestataire = $(this).find(".selPrestataires").val()
+
+                if(id_selService && id_service && prix_service && prestataire){
+                    tabPrestations.push({"idService" : id_service, "prixService" : prix_service, "prestataire" : prestataire, "idSelect": $currentSelect})
+                }
+            })
+
+            let remise = $("#remise").val() || 0;
+            let client = $("#clients-select").val();
+
+            data = {
+                prestations: tabPrestations,
+                remise: remise,
+                client: client
+            }
+
+            if(data.prestations.length <= 0){
+                $("#response-message-service").text("Vous devez sélectionner au moins un Service.")
+                $('#response-message-service').addClass('bg-danger show').fadeIn();
+                setTimeout(function(){
+                    $("#response-message-service").removeClass('show bg-danger').fadeOut();
+                }, 3500)
+                return
+            }
+
+            if(!data.client){
+                $("#response-message-service").text("Veuillez sélectionner un Client.")
+                $('#response-message-service').addClass('bg-danger show').fadeIn();
+                setTimeout(function(){
+                    $("#response-message-service").removeClass('show bg-danger').fadeOut();
+                }, 3500)
+                return
+            }
+
+            const url = "/salon/prestations/add/";
+
+            $.ajax({
+              url: url,
+              method: "POST",
+              headers: { 'X-CSRFToken': getCSRFToken() },
+              data: JSON.stringify(data),
+              contentType: "application/json",
+              success: function(res){
+                $("#response-message-service").text(res.msg)
+                $('#response-message-service').addClass('bg-success show').fadeIn();
+                setTimeout(function(){
+                    $("#response-message-service").removeClass('show bg-success').fadeOut();
+                }, 3000)
+
+                // Refresh la page pour réinitialiser les champs
+                $("#cancel").trigger('click')
+              },
+              error: function(err){
+                $("#response-message-service").text(err.msg)
+                $('#response-message-service').addClass('bg-danger show').fadeIn();
+                setTimeout(function(){
+                    $("#response-message-service").removeClass('show bg-danger').fadeOut();
+                }, 3500)
+              }
+            })
+
+        })
     })
 </script>
 {% endblock %}
