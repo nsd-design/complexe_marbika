@@ -159,31 +159,16 @@
                         <thead>
                         <tr>
                             <th>#</th>
-                            <th>Services</th>
-                            <th>Prestataires</th>
-                            <th>Montant</th>
-                            <th>Reduction</th>
+                            <th>Reference</th>
+                            <th>Client</th>
+                            <th>Montant Total</th>
+                            <th>Remise</th>
                             <th>Net Payé</th>
                             <th>Actions</th>
                         </tr>
                         </thead>
                         <tbody>
-                        {% for prestation in prestation_list %}
-                        <tr>
-                            <td></td>
-                            <td>
-                                {{ prestation.service }}
-                            </td>
-                            <td>{{ prestation.fait_par }}</td>
-                            <td>{{ prestation.montant_a_payer | currency }}</td>
-                            <td>{{ prestation.montant_reduit | currency }}</td>
-                            <td class="text-primary">{{ prestation.montant_paye | currency }}</td>
-                            <td>
-                                <a class="btn btn-danger btn-sm" href="#"><i class="bi bi-pencil"></i>
-                                </a>
-                            </td>
-                        </tr>
-                        {% endfor %}
+                        <!--Contenu chargé via Ajax-->
 
                         </tbody>
                     </table>
@@ -202,32 +187,34 @@
 {% endblock %}
 <script>
     $(document).ready(function(){
-
-        $("#table-prestation").DataTable({
-            language: {
-                processing: "Traitement en cours...",
-                search: "Rechercher&nbsp;:&nbsp;",
-                lengthMenu:    "Afficher _MENU_ &eacute;l&eacute;ments",
-                info:           "Affichage de l'&eacute;lement _START_ &agrave; _END_ sur _TOTAL_ &eacute;l&eacute;ments",
-                infoEmpty:      "Affichage de l'&eacute;lement 0 &agrave; 0 sur 0 &eacute;l&eacute;ments",
-                loadingRecords: "Chargement en cours...",
-                zeroRecords:    "Aucun &eacute;l&eacute;ment &agrave; afficher",
-                emptyTable:     "Aucune donnée disponible dans le tableau",
-                aria: {
-                    sortAscending:  ": activer pour trier la colonne par ordre croissant",
-                    sortDescending: ": activer pour trier la colonne par ordre décroissant"
-                }
+        var table_prestation = $("#table-prestation").DataTable({
+            ajax: {
+                url: '/salon/get_prestations/',
+                dataSrc: 'data',
             },
-            "columnDefs": [{
+            columns: [
+                {
+                    data: null,
+                    render: function(data, type, row, meta){
+                        return meta.row + 1;
+                      }
+                },
+                { data: 'reference' },
+                { data: 'client' },
+                { data: 'total' },
+                { data: 'remise' },
+                { data: 'net_paye' },
+                { data: 'actions' },
+            ],
+             columnDefs: [{
                 "targets": 0,
                 "searchable": false,
                 "orderable": false
             }],
-            "order": [],
-            "rowCallback": function(row, data, index){
+            order: [],
+            rowCallback: function(row, data, index){
                 $('td:eq(0)', row).html(index + 1)
             },
-
         });
 
         // Calculer le montant de la Prestation

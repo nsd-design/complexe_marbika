@@ -13,6 +13,7 @@ urlpatterns = [
     path("prix/", prix_services, name="prix_services"),
     path("prix/add/", add_prix_service, name="add_prix_services"),
     path("prestations/", prestations, name="prestations"),
+    path("get_prestations/", get_prestations, name="get_prestations"),
     path("prestations/add/", add_prestation, name="add_prestations"),
     path("prestations/<str:service_id>/", get_prix_service, name="get_prix_service"),
     path("produits/", produits, name="produits"),

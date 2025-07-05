@@ -220,28 +220,42 @@ def add_prix_service(request):
 
 
 def prestations(request):
-    total_paye = 0
 
-    prestations_list = InitPrestation.objects.annotate(
-        montant_paye=F("montant_total") - F("remise")
-    ).order_by("-created_at")
-
-    if prestations_list:
-        total_paye = prestations_list.aggregate(total=Sum("montant_paye"))['total']
-        total_paye = "{:,.0f} GNF".format(total_paye).replace(",", " ")
-
-    services = Service.objects.all()
+    qs_services = Service.objects.all()
     prestataires = Employe.objects.all()
 
     context= {
         "form": PrestationForm(),
-        "services":  services if services else [],
+        "services":  qs_services if qs_services else [],
         "prestataires": prestataires if prestataires.exists else [],
         "page_title": "Prestations",
-        "prestation_list": prestations_list if prestations_list.exists else None,
-        "total_paye": total_paye
     }
     return render(request, tmp + "prestations.html", context)
+
+
+@require_http_methods(["GET"])
+def get_prestations(request):
+    try:
+        list_init_prestations = InitPrestation.objects.all()
+        data: list = []
+        for prestation in list_init_prestations:
+            remise = float(prestation.remise)
+            montant_total = float(prestation.montant_total)
+            net_paye = float(prestation.montant_total) - float(prestation.remise)
+            data.append({
+                "reference": prestation.reference,
+                "total": "{:,.0f} GNF".format(montant_total).replace(",", " "),
+                "remise": "{:,.0f} GNF".format(remise).replace(",", " "),
+                "client": f'<p>{prestation.client.nom_complet}<br><span class="badge border border-info text-body">{prestation.client.telephone}</span></p>' if prestation.client else "",
+                "net_paye": "{:,.0f} GNF".format(net_paye).replace(",", " "),
+                "actions": f'<a href="#" class="text-danger details"><i class="bi bi-box-arrow-up-right fs-5"></i></a>',
+            })
+
+        return JsonResponse({"success": True, "data": data})
+    except InitPrestation.DoesNotExist:
+        return JsonResponse({"error": True, "msg": "Aucune données disponible."})
+
+
 
 
 def get_prix_service(request, service_id):
