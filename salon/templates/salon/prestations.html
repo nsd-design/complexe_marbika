@@ -148,7 +148,7 @@
     </div>
   </div>
 
-    <div class="card mb-4">
+    <div class="card mb-4 col-12 col-sm-12 col-xl-8">
         <div class="card-header">
             <h5 class="card-title">Liste des Prestations</h5>
         </div>
@@ -176,6 +176,59 @@
             </div>
         </div>
     </div>
+
+    <!-- Ticket -->
+    <div class="col-xl-4 col-sm-12">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title" id="cardTitle">Ticket</h5>
+            </div>
+            <div class="card-body scroll350 overflow-auto" id="bodyCardTicket">
+                <div class="m-auto p-2" style="width: 303px; background-color: #fff">
+                    <div class="text-center" id="logoMarbika">
+                        <img src="{% static 'assets/images/LogoMarbika.png' %}" alt="Logo Marbika" class="img-fluid m-2"
+                             style="width: 100px">
+                    </div>
+                    <div id="infoPrestation" class="my-2 " style="color: #000;">
+                        <p class="my-0 fw-bold lh-lg">Prestation : <span class="fw-normal" id="referencePS"></span></p>
+                        <p class="my-0 fw-bold lh-lg">Client : <span class="fw-normal" id="nomClient"></span></p>
+                        <p class="my-0 fw-bold lh-lg">Telephone : <span class="fw-normal" id="telephoneClient"></span></p>
+                        <p class="my-0 fw-bold lh-lg">Date : <span class="fw-normal" id="datePrestation"></span></p>
+                    </div>
+                    <table id="tabTicketPrestation" class="col-12 col-xl-12 mt-3" style="color: #000">
+                        <thead style="border-top: 1px dashed black; border-bottom: 1px dashed black; color: #000;">
+                        <tr>
+                            <th class="border-end py-2">Designation</th>
+                            <th class="text-center">Prix</th>
+                        </tr>
+                        </thead>
+                        <tbody id="prestationServices">
+
+                        </tbody>
+                    </table>
+                    <!-- Zone d'affichage des Montants (Sous-total, remise, total)-->
+                    <div class="col-12 d-flex justify-content-between mt-5" id="ticketFooter">
+                        <div class="fw-bold text-black" id="divLib">
+                            <p class="m-0" id="libSousTotal"></p>
+                            <p class="m-0" id="libRemise"></p>
+                            <p class="m-0" id="libNetPayer"></p>
+                        </div>
+                        <div class="text-black" id="divVal">
+                            <p class="m-0" id="valSousTotal"></p>
+                            <p class="m-0" id="valRemise"></p>
+                            <p class="m-0" id="valNetPayer"></p>
+                        </div>
+                    </div>
+
+                    <!-- Zone d'affichage du code-barre -->
+                    <div id="barcode-container" class="mt-5" hidden="hidden">
+                        <svg id="barcode" class="col-12 col-xl-12"></svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Ticket-->
 </div>
 <!-- Row ends -->
 
@@ -184,6 +237,7 @@
 <script src="{% static 'assets/js/jquery.min.js' %}"></script>
 <script src="{% static 'assets/js/datatables.min.js' %}"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script defer src="{% static 'assets/js/JsBarcode.all.min.js' %}"></script>
 {% endblock %}
 <script>
     $(document).ready(function(){
@@ -454,5 +508,106 @@
 
         })
     })
+</script>
+<script defer>
+    $(document).ready(function(){
+
+        $(document).on("click", ".showTicket", function(e){
+            e.preventDefault()
+
+            const url = $(this).attr("href")
+
+            // Extraire id prestation
+            let parts = url.split("/")
+            let id_prestation = parts[4]
+
+            if(id_prestation){
+                $.ajax({
+                    url: url,
+                    method: "GET",
+                    dataType: 'json',
+                    success: function(res){
+                        let data = res.data
+                        const $prestationComponent = createTicketComponent(data);
+
+                        $('#bodyCardTicket').html($prestationComponent);
+                        $("#prestationServices").css({
+                          "border-bottom": "1px dashed #000"
+                        })
+
+                        ajouterFooterFacture(data.total, data.remise, data.net_paye, data.reference)
+
+                        $("#barcode-container").attr("hidden", false);
+                        JsBarcode("#barcode", res.data.reference, {
+                            format: "CODE128",
+                            lineColor: "#000",
+                            width: 2,
+                            height: 40,
+                            displayValue: true,
+                            fontSize: 16,
+                            margin: 10
+                        });
+
+                    },
+                    error: function(err){
+                        console.log(err)
+                    },
+                })
+            }
+
+        })
+
+        function createTicketComponent(prestation) {
+
+            $("#referencePS").text(prestation.reference)
+            $("#datePrestation").text(prestation.date)
+            $("#nomClient").text(prestation.nom_client)
+            $("#telephoneClient").text(prestation.tel_client)
+
+            if (Array.isArray(prestation.services)) {
+                $("#prestationServices").empty()
+                prestation.services.forEach(item => {
+                    const $row = $('<tr>').append(
+                        $('<td>', { class: ' py-1', text: item.designation }),
+                        $('<td>', { class: ' text-center', text: item.prix.toLocaleString() + " GNF" }),
+                    );
+                    $("#prestationServices").append($row);
+                });
+            }
+
+        } // End createTicketComponent
+
+        function ajouterFooterFacture(total, remise, netPayer, reference){
+            let divFooter = $("#ticketFooter")
+
+            // Libelles
+            //let libSousTotal = $("<p>").addClass("m-0").text('Sous-total')
+            //let libRemise = $("<p>").addClass("m-0").text("Remise")
+            //let libTotalPayer = $("<p>").addClass("m-0").text("Total à payer")
+            //let divLib = $("<div>").css({"color": "#000"}).addClass("fw-bold")
+            //divLib.append(libSousTotal, libRemise, libTotalPayer)
+
+            // Valeurs
+            //let valSousTotal = $("<p>").addClass("m-0").text(montant.toLocaleString() + " GNF")
+            //let valRemise = $("<p>").addClass("m-0").text(reduction.toLocaleString() + " GNF")
+            //const total = montant - reduction
+            //let valTotalPayer = $("<p>").addClass("m-0").text(total.toLocaleString() + " GNF")
+            //let divVal = $("<div>").css({"color": "#000"})
+            //divVal.append(valSousTotal, valRemise, valTotalPayer)
+
+            //divFooter.html(divLib, divVal)
+            //$("#tabDetailsCommande").after(divFooter)
+
+            $("#libSousTotal").text("Sous-total")
+            $("#libRemise").text("Remise")
+            $("#libNetPayer").text("Total à payer")
+            $("#valSousTotal").text(total.toLocaleString() + " GNF")
+            $("#valRemise").text(remise.toLocaleString() + " GNF")
+            $("#valNetPayer").text(netPayer.toLocaleString() + " GNF")
+
+        }
+
+    })
+
 </script>
 {% endblock %}
