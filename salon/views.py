@@ -248,7 +248,7 @@ def get_prestations(request):
                 "remise": "{:,.0f} GNF".format(remise).replace(",", " "),
                 "client": f'<p>{prestation.client.nom_complet}<br><span class="badge border border-info text-body">{prestation.client.telephone}</span></p>' if prestation.client else "",
                 "net_paye": "{:,.0f} GNF".format(net_paye).replace(",", " "),
-                "actions": f'<a href="#" class="text-danger details"><i class="bi bi-box-arrow-up-right fs-5"></i></a>',
+                "actions": f'<a href="/salon/prestations/details/{prestation.id}" class="text-danger showTicket"><i class="bi bi-box-arrow-up-right fs-5"></i></a>',
             })
 
         return JsonResponse({"success": True, "data": data})
@@ -256,6 +256,41 @@ def get_prestations(request):
         return JsonResponse({"error": True, "msg": "Aucune données disponible."})
 
 
+# Get Services inclus dans une Prestation
+@require_http_methods(["GET"])
+def get_prestation_details(request, id_prestation):
+    try:
+        prestation = InitPrestation.objects.get(id=id_prestation)
+        prestation_services = Prestation.objects.filter(init_prestation=prestation)
+
+        list_service: list = []
+        for service in prestation_services:
+            list_service.append({
+                "designation": service.service.designation,
+                "prix": service.service.prix_service,
+            })
+
+        data = {
+            "reference": prestation.reference,
+            "nom_client": prestation.client.nom_complet if prestation.client else "",
+            "tel_client": prestation.client.telephone if prestation.client else "",
+            "date": prestation.created_at.strftime("%d/%m/%Y %H:%M"),
+            "total": prestation.montant_total,
+            "remise": prestation.remise,
+            "net_paye": prestation.montant_total - prestation.remise,
+            "services": list_service,
+        }
+
+        return JsonResponse({"success": True, "data": data}, status=200)
+
+    except Prestation.DoesNotExist:
+        return JsonResponse({"error": True, "msg": "Cette Prestation ne contient aucun Service"}, status=404)
+
+    except InitPrestation.DoesNotExist:
+        return JsonResponse({"error": True, "msg": "Aucune donnée pour cette prestation"}, status=404)
+    except Exception as e:
+        print("Erreur inattendue", str(e))
+        return JsonResponse({"error": True, "msg": "Erreur inattendue"}, status=400)
 
 
 def get_prix_service(request, service_id):
