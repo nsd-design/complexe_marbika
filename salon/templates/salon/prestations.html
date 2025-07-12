@@ -180,11 +180,12 @@
     <!-- Ticket -->
     <div class="col-xl-4 col-sm-12">
         <div class="card mb-4">
-            <div class="card-header">
+            <div class="d-flex justify-content-between card-header">
                 <h5 class="card-title" id="cardTitle">Ticket</h5>
+                <button id="btnPrintTicket" class="dt-button buttons-print" tabindex="0" aria-controls="customButtons" type="button"><span>Print</span></button>
             </div>
             <div class="card-body scroll350 overflow-auto" id="bodyCardTicket">
-                <div class="m-auto p-2" style="width: 303px; background-color: #fff">
+                <div class="m-auto p-2" style="width: 303px; background-color: #fff" id="printTicket">
                     <div class="text-center" id="logoMarbika">
                         <img src="{% static 'assets/images/LogoMarbika.png' %}" alt="Logo Marbika" class="img-fluid m-2"
                              style="width: 100px">
@@ -228,6 +229,8 @@
             </div>
         </div>
     </div>
+    <iframe id="printFrame" style="display:none;"></iframe>
+
     <!-- End Ticket-->
 </div>
 <!-- Row ends -->
@@ -238,7 +241,73 @@
 <script src="{% static 'assets/js/datatables.min.js' %}"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script defer src="{% static 'assets/js/JsBarcode.all.min.js' %}"></script>
+<script src="https://printjs-4de6.kxcdn.com/print.min.js"></script>
+
+
 {% endblock %}
+<script>
+    $(document).ready(function(){
+        $("#btnPrintTicket").on("click", function () {
+    const iframe = document.getElementById("printFrame");
+    const doc = iframe.contentWindow.document;
+    const contenu = document.getElementById("printTicket").innerHTML;
+
+    doc.open();
+    doc.write(`
+        <html>
+        <head>
+            <title>Impression</title>
+            <style>
+                body {
+                    font-family: monospace;
+                    font-size: 11px;
+                    width: 180px;
+                    padding: 0;
+                    margin: 0;
+                    color: #000;
+                }
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-top: 15px;
+                }
+                th, td {
+                    padding: 2px 0;
+                }
+                th {
+                    border-bottom: 1px dashed #000;
+                }
+                svg {
+                    display: block;
+                    margin: 10px auto 0;
+                    width: 100%;
+                }
+                p {
+                    margin: 2px 0;
+                }
+                #ticketFooter{
+                    display: flex;
+                    justify-content: space-between;
+                }
+            </style>
+        </head>
+        <body>
+            ${contenu}
+        </body>
+        </html>
+    `);
+    doc.close();
+
+    setTimeout(() => {
+        iframe.contentWindow.focus();
+        iframe.contentWindow.print();
+    }, 100);
+});
+
+
+
+    })
+</script>
 <script>
     $(document).ready(function(){
         var table_prestation = $("#table-prestation").DataTable({
