@@ -132,12 +132,13 @@ class Approvisionnement(MyBaseModel):
 
 
 class Depense(MyBaseModel):
+    ligne_depense = [("RESTAURANT", "RESTAURANT"), ("SALON", "SALON")]
     motif = models.TextField()
     montant = models.BigIntegerField()
-    section = models.UUIDField(db_index=True)
+    section = models.CharField(choices=ligne_depense, max_length=10)
 
     def __str__(self):
-        return f"{self.montant} - {self.motif}"
+        return f"{self.montant} - {self.motif} - {self.section}"
 
 
 class InitAbonnementService(MyBaseModel):
