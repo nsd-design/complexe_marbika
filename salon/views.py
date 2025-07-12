@@ -1,3 +1,4 @@
+import http
 import json
 from datetime import datetime
 
@@ -10,9 +11,10 @@ from django.views.decorators.http import require_http_methods
 
 from client.models import Client
 from employe.models import Employe
-from salon.forms import ServiceForm, CategorieForm, PrixServiceForm, ProduitForm, ApproProduitForm, PrestationForm
+from salon.forms import ServiceForm, CategorieForm, PrixServiceForm, ProduitForm, ApproProduitForm, PrestationForm, \
+    DepensesForm
 from salon.models import CategorieService, Service, PrixService, Produit, Approvisionnement, Vente, \
-    ProduitVendu, Prestation, InitPrestation
+    ProduitVendu, Prestation, InitPrestation, Depense
 
 tmp = "salon/"
 
@@ -579,3 +581,51 @@ def get_ventes(request):
         return JsonResponse({"success": True, "data": list_ventes})
     except Exception as e:
         print(e)
+
+
+@require_http_methods(["GET"])
+def depenses(request):
+    context = {
+        "form": DepensesForm(),
+        "page_title": "Dépenses",
+    }
+    return render(request, tmp + "depenses.html", context)
+
+
+@require_http_methods(["GET"])
+def get_depenses(request):
+    try:
+        qs_depenses = Depense.objects.all()
+
+        list_depenses: list = []
+
+        for depense in qs_depenses:
+            border_color = "danger" if depense.section == "RESTAURANT" else "info"
+            montant = float(depense.montant)
+            list_depenses.append({
+                "motif": depense.motif,
+                "montant": f'<span class="text-danger">' +"-{:,.0f} GNF".format(montant).replace(",", " ") + '</span>',
+                "date": depense.created_at.strftime("%d/%m/%Y %H:%M"),
+                "section": f'<span class="badge border border-{border_color} text-{border_color}">{depense.section}</span>',
+            })
+        return JsonResponse({"success": True, "data": list_depenses})
+    except Depense.DoesNotExist:
+        return JsonResponse({"error": "Aucune dépense trouvée"})
+
+
+@require_http_methods(["POST"])
+def creer_depense(request):
+    try:
+        depense_form_submited = DepensesForm(request.POST)
+        if depense_form_submited.is_valid():
+            montant = depense_form_submited.cleaned_data["montant"]
+            motif = depense_form_submited.cleaned_data["motif"]
+            section = depense_form_submited.cleaned_data["section"]
+            Depense.objects.create(
+                motif=motif, montant=montant, section=section
+            )
+            return JsonResponse({"success": True, "msg": "Dépense enregistrée avec succès."}, status=http.HTTPStatus.CREATED)
+        else:
+            return JsonResponse({"error": True, "msg": "Données soumises sont invalides, veuillez réessayer."}, status=400)
+    except Exception as e:
+        return JsonResponse({"error": True, "msg": str(e)})
