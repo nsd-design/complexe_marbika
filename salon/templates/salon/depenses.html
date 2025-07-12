@@ -1,0 +1,205 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block page_title %} {{ page_title }} {% endblock %}
+{% block main %}
+<!-- Row starts -->
+<div class="row gx-4">
+    <div class="col-sm-12">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title">Enregistrer une nouvelle Dépense</h5>
+            </div>
+            <div class="card-body">
+                <div class="accordion" id="accordionSpecialTitle">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingSpecialTitleTwo">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#collapseSpecialTitleTwo" aria-expanded="false"
+                                    aria-controls="collapseSpecialTitleTwo">
+                                <div class="d-flex flex-column">
+                                    <h5 class="m-0">Nouvelle Dépense</h5>
+                                </div>
+                            </button>
+                        </h2>
+                        <div id="collapseSpecialTitleTwo" class="accordion-collapse collapse"
+                             aria-labelledby="headingSpecialTitleTwo" data-bs-parent="#accordionSpecialTitle">
+                            <div class="accordion-body">
+
+                                <!-- Row starts -->
+                                <form method="POST" action="{% url 'creer_depense' %}" class="row gx-4" id="depense-form">
+                                    {% csrf_token %}
+                                    <div class="col-xl-3 col-sm-4 col-12">
+                                        <div class="mb-3">
+                                            <label class="form-label" for="id_montant">Montant</label>
+                                            {{ form.montant | as_crispy_field }}
+                                        </div>
+                                    </div>
+                                    <div class="col-xl-3 col-sm-4 col-12">
+                                        <div class="mb-3">
+                                            <label class="form-label" for="id_motif">Motif</label>
+                                            {{ form.motif | as_crispy_field }}
+                                        </div>
+                                    </div>
+                                    <div class="col-xl-3 col-sm-4 col-12">
+                                        <div class="mb-3">
+                                            <label class="form-label" for="id_section">Section</label>
+                                            {{ form.section | as_crispy_field }}
+                                        </div>
+                                    </div>
+
+                                    <!-- Zone d'affichage des messages -->
+                                    <div id="response-message" class="alert bg-success text-white alert-dismissible fade" role="alert">
+
+                                      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"
+                                        aria-label="Close"></button>
+                                    </div>
+
+                                    <div class="col-sm-12 col-12">
+                                        <div class="d-flex gap-2 justify-content-center">
+                                            <button type="submit" class="btn btn-primary me-3">Enregistrer</button>
+                                            <button type="reset" class="btn btn-secondary">Annuler</button>
+                                        </div>
+                                    </div>
+                                </form>
+                                <!-- Row ends -->
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Row starts -->
+<div class="row gx-4">
+  <div class="col-sm-12">
+
+    <!-- Card starts -->
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title">Historique des Dépenses</h5>
+      </div>
+      <div class="card-body">
+
+        <!-- Table starts -->
+        <div class="table-bg">
+          <div class="table-responsive">
+            <table id="tableDepenses" class="table align-middle truncate">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Motifs Dépenses</th>
+                  <th>Montant</th>
+                  <th>Section</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Contenu chargé via AJAX -->
+
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <!-- Table ends -->
+
+      </div>
+    </div>
+    <!-- Card ends -->
+
+  </div>
+</div>
+<!-- Row ends -->
+
+<!-- Custom JS files -->
+{% block custom_js %}
+<script src="{% static 'assets/js/jquery.min.js' %}"></script>
+<script src="{% static 'assets/js/datatables.min.js' %}"></script>
+{% endblock %}
+<script>
+    $(document).ready(function(){
+
+        var tableEmploye = $("#tableDepenses").DataTable({
+            ajax: '/salon/depenses/list/',
+            columns: [
+                {
+                    data: null,
+                    render: function(data, type, row, meta){
+                        return meta.row + 1;
+                      }
+                },
+                { data: 'motif' },
+                { data: 'montant' },
+                { data: 'section' },
+                { data: 'date' }
+
+            ],
+            language: {
+                processing: "Traitement en cours...",
+                search: "Rechercher&nbsp;:&nbsp;",
+                lengthMenu:    "Afficher _MENU_ &eacute;l&eacute;ments",
+                info:           "Affichage de l'&eacute;lement _START_ &agrave; _END_ sur _TOTAL_ &eacute;l&eacute;ments",
+                infoEmpty:      "Affichage de l'&eacute;lement 0 &agrave; 0 sur 0 &eacute;l&eacute;ments",
+                loadingRecords: "Chargement en cours...",
+                zeroRecords:    "Aucun &eacute;l&eacute;ment &agrave; afficher",
+                emptyTable:     "Aucune donnée disponible dans le tableau",
+                aria: {
+                    sortAscending:  ": activer pour trier la colonne par ordre croissant",
+                    sortDescending: ": activer pour trier la colonne par ordre décroissant"
+                }
+            }
+        });
+
+        function getCSRFToken(){
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+            return csrfToken ? csrfToken.value : "";
+        }
+
+        $("#depense-form").on("submit", function(e){
+            e.preventDefault();
+
+            const actionUrl = $(this).attr('action');
+            let formData = new FormData(this);
+
+            $.ajax({
+                url: actionUrl,
+                method: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(res){
+                    console.log(res)
+                    if(res.success){
+                        $('#response-message').text(res.msg);
+                        $('#response-message').addClass('show').fadeIn();
+
+                        // Faire disparaître le message du success après 3 secondes (3000 ms)
+                        setTimeout(function () {
+                            $('#response-message').removeClass('show').fadeOut();
+                        }, 3000);
+
+                        $("#depense-form")[0].reset();
+                    }
+                },
+                error: function(xhr){
+                    console.log(xhr)
+                    const errorResponse = xhr.responseJSON ? xhr.responseJSON.msg : 'Erreur serveur.';
+                    $('#response-message').text(`Erreur: ${errorResponse}`);
+                    $('#response-message').removeClass('bg-success')
+                    $('#response-message').addClass('bg-warning show').fadeIn();
+                    // Faire disparaître après 3 secondes (3000 ms)
+                    setTimeout(function () {
+                        $('#response-message').removeClass('show').fadeOut();
+                        $('#response-message').removeClass('bg-warning');
+                    }, 3000);
+                }
+            })
+        })
+    })
+</script>
+<!-- Row ends -->
+{% endblock %}
+

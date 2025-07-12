@@ -1,5 +1,5 @@
 from django import forms
-from .models import CategorieService, Service, Prestation, PrixService, Produit, Approvisionnement, InitPrestation
+from .models import CategorieService, Service, Prestation, PrixService, Produit, Approvisionnement, InitPrestation, Depense
 
 
 class CategorieForm(forms.ModelForm):
@@ -82,3 +82,15 @@ class ApproProduitForm(forms.ModelForm):
     class Meta:
         model = Approvisionnement
         fields = ["produit", "quantite", "pau", "description"]
+
+
+class DepensesForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name in self.fields:
+            self.fields[field_name].label = ''
+
+
+    class Meta:
+        model = Depense
+        fields = ["motif", "montant", "section"]

@@ -25,4 +25,7 @@ urlpatterns = [
     path("produits/vente/", vente_produits, name="vente_produits"),
     path("produits/list_clients/", get_clients, name="list_clients"),
     path("produits/liste_ventes/", get_ventes, name="liste_ventes"),
+    path("depenses/", depenses, name="depenses"),
+    path("depenses/add/", creer_depense, name="creer_depense"),
+    path("depenses/list/", get_depenses, name="get_depenses"),
 ]
