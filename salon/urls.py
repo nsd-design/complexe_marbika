@@ -28,4 +28,5 @@ urlpatterns = [
     path("depenses/", depenses, name="depenses"),
     path("depenses/add/", creer_depense, name="creer_depense"),
     path("depenses/list/", get_depenses, name="get_depenses"),
+    path("depenses/calcul_depenses/", depense_semaine_mois_annee, name="calcul_depenses"),
 ]

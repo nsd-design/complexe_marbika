@@ -5,6 +5,78 @@
 {% block page_title %} {{ page_title }} {% endblock %}
 {% block main %}
 <!-- Row starts -->
+<div class="row gx-4 mb-4">
+  <div class="col-sm-12">
+
+    <!-- Card starts -->
+    <div class="card">
+      <div class="card-body">
+        <!-- Row starts -->
+        <div class="row gx-4">
+          <div class="col-12 col-md">
+            <div class="card border border-secondary mb-4">
+              <div class="card-body text-center">
+                <h6 class="m-0">Semaine Passée</h6>
+                <h4 class="fw-bold my-2" id="totalSemainePassee">GNF</h4>
+                <div class="mb-2">
+<!--                  <span class="badge bg-danger">8%</span>-->
+                </div>
+                <div class="small" id="numeroSemainePassee">
+                  S-1
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-12 col-md">
+            <div class="card border border-secondary mb-4">
+              <div class="card-body text-center">
+                <h6 class="m-0">Semaine En Cours</h6>
+                <h4 class="fw-bold my-2" id="totalSemaineEnCours">GNF</h4>
+                <div class="mb-2">
+<!--                  <span class="badge bg-danger">8%</span>-->
+                </div>
+                <div class="small" id="numeroSemaineEnCours">
+                  S-N°
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-12 col-md">
+            <div class="card border border-secondary mb-4">
+              <div class="card-body text-center">
+                <h6 class="m-0">Total du Mois</h6>
+                <h4 class="fw-bold my-2" id="totalMois">GNF</h4>
+                <div class="mb-2">
+<!--                  <span class="badge bg-danger">8%</span>-->
+                </div>
+                <div class="small" id="moisEnCours">
+                  2000 Vs Target
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-12 col-md">
+            <div class="card border border-secondary mb-4">
+              <div class="card-body text-center">
+                <h6 class="m-0">Total Année</h6>
+                <h4 class="fw-bold my-2" id="totalAnnee">GNF</h4>
+                <div class="mb-2">
+<!--                  <span class="badge bg-danger">8%</span>-->
+                </div>
+                <div class="small" id="anneeEnCours">
+                  2000 Vs Target
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Row ends -->
+      </div>
+      </div>
+  </div>
+</div>
+<!-- Row ends -->
+<!-- Row starts -->
 <div class="row gx-4">
     <div class="col-sm-12">
         <div class="card mb-4">
@@ -122,7 +194,7 @@
 <script>
     $(document).ready(function(){
 
-        var tableEmploye = $("#tableDepenses").DataTable({
+        var tableDepenses = $("#tableDepenses").DataTable({
             ajax: '/salon/depenses/list/',
             columns: [
                 {
@@ -153,10 +225,30 @@
             }
         });
 
-        function getCSRFToken(){
-            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
-            return csrfToken ? csrfToken.value : "";
+        function depense_semaine_mois_annee(){
+           $.ajax({
+               url: '/salon/depenses/calcul_depenses/',
+               method: 'GET',
+               dataType: 'json',
+               success: function(res){
+                   $("#totalSemaineEnCours").text(res.data.total_semaine_en_cours)
+                   $("#totalSemainePassee").text(res.data.total_semaine_passe)
+                   $("#totalMois").text(res.data.total_mois_en_cours)
+                   $("#totalAnnee").text(res.data.total_annee_en_cours)
+
+                   // Afficher les numeros de Semaine
+                   $("#numeroSemainePassee").text("S-" + res.data.numero_semaine_passe);
+                   $("#numeroSemaineEnCours").text("S-" + res.data.numero_semaine_en_cours);
+
+                   $("#moisEnCours").text(res.data.nom_du_mois)
+                   $("#anneeEnCours").text(res.data.annee_en_cours)
+               },
+               error: function(xhr){
+                  console.log("error", xhr)
+               }
+           })
         }
+        depense_semaine_mois_annee();
 
         $("#depense-form").on("submit", function(e){
             e.preventDefault();
@@ -171,10 +263,15 @@
                 processData: false,
                 contentType: false,
                 success: function(res){
-                    console.log(res)
                     if(res.success){
                         $('#response-message').text(res.msg);
                         $('#response-message').addClass('show').fadeIn();
+
+                        // Refresh la table
+                        tableDepenses.ajax.reload();
+
+                        // Recalculer les montants totaux des Dépenses
+                        depense_semaine_mois_annee();
 
                         // Faire disparaître le message du success après 3 secondes (3000 ms)
                         setTimeout(function () {
@@ -185,7 +282,6 @@
                     }
                 },
                 error: function(xhr){
-                    console.log(xhr)
                     const errorResponse = xhr.responseJSON ? xhr.responseJSON.msg : 'Erreur serveur.';
                     $('#response-message').text(`Erreur: ${errorResponse}`);
                     $('#response-message').removeClass('bg-success')
