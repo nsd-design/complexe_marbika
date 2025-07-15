@@ -1,11 +1,13 @@
 import http
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
+from http import HTTPStatus
 
 from django.db import IntegrityError, transaction
 from django.db.models import F, Sum
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
+from django.utils import timezone
 from django.utils.html import escape
 from django.views.decorators.http import require_http_methods
 
@@ -17,6 +19,14 @@ from salon.models import CategorieService, Service, PrixService, Produit, Approv
     ProduitVendu, Prestation, InitPrestation, Depense
 
 tmp = "salon/"
+
+def currency(value):
+    # print("value :", value)
+    try:
+        float(value)
+        return "{:,.0f} GNF".format(value).replace(",", " ")
+    except (ValueError, TypeError):
+        return value
 
 def services(request):
     categories = CategorieService.objects.all()
@@ -629,3 +639,66 @@ def creer_depense(request):
             return JsonResponse({"error": True, "msg": "Données soumises sont invalides, veuillez réessayer."}, status=400)
     except Exception as e:
         return JsonResponse({"error": True, "msg": str(e)})
+
+
+@require_http_methods(["GET"])
+def depense_semaine_mois_annee(request):
+    try:
+        # Date du jour
+        today = timezone.now().date()
+
+        # Debut de la semaine en cours
+        start_of_week = today - timedelta(days=today.weekday())
+        current_week_number = today.isocalendar().week
+
+        # Debut de la semaine passee
+        start_of_last_week = start_of_week - timedelta(days=7)
+        end_of_last_week = start_of_week - timedelta(days=1)
+        last_week_number = start_of_last_week.isocalendar().week
+
+
+        # Debut du mois
+        start_of_month = today.replace(day=1)
+
+        # Debut de l'annee
+        start_of_year = today.replace(month=1, day=1)
+
+        # Debut de calcul des montants
+        # Montant total des depenses de la semaine en cours
+        total_semaine_en_cours = Depense.objects.filter(
+            created_at__date__gte=start_of_week,
+            created_at__date__lte=today
+        ).aggregate(Sum("montant"))["montant__sum"] or 0
+
+        # Montant total des depenses de la semaine passée
+        total_semaine_passe = Depense.objects.filter(
+            created_at__date__gte=start_of_last_week,
+            created_at__date__lte=end_of_last_week,
+        ).aggregate(Sum("montant"))["montant__sum"] or 0
+
+        # Montant total des depenses du Mois en Cours
+        total_mois_en_cours = Depense.objects.filter(
+            created_at__date__gte=start_of_month
+        ).aggregate(Sum("montant"))["montant__sum"] or 0
+
+        total_annee_en_cours = Depense.objects.filter(
+            created_at__date__gte=start_of_year
+        ).aggregate(Sum("montant"))["montant__sum"] or 0
+
+        data = {
+            "total_semaine_en_cours": currency(total_semaine_en_cours),
+            "numero_semaine_en_cours": current_week_number,
+            "total_semaine_passe": currency(total_semaine_passe),
+            "numero_semaine_passe": last_week_number,
+            "total_mois_en_cours": currency(total_mois_en_cours),
+            "nom_du_mois": today.strftime("%B"),
+            "total_annee_en_cours": currency(total_annee_en_cours),
+            "annee_en_cours": today.strftime("%Y"),
+        }
+
+        return JsonResponse({"success": True, "data": data}, status=HTTPStatus.OK)
+    except Exception as e:
+        print(e)
+        return JsonResponse({"error": True, "msg": "Erreur inattendue"})
+    except (ValueError, TypeError):
+        return JsonResponse({"error": True, "msg": "Erreur lors de la mise en forme du montant"})
