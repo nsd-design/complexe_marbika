@@ -260,7 +260,10 @@ def get_prestations(request):
                 "remise": "{:,.0f} GNF".format(remise).replace(",", " "),
                 "client": f'<p>{prestation.client.nom_complet}<br><span class="badge border border-info text-body">{prestation.client.telephone}</span></p>' if prestation.client else "",
                 "net_paye": "{:,.0f} GNF".format(net_paye).replace(",", " "),
-                "actions": f'<a href="/salon/prestations/details/{prestation.id}" class="text-danger showTicket"><i class="bi bi-box-arrow-up-right fs-5"></i></a>',
+                "actions": f'''
+                            <a href="/salon/prestations/details/{prestation.id}" class="text-info me-2 showDetails"><i class="bi bi-eye fs-5"></i></i></a>
+                            <a href="/salon/prestations/details/{prestation.id}" class="text-danger showTicket"><i class="bi bi-box-arrow-up-right fs-5"></i></a>
+                            ''',
             })
 
         return JsonResponse({"success": True, "data": data})
@@ -280,6 +283,8 @@ def get_prestation_details(request, id_prestation):
             list_service.append({
                 "designation": service.service.designation,
                 "prix": service.service.prix_service,
+                "nom_prestataire": service.fait_par.first_name + " " + service.fait_par.last_name,
+                "email_prestataire": service.fait_par.email,
             })
 
         data = {

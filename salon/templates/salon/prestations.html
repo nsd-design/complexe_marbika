@@ -5,6 +5,7 @@
 
 {% block page_title %} {{ page_title }} {% endblock %}
 {% block main %}
+
 <!-- Row starts -->
 <div class="row gx-4">
   <div class="col-sm-12">
@@ -234,6 +235,34 @@
     <!-- End Ticket-->
 </div>
 <!-- Row ends -->
+
+<!-- Modal -->
+<div class="modal fade" id="modalPrestation" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false"
+  aria-labelledby="modalPrestationTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalPrestationTitle">
+          Details Prestation
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="bodyModalPrestation">
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-dark" data-bs-dismiss="modal">
+          Fermer
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+    <!-- End Modal -->
+<button type="button" hidden="hidden" id="showModalPrestation" class="btn btn-primary" data-bs-toggle="modal"
+  data-bs-target="#modalPrestation">
+  Afficher Modal Prestation
+</button>
 
 <!-- Custom JS files -->
 {% block custom_js %}
@@ -626,6 +655,80 @@
 
         })
 
+        $(document).on("click", ".showDetails", function(e){
+            e.preventDefault()
+
+            const url = $(this).attr("href")
+
+            // Extraire id prestation
+            let parts = url.split("/")
+            let id_prestation = parts[4]
+
+            $.ajax({
+                url: url,
+                method: "GET",
+                dataType: 'json',
+                success: function(res){
+                    if(res.success){
+                        let data = res.data;
+
+                        $("#showModalPrestation").trigger('click')
+
+                        // Vider le contenu du modal avant l'ajout des nouveaux
+                        $("#bodyModalPrestation").empty();
+
+                        const $infoPrestation = $('<div>')
+                        const $referenceDetailPresta = $('<p>', { class: 'lh-1', text: "Reference : " + data.reference })
+
+                        const $nomClientDetailPresta = $('<p>', { class: 'lh-1', text: "Client : " + data.nom_client })
+                        const $telephoneClientDetailPresta = $('<span>', {text: " - " + data.tel_client })
+                        $nomClientDetailPresta.append($telephoneClientDetailPresta)
+
+                        const $total = $('<p>', { class: 'lh-1', text: "Total : " + data.total.toLocaleString() + " GNF" })
+                        const $remise = $('<p>', { class: 'lh-1', text: "Remise : " + data.remise.toLocaleString() + " GNF" })
+                        const $netPaye = $('<p>', { class: 'lh-1', text: "Net Payé : " + data.net_paye.toLocaleString() + " GNF" })
+
+                        $infoPrestation.append($referenceDetailPresta, $nomClientDetailPresta, $total, $remise, $netPaye)
+
+                        // Création du conteneur principal
+                        const $activityFeed = $('<div>', { class: 'activity-feed' });
+
+                        data.services.forEach(service => {
+                            // Créer des éléments **à chaque itération**
+                            const $activityItem = $('<div>', { class: 'feed-item' });
+                            const $designation = $('<span>', { class: 'feed-date pb-1 fw-bold', text: service.designation });
+
+                            const $prestataireContainer = $('<div>', { class: 'mb-1' });
+                            const $nomPrestataire = $('<p>', {
+                                class: 'fw-bold',
+                                text: service.nom_prestataire
+                             });
+                            const $emailPrestataire = $('<span>', {text: " - " + service.email_prestataire,
+                                class: 'fw-normal'
+                            })
+                            $nomPrestataire.append($emailPrestataire)
+
+                            const $prixService = $('<div>', {
+                                class: 'text-primary',
+                                text: service.prix.toLocaleString() + " GNF"
+                            });
+
+                            $prestataireContainer.append($nomPrestataire);
+                            $activityItem.append($designation, $prestataireContainer, $prixService);
+                            $activityFeed.append($activityItem);
+                        });
+
+                        // Ajouter tous les éléments une seule fois
+                        $("#bodyModalPrestation").append($infoPrestation, $activityFeed);
+
+                    }
+                },
+                error: function(err){
+                    console.log(err)
+                },
+            })
+        })
+
         function createTicketComponent(prestation) {
 
             $("#referencePS").text(prestation.reference)
@@ -649,31 +752,12 @@
         function ajouterFooterFacture(total, remise, netPayer, reference){
             let divFooter = $("#ticketFooter")
 
-            // Libelles
-            //let libSousTotal = $("<p>").addClass("m-0").text('Sous-total')
-            //let libRemise = $("<p>").addClass("m-0").text("Remise")
-            //let libTotalPayer = $("<p>").addClass("m-0").text("Total à payer")
-            //let divLib = $("<div>").css({"color": "#000"}).addClass("fw-bold")
-            //divLib.append(libSousTotal, libRemise, libTotalPayer)
-
-            // Valeurs
-            //let valSousTotal = $("<p>").addClass("m-0").text(montant.toLocaleString() + " GNF")
-            //let valRemise = $("<p>").addClass("m-0").text(reduction.toLocaleString() + " GNF")
-            //const total = montant - reduction
-            //let valTotalPayer = $("<p>").addClass("m-0").text(total.toLocaleString() + " GNF")
-            //let divVal = $("<div>").css({"color": "#000"})
-            //divVal.append(valSousTotal, valRemise, valTotalPayer)
-
-            //divFooter.html(divLib, divVal)
-            //$("#tabDetailsCommande").after(divFooter)
-
             $("#libSousTotal").text("Sous-total")
             $("#libRemise").text("Remise")
             $("#libNetPayer").text("Total à payer")
             $("#valSousTotal").text(total.toLocaleString() + " GNF")
             $("#valRemise").text(remise.toLocaleString() + " GNF")
             $("#valNetPayer").text(netPayer.toLocaleString() + " GNF")
-
         }
 
     })
