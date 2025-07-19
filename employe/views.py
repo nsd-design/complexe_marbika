@@ -1,4 +1,5 @@
 import json
+from datetime import date, timedelta
 
 import django.db.utils
 from django.db import IntegrityError
@@ -12,9 +13,42 @@ from employe.forms import EmployeForm
 from employe.models import Employe
 
 tmp_base = "employe/"
+
+
+def semaines():
+    today = date.today()
+    current_year = today.year
+
+    # Commencer a partir du 1er Jan
+    start_date = date(current_year, 1, 1)
+
+    # Trouver le Lundi de la 1ere semaine
+    start_date -= timedelta(days=start_date.weekday())
+
+    list_semaines: list = []
+
+    while start_date <= today:
+        numero_semaine =  start_date.isocalendar().week
+        annee_semaine = start_date.isocalendar().year
+        mois_semaine = start_date.strftime("%B")
+        num_mois_semaine = start_date.month
+
+        list_semaines.append({
+            "numero_semaine": numero_semaine,
+            "annee_semaine": annee_semaine,
+            "mois_semaine": mois_semaine,
+            "num_mois_semaine": num_mois_semaine,
+        })
+
+        start_date += timedelta(weeks=1)
+    list_semaines = sorted(list_semaines, key=lambda k: k['numero_semaine'], reverse=True)
+    return list_semaines
+
+
 def dashmin(request):
 
     context = {
+        "semaines": semaines(),
         "page_title": "Analytics"
     }
     return render(request, "dashboard.html", context)
