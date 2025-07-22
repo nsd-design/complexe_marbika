@@ -44,6 +44,7 @@ def semaines():
         })
 
         start_date += timedelta(weeks=1)
+
     list_semaines = sorted(list_semaines, key=lambda k: k['numero_semaine'], reverse=True)
     return list_semaines
 
@@ -113,12 +114,19 @@ def add_employe(request):
             return JsonResponse({"error": "Echec de l'enregistrement pour des raison de doublon"}, status=409)
 
 
-def get_stats_vente_produits(annee: int, num_week: int):
+def get_stats_vente_produits(annee: int, week_num: int, month_num: int):
     try:
-        ventes = Vente.objects.filter(
-            created_at__date__year=annee,
-            created_at__date__week=num_week,
-        )
+        filtres = {"created_at__date__year": annee}
+
+        if month_num > 0:
+            # Filtre pour récupérer les data du mois
+            filtres["created_at__date__month"] = month_num
+        if week_num > 0:
+            # Filtre pour récupérer les data de la semaine
+            filtres["created_at__date__week"] = week_num
+
+        ventes = Vente.objects.filter(**filtres)
+
         # Nombre de Ventes réalisé
         nb_ventes = ventes.count()
         sum_montant_ventes = ventes.aggregate(Sum("montant_total"))['montant_total__sum'] or 0
@@ -135,7 +143,7 @@ def get_stats_vente_produits(annee: int, num_week: int):
             sum_remise_vente_cash=Sum("reduction", filter=Q(type_vente=1)),
         )
         sum_ventes_cash = resultats_ventes_cash['sum_vente_cash'] or 0
-        sum_remise_ventes_cash = resultats_ventes_cash['sum_remise_vente_cash']
+        sum_remise_ventes_cash = resultats_ventes_cash['sum_remise_vente_cash'] or 0
 
         total_ventes_cash = sum_ventes_cash - sum_remise_ventes_cash
 
@@ -175,11 +183,12 @@ def get_stats_vente_produits(annee: int, num_week: int):
 def filtre_dashmin_data(request):
     try:
         data = json.loads(request.body)
-
-        stats_vente_produits = get_stats_vente_produits(int(data['year']), int(data['week_num']))
+        stats_vente_produits = get_stats_vente_produits(
+            int(data['year']), int(data['week_num']), int(data['month_num'])
+        )
         data = {
             "stats_vente_produits": stats_vente_produits,
         }
-        return JsonResponse({"success": True, "data": data}, status=http.HTTPStatus.FOUND)
+        return JsonResponse({"success": True, "data": data}, status=http.HTTPStatus.OK)
     except json.JSONDecodeError:
         return JsonResponse({"error": True, "msg": "Format de données invalides"}, status=400)
