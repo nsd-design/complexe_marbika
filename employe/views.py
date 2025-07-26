@@ -4,7 +4,7 @@ from datetime import date, timedelta
 
 import django.db.utils
 from django.db import IntegrityError
-from django.db.models import Sum, Q
+from django.db.models import Sum, Q, Count
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
@@ -13,7 +13,8 @@ from django.views.decorators.http import require_http_methods
 
 from employe.forms import EmployeForm
 from employe.models import Employe
-from salon.models import Vente, Depense
+from salon.models import Vente, Depense, InitPrestation, Prestation
+from salon.views import currency
 
 tmp_base = "employe/"
 
@@ -179,16 +180,118 @@ def get_stats_vente_produits(annee: int, week_num: int, month_num: int):
     except Vente.DoesNotExist:
         return None
 
+
+def get_service_le_plus_demande(filtre):
+    # le parametre 'filtre' est de type dictionnaire au format:
+    # {"created_at__date__week": week_num}
+    return (
+        Prestation.objects.filter(**filtre)
+        .values("service__id", "service__designation")
+        .annotate(nb_services=Count("id"))
+        .order_by("-nb_services")
+        .first()
+    )
+
+def get_montant_total_par_service(id_service, filtres):
+    return (
+        Prestation.objects.filter(service__id=id_service, **filtres)
+        .aggregate(total_montant=Sum("prix_service"))["total_montant"] or 0
+    )
+
+
+def get_stats_prestaions(year: int, week_num: int, month_num: int):
+    try:
+        filtres = {"created_at__date__year": year}
+
+        service_de_la_semaine = {}
+        service_de_du_mois = {}
+        service_de_lannee = {}
+
+        if week_num:
+            filtres["created_at__date__week"] = week_num
+            # Rechercher le Service le plus demandé de la Semaine
+            service_semaine = get_service_le_plus_demande({"created_at__date__week": week_num})
+            if service_semaine:
+                # Récupérer le service le plus demandé de la semaine
+                montant_total_service_semaine = get_montant_total_par_service(
+                    service_semaine["service__id"],{"created_at__date__week": week_num}
+                )
+                service_de_la_semaine["designation"] = service_semaine["service__designation"]
+                service_de_la_semaine["nb_demande"] = service_semaine["nb_services"] or 0
+                service_de_la_semaine["montant_total_service_semaine"] = currency(montant_total_service_semaine)
+
+        if month_num:
+            filtres["created_at__date__month"] = month_num
+            service_month = get_service_le_plus_demande({"created_at__date__month": month_num})
+            if service_month:
+                print("service_month :", service_month)
+                montant_total_service_month = get_montant_total_par_service(service_month["service__id"], {"created_at__date__month": month_num})
+
+                service_de_du_mois["designation"] = service_month["service__designation"]
+                service_de_du_mois["nb_demande"] = service_month["nb_services"] or 0
+                service_de_du_mois["montant_total_service_month"] = currency(montant_total_service_month) if montant_total_service_month else currency(0)
+
+        # Récupérer le service le plus demandé de l'année
+        service_year = get_service_le_plus_demande({"created_at__date__year": year})
+
+        if service_year:
+            # Récupérer le montant total du service le plus demandé de l'année
+            montant_total_service_year = get_montant_total_par_service(
+                service_year["service__id"],{"created_at__date__year": year}
+            )
+            service_de_lannee["designation"] = service_year["service__designation"]
+            service_de_lannee["nb_demande"] = service_year["nb_services"] or 0
+            service_de_lannee["montant_total_service_year"] = currency(montant_total_service_year) if montant_total_service_year else currency(0)
+
+
+        prestations = InitPrestation.objects.filter(**filtres)
+
+        # Montant total des Prestations
+        resultats_montant_prestations = prestations.aggregate(
+            sum_montant_prestations=Sum("montant_total"),
+            sum_remises=Sum("remise"),
+        )
+        sum_montant_prestations = resultats_montant_prestations['sum_montant_prestations'] or 0
+        sum_remises = resultats_montant_prestations['sum_remises'] or 0
+
+        montant_net_prestations = sum_montant_prestations - sum_remises
+
+        # Nombre de Prestations
+        nb_prestations = prestations.count()
+
+        data = {
+            "montant_net_prestations": currency(montant_net_prestations) if montant_net_prestations else currency(0),
+            "nb_prestations": nb_prestations if nb_prestations else 0,
+            "service_semaine": service_de_la_semaine,
+            "service_month": service_de_du_mois,
+            "service_year": service_de_lannee,
+        }
+
+        return data
+
+    except InitPrestation.DoesNotExist:
+        return None
+
+    except Exception as e:
+        print("erreur inattendue in get_stats_prestaions :", str(e))
+        return None
+
+
+
 @require_http_methods(["POST"])
 def filtre_dashmin_data(request):
     try:
         data = json.loads(request.body)
-        stats_vente_produits = get_stats_vente_produits(
-            int(data['year']), int(data['week_num']), int(data['month_num'])
-        )
+
+        year = int(data['year'])
+        week_num = int(data['week_num'])
+        month_num = int(data['month_num'])
+
         data = {
-            "stats_vente_produits": stats_vente_produits,
+            "stats_vente_produits": get_stats_vente_produits(year, week_num, month_num),
+            "get_stats_prestaions": get_stats_prestaions(year, week_num, month_num),
         }
+
         return JsonResponse({"success": True, "data": data}, status=http.HTTPStatus.OK)
     except json.JSONDecodeError:
         return JsonResponse({"error": True, "msg": "Format de données invalides"}, status=400)

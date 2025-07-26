@@ -142,6 +142,62 @@
 
 <!-- Row starts -->
 <div class="row gx-4">
+  <div class="col-lg-4 col-sm-6 col-12">
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5 class="card-title">Prestations effectuées</h5>
+      </div>
+      <div class="card-body">
+        <div class="d-flex justify-content-between">
+          <div>
+            <h2 id="nbPrestations">0</h2>
+            <h5 class="mb-2 fw-light" id="totalNetPrestations">0</h5>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4 col-sm-6 col-12" id="cardServiceSemaine">
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5 class="card-title">Service le plus demandé de la Semaine</h5>
+      </div>
+      <div class="card-body">
+        <div class="d-flex justify-content-between">
+          <div>
+            <h2 id="serviceDemandeSemaine"></h2>
+            <h5 class="mb-2 fw-light" id="nbDemandeSemaine"></h5>
+            <p class="m-0" >
+              <span id="montantServicePlusDemandeSemaine"></span>
+            </p>
+          </div>
+          <div class="ms-3 graph-mini" id="option2"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4 col-sm-12 col-12">
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5 class="card-title">Service le plus demandé du Mois</h5>
+      </div>
+      <div class="card-body">
+        <div class="d-flex justify-content-between">
+          <div>
+            <h2 id="serviceDuMois"></h2>
+            <h5 class="mb-2 fw-light" id="nbDemandeServiceDuMois"></h5>
+            <p class="m-0" id="montantServiceDuMois">
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Row ends -->
+
+<!-- Row starts -->
+<div class="row gx-4">
   <div class="col-sm-12">
     <div class="card mb-4">
       <div class="card-header">
@@ -733,6 +789,31 @@
 
         })
 
+        function get_stats_prestations(data){
+          $("#nbPrestations").text(data.nb_prestations)
+          $("#totalNetPrestations").text(data.montant_net_prestations)
+          $("#servicePlusDemande").text(data.service_month.designation)
+
+          if(data.service_semaine.designation != undefined){
+
+            $("#nbDemandeSemaine").text(data.service_semaine.nb_demande)
+            $("#serviceDemandeSemaine").text(data.service_semaine.designation)
+            $("#montantServicePlusDemandeSemaine").text(data.service_semaine.montant_total_service_semaine)
+
+          }
+
+          if(data.service_month.designation != undefined){
+            $("#serviceDuMois").text(data.service_month.designation)
+            $("#nbDemandeServiceDuMois").text(data.service_month.nb_demande)
+            $("#montantServiceDuMois").text(data.service_month.montant_total_service_month)
+          }
+
+          if(data.service_year.designation != undefined){
+            $("#servicePlusDemande").text(data.service_year.designation)
+          }
+
+        }
+
         function get_stats_ventes_produits(year, num_week, num_month){
 
             const data = {
@@ -749,6 +830,10 @@
                 headers: { 'X-CSRFToken': getCSRFToken() },
                 success: function(res){
                   const stats_vente_produits = res.data.stats_vente_produits;
+                  const stats_prestaions = res.data['get_stats_prestaions'];
+
+                  // Statistiques sur la Prestation
+                  get_stats_prestations(stats_prestaions)
 
                   $("#nombreVentes").text(stats_vente_produits.nb_ventes)
                   $("#nombreVentesCash").text(stats_vente_produits.nb_ventes_cash)
