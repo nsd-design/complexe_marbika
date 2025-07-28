@@ -58,17 +58,22 @@ def create_boisson(request):
                 prix_achat = form.cleaned_data['prix_achat']
                 prix_vente = form.cleaned_data['prix_vente']
                 image = form.cleaned_data['photo_boisson']
+                stock = form.cleaned_data['stock']
 
-                Boisson.objects.create(
+                new_boisson = Boisson.objects.create(
                     designation=designation, prix_achat=prix_achat, prix_vente=prix_vente,
                     photo_boisson=image
                 )
+
+                new_boisson.approvisionner(quantite=stock, prix_achat_unitaire=prix_achat, description="Stock initial - 1er approvisionnement")
 
                 return JsonResponse({"msg": "Boisson créée avec succès !"}, status=200)
 
         except Exception as e:
             print(e)
             return JsonResponse({"error": "Erreur de validation"}, status=400)
+        except ValueError as e:
+            return JsonResponse({"error": str(e)}, status=400)
     else:
         return JsonResponse({"error": "Methode non autorisée"}, status=405)
 

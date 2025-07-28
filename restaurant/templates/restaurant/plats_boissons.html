@@ -89,26 +89,26 @@
                 <div class="col-sm-3 col-12">
                   <div class="mb-3">
                     <label class="form-label" for="id_prix_achat">Prix d'achat</label>
-                    <div class="input-group">
-                      {{ from_boisson.prix_achat | as_crispy_field }}
-                    </div>
+                    {{ from_boisson.prix_achat | as_crispy_field }}
                   </div>
                 </div>
                 <div class="col-sm-3 col-12">
                   <div class="mb-3">
                     <label class="form-label" for="id_prix_vente">Prix de vente</label>
-                    <div class="input-group">
-                      {{ from_boisson.prix_vente | as_crispy_field }}
-                    </div>
+                    {{ from_boisson.prix_vente | as_crispy_field }}
+                  </div>
+                </div>
+                <div class="col-sm-3 col-12">
+                  <div class="mb-3">
+                    <label class="form-label" for="id_stock">Stock Initial</label>
+                    {{ from_boisson.stock | as_crispy_field }}
                   </div>
                 </div>
                  <div class="col-sm-6 col-12">
                     <div class="mb-4">
                         <div class="m-0">
                           <label class="form-label" for="id_photo_boisson">Image</label>
-                          <div class="input-group">
-                            {{ from_boisson.photo_boisson | as_crispy_field  }}
-                          </div>
+                          {{ from_boisson.photo_boisson | as_crispy_field  }}
                         </div>
                     </div>
                  </div>

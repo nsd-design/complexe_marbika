@@ -407,7 +407,7 @@ def add_produit(request):
             new_product = Produit.objects.create(
                 designation=designation, prix_achat=prix_achat, prix_vente=prix_vente, image=image
             )
-            new_product.approvisionner_produit(quantite=stock_init, prix_achat_u=prix_achat, description="Stock initial")
+            new_product.approvisionner_produit(quantite=stock_init, prix_achat_u=prix_achat, description="Stock initial - 1er approvisionnement")
 
             return JsonResponse({"success": True, "msg": "Produti céé avec succès !"}, status=201)
         else:

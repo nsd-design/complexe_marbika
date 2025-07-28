@@ -26,7 +26,7 @@ class Boisson(MyBaseModel):
     def __str__(self):
         return f"{self.designation} - Stock: {self.stock} - PAU: {self.prix_achat}"
 
-    def approvisionner(self, quantite, prix_achat_unitaire):
+    def approvisionner(self, quantite, prix_achat_unitaire, description):
         if quantite <= 0 or prix_achat_unitaire <= 0:
             raise ValueError("La quantité et le prix d'achat doivent être positifs.")
 
@@ -40,7 +40,8 @@ class Boisson(MyBaseModel):
         ApprovisionnementBoisson.objects.create(
             boisson=self,
             quantite=quantite,
-            prix_achat_unit=prix_achat_unitaire
+            prix_achat_unit=prix_achat_unitaire,
+            description=description
         )
 
     def controle_stock(self, quantite):
@@ -59,6 +60,8 @@ class ApprovisionnementBoisson(MyBaseModel):
     quantite = models.PositiveIntegerField()
     prix_achat_unit = models.BigIntegerField()
     date_approvisionnement = models.DateTimeField(auto_now_add=True)
+    description = models.CharField(null=True, blank=True)
+
 
     def __str__(self):
         return f"{self.boisson.designation} Qte: {self.quantite} - Date: {self.date_approvisionnement}"
