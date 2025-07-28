@@ -1,5 +1,6 @@
 import http
 import json
+from collections import defaultdict
 from datetime import date, timedelta
 
 import django.db.utils
@@ -50,11 +51,64 @@ def semaines():
     return list_semaines
 
 
-def dashmin(request):
+def groupe_prestations_par_reference(year: int):
+    init_prestations = InitPrestation.objects.prefetch_related(
+        'prestation_set__fait_par',
+        'prestation_set__service',
+    ).order_by('-created_at')
 
+    prestation_par_prestataire: list = []
+
+    for init_pres in init_prestations:
+        employe_data = defaultdict(lambda : {
+            "initiales": "",
+            "nom": "",
+            "prenom": "",
+            "email": "",
+            "nb_services": 0,
+            "services": list(),
+        })
+
+        for prestation in init_pres.prestation_set.all():
+            prestataire = prestation.fait_par
+            service = prestation.service
+
+            if prestataire and service:
+                key = prestataire.id
+                employe_data[key]["nom"] = prestataire.last_name
+                employe_data[key]["prenom"] = prestataire.first_name
+                employe_data[key]["email"] = prestataire.email
+                employe_data[key]["nb_services"] += 1
+                employe_data[key]["services"].append(service.designation)
+
+        prestation_par_prestataire.append({
+            "reference": init_pres.reference,
+            "montant_total": currency(init_pres.montant_total),
+            "remise": currency(init_pres.remise),
+            "net_paye": currency(init_pres.montant_total - init_pres.remise),
+            "date": init_pres.created_at.strftime("%d/%m/%Y"),
+            "prestataire": [
+                {
+                    "initiales": data["prenom"][0] + "" + data["nom"][0],
+                    "nom_complet": data["prenom"] + " " + data["nom"],
+                    "email": data["email"],
+                    "nb_services": data["nb_services"],
+                    "services": ", ".join(data["services"]),
+                } for data in employe_data.values()
+            ]
+        })
+
+    return prestation_par_prestataire
+
+
+def dashmin(request):
+    current_year = date.today().year
+
+    prestations_par_reference = groupe_prestations_par_reference(year=current_year)
     context = {
         "semaines": semaines(),
-        "page_title": "Analytics"
+        "page_title": "Analytics",
+        "prestations_par_reference": prestations_par_reference,
     }
     return render(request, "dashboard.html", context)
 
