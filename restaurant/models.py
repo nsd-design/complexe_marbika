@@ -1,6 +1,6 @@
 import uuid
-
 from django.db import models
+from django.utils import timezone
 
 from employe.models import MyBaseModel
 
@@ -52,6 +52,7 @@ class Boisson(MyBaseModel):
 
     def vente_boissons(self, quantite):
         self.stock -= int(quantite)
+        self.updated_at = timezone.now()
         self.save()
 
 
