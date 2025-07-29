@@ -115,7 +115,8 @@
                                          style="background-size: cover;"
                                          class="img-fluid " alt="Bootstrap Gallery"/>
                                     {% endif %}
-                                    <p>
+                                    <p class="position-relative">
+                                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary">{{ boisson.stock }}</span>
                                         <span class="designation">{{ boisson.designation }}</span>
                                         <span class="badge rounded-pill bg-success">{{ boisson.prix_vente | currency }}</span>
                                         <span class="productPrice" hidden>{{ boisson.prix_vente}}</span>
@@ -399,10 +400,11 @@
               $("#montantTotal").text("")
 
               // Actualiser le Tableau pour ajouter les nouveaux enregistrements
-              table.ajax.reload();
+              //table.ajax.reload();
+              location.reload();
 
               // Réinitialiser d'autres champs
-              $("#form_commandes")[0].reset();
+              //$("#form_commandes")[0].reset();
 
               tabPlatsBoissons = []
 

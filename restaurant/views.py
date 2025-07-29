@@ -148,58 +148,72 @@ def get_commandes(request):
         return JsonResponse(response)
 
 
+from django.db import transaction
+
 def passer_commande(request):
     if request.method == "POST":
         try:
             data = json.loads(request.body)
-
             plats_boissons = data.get("plat_boissons", [])
             reduction = data.get("reduction", 0)
 
-            current_commande = Commande.objects.create(prix_total=0, reduction=reduction)
-            current_commande.reference = f"CMD-{current_commande.id.hex[:8].upper()}"
-            current_commande.save()
-            # print("reference:", current_commande.reference)
-            prix_total = 0
+            with transaction.atomic():
+                prix_total = 0
 
-            # Verifier si la quantite de la Boisson commandée est disponible
-            for item in plats_boissons:
-                if item['type'] == 'boisson':
-                    boisson = Boisson.objects.get(id=item["designation"])
-                    boisson.controle_stock(item['quantite'])
+                current_commande = Commande.objects.create(prix_total=0, reduction=reduction)
+                current_commande.reference = f"CMD-{current_commande.id.hex[:8].upper()}"
+                current_commande.save()
 
-            for item in plats_boissons:
-                if item['type'] == 'plat':
-                    plat = Plat.objects.get(id=item["designation"])
-                    CommandePlat.objects.create(
-                        commande=current_commande,
-                        plat=plat,
-                        quantite=item['quantite'],
-                        prix=item['prix']
-                    )
-                    prix_total += item['quantite'] * item['prix']
-                elif item['type'] == 'boisson':
-                    boisson = Boisson.objects.get(id=item["designation"])
-                    CommandeBoisson.objects.create(
-                        commande=current_commande,
-                        boisson=boisson,
-                        quantite=item['quantite'],
-                        prix=item['prix']
-                    )
-                    boisson.vente_boissons(item['quantite'])
-                    prix_total += item['quantite'] * item['prix']
+                details_commande_crees = False
 
+                # Vérifier le stock de toutes les boissons AVANT toute opération
+                for item in plats_boissons:
+                    if item['type'] == 'boisson':
+                        boisson = Boisson.objects.get(id=item["designation"])
+                        boisson.controle_stock(item['quantite'])  # Lève une erreur si stock insuffisant
 
-            # Mise à jour du prix total de la Commande
-            current_commande.prix_total = prix_total - int(reduction)
-            current_commande.save()
+                # Enregistrement des plats et boissons
+                for item in plats_boissons:
+                    if item['type'] == 'plat':
+                        plat = Plat.objects.get(id=item["designation"])
+                        CommandePlat.objects.create(
+                            commande=current_commande,
+                            plat=plat,
+                            quantite=item['quantite'],
+                            prix=item['prix']
+                        )
+                        prix_total += item['quantite'] * item['prix']
+                        details_commande_crees = True
+
+                    elif item['type'] == 'boisson':
+                        boisson = Boisson.objects.get(id=item["designation"])
+                        CommandeBoisson.objects.create(
+                            commande=current_commande,
+                            boisson=boisson,
+                            quantite=item['quantite'],
+                            prix=item['prix']
+                        )
+                        boisson.vente_boissons(item['quantite'])
+                        prix_total += item['quantite'] * item['prix']
+                        details_commande_crees = True
+
+                if not details_commande_crees:
+                    raise ValueError("Aucun élément de commande valide trouvé.")
+
+                # Mise à jour du prix total
+                current_commande.prix_total = prix_total - int(reduction)
+                current_commande.save()
+
             return JsonResponse({"success": True, "msg": "Commande reçue"})
+
         except ValueError as e:
             return JsonResponse({"error": True, "msg": str(e)}, status=400)
         except Exception as e:
-            print(e)
-            return JsonResponse({"error": True, "msg": str(e)}, status=400)
+            print("Erreur:", e)
+            return JsonResponse({"error": True, "msg": "Une erreur s'est produite."}, status=400)
+
     return JsonResponse({"error": True, "msg": "Méthode non autorisée"}, status=405)
+
 
 
 @require_http_methods(["GET"])
