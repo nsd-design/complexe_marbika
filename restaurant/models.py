@@ -117,3 +117,22 @@ class DetailsControleBoissons(MyBaseModel):
 
     def __str__(self):
         return f"{self.boisson}"
+
+
+class InitControlePlats(MyBaseModel):
+    status = [(1, "Ouvert"), (2, "Clôturé")]
+    statut = models.SmallIntegerField(choices=status, default=1)
+
+    def __str__(self):
+        return f"{self.id} - {self.created_at} - {self.statut}"
+
+
+class PlatsControlles(models.Model):
+    init_controle = models.ForeignKey(InitControlePlats, on_delete=models.SET_NULL, null=True)
+    plat = models.ForeignKey(Plat, on_delete=models.SET_NULL, null=True)
+    quantite_disponible = models.IntegerField()
+    quantite_vendue = models.IntegerField(null=True)
+    quantite_restante = models.IntegerField(null=True)
+
+    def __str__(self):
+        return f"{self.plat.nom_plat} | Qte Disp: {self.quantite_disponible}"
