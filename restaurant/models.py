@@ -133,6 +133,8 @@ class PlatsControlles(models.Model):
     quantite_disponible = models.IntegerField()
     quantite_vendue = models.IntegerField(null=True)
     quantite_restante = models.IntegerField(null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.plat.nom_plat} | Qte Disp: {self.quantite_disponible}"
