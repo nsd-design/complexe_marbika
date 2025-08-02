@@ -5,6 +5,9 @@ from restaurant.views import *
 urlpatterns = [
     path("", plats_boissons, name="plats_boissons"),
     path("plat", create_plat, name="create_plat"),
+    path("plat/controle/", controle_plats, name="controle_plats"),
+    path("plat/nouveau_controle/", init_nouveau_controle_plats, name="controle_plats"),
+    path("plat/cloture_controle/", cloture_controle_plat, name="controle_plats"),
     path("boisson", create_boisson, name="create_boisson"),
     path("boisson/approvisionner", approvisionner_boisson, name="appro_boisson"),
     path("commandes/", commande, name="commandes"),
