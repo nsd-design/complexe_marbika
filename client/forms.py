@@ -9,8 +9,12 @@ class LocationForm(forms.ModelForm):
         for field_name in self.fields:
             self.fields[field_name].label = ''
 
-    montant_reduit = forms.CharField(required=False)
+    montant_reduit = forms.FloatField(
+        required=False,
+        widget=forms.NumberInput()
+    )
     objet = forms.CharField(required=False)
+    locateur = forms.CharField(required=False)
 
     class Meta:
         model = models.Location
@@ -21,7 +25,7 @@ class LocationForm(forms.ModelForm):
 
         widgets = {
             'date_debut' : forms.DateInput(attrs={'type': 'date'}),
-            'date_fin' : forms.DateInput(attrs={'type': 'date'})
+            'date_fin' : forms.DateInput(attrs={'type': 'date'}),
         }
 
 

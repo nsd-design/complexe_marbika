@@ -37,15 +37,25 @@
             <div class="tab-pane fade show active" id="oneAA" role="tabpanel" aria-labelledby="tab-oneAA">
                 <form method="POST" action="{% url 'louer' %}" class="row gx-4" id="locationForm">
                 {% csrf_token %}
+                    <!-- Liste Clients -->
                 <div class="col-xl-3 col-sm-4 col-12">
                   <div class="mb-3">
-                    <label class="form-label" for="id_zone">Zone</label>
+                    <label class="form-label" for="clients-select">Selectionnez un Client <span style="color: red">*</span></label>
+                    <select name="location" required class="form-select bg-secondary" id="clients-select"
+                            aria-label="Default select example">
+                        <option value="">-- Selectionner un Client --</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="col-xl-3 col-sm-4 col-12">
+                  <div class="mb-3">
+                    <label class="form-label" for="id_zone">Zone <span style="color: red">*</span></label>
                     {{ form.zone | as_crispy_field  }}
                   </div>
                 </div>
                 <div class="col-xl-3 col-sm-4 col-12">
                   <div class="mb-3">
-                    <label class="form-label" for="id_montant_a_payer">Prix</label>
+                    <label class="form-label" for="id_montant_a_payer">Prix <span style="color: red">*</span></label>
                     {{ form.montant_a_payer | as_crispy_field  }}
                   </div>
                 </div>
@@ -57,32 +67,38 @@
                 </div>
                 <div class="col-xl-3 col-sm-4 col-12">
                   <div class="mb-3">
-                    <label class="form-label" for="id_date_debut">Date de debut</label>
+                    <label class="form-label" for="id_date_debut">Date de debut <span style="color: red">*</span></label>
                     {{ form.date_debut | as_crispy_field  }}
                   </div>
                 </div>
                 <div class="col-xl-3 col-sm-4 col-12">
                   <div class="mb-3">
-                    <label class="form-label" for="id_date_fin">Date de fin</label>
+                    <label class="form-label" for="id_date_fin">Date de fin <span style="color: red">*</span></label>
                     {{ form.date_fin | as_crispy_field  }}
                   </div>
                 </div>
                 <div class="col-xl-3 col-sm-4 col-12">
                   <div class="mb-3">
-                    <label class="form-label" for="id_statut">Etat</label>
+                    <label class="form-label" for="id_statut">Etat <span style="color: red">*</span></label>
                     {{ form.statut | as_crispy_field  }}
                   </div>
                 </div>
                 <div class="col-xl-3 col-sm-4 col-12">
                   <div class="mb-3">
-                    <label class="form-label" for="id_type_location">Type</label>
+                    <label class="form-label" for="id_type_location">Type <span style="color: red">*</span></label>
                     {{ form.type_location | as_crispy_field  }}
+                  </div>
+                </div>
+                <div class="col-xl-3 col-sm-4 col-12">
+                  <div class="mb-3">
+                    <label class="form-label" for="id_description">Commentaire</label>
+                    {{ form.description | as_crispy_field  }}
                   </div>
                 </div>
 
 
                 <!-- Zone d'affichage des messages -->
-                <div id="response-message" class="alert bg-success text-white alert-dismissible fade" role="alert">
+                <div id="responseMessageLouer" class="alert bg-success text-white alert-dismissible fade" role="alert">
 
                   <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"
                     aria-label="Close"></button>
@@ -90,7 +106,7 @@
 
                 <div class="col-sm-12 col-12">
                   <div class="d-flex gap-4 justify-content-end">
-                    <button type="submit" class="btn btn-primary">Céer</button>
+                    <button type="button" id="submitLocation" class="btn btn-primary">Céer</button>
                     <button type="reset" class="btn btn-outline-secondary">Annuler</button>
                   </div>
                 </div>
