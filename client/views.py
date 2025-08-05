@@ -6,9 +6,9 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
 
-from client.models import Client, ZoneAReserver
+from client.models import Client, ZoneAReserver, Location
 from . import forms
-from .forms import ZoneForm
+from .forms import ZoneForm, LocationForm
 
 tmp_base = "client/"
 
@@ -74,3 +74,36 @@ def create_zone(request):
             return JsonResponse({"error": True, "msg": str(e)}, status=400)
     else:
         return JsonResponse({"error": True, "msg": "Données invalides"}, status=400)
+
+
+@require_http_methods(["POST"])
+def create_location(request):
+    try:
+        data = json.loads(request.body)
+
+        id_client = escape(data.get("id_client"))
+        id_zone = escape(data.get("id_zone"))
+        montant_a_payer = escape(data.get("montant_a_payer"))
+        remise = escape(data.get("remise"))
+        date_debut = escape(data.get("date_debut"))
+        date_fin = escape(data.get("date_fin"))
+        statut = escape(data.get("statut"))
+        type_location = escape(data.get("type_location"))
+        description = escape(data.get("description"))
+
+        current_client = Client.objects.get(id=id_client)
+        current_zone = ZoneAReserver.objects.get(id=id_zone)
+
+        Location.objects.create(
+            locateur=current_client, zone=current_zone, description=description, montant_a_payer=montant_a_payer,
+            montant_reduit=int(remise), date_debut=date_debut, date_fin=date_fin, statut=statut, type_location=type_location,
+        )
+
+        return JsonResponse({"success": True, "msg": f"Location enregistrée avec succès."})
+    except Client.DoesNotExist:
+        return JsonResponse({"error": True, "msg": "Le Client n'a été trouvé dans la Base de données"})
+    except ZoneAReserver.DoesNotExist:
+        return JsonResponse({"error": True, "msg": "La Zone à louer n'a été trouvé dans la Base de données"})
+    except Exception as e:
+        print("Erreur :", e)
+        return JsonResponse({"error": True, "msg": str(e)})

@@ -1,724 +1,118 @@
 $(document).ready(function () {
-    $("#zoneForm").on('submit', function(e){
-        e.preventDefault();
-        let formData = new FormData(this)
+	function chargerClients()
+	{
+		const $select = $('#clients-select');
+		$.ajax({
+			url: '/salon/produits/list_clients/',
+			method: 'GET',
+			success: function(data){
+			$select.empty(); // Vider l'ancien contenu
+				$select.append(new Option("-- Selectionner un Client --", "", true, true));
+			data.data.forEach(function(client){
+				$select.append(new Option(`${client.nom_complet} - ${client.telephone ? client.telephone : ""}`, client.id));
+			});
+			$select.select2({
+				allowClear: true
+			});
+
+			$select.trigger('change'); // Mettre à jour le Select2
+			},
+			error: function(err){
+			console.log(err)
+			}
+		});
+	}
+	chargerClients();
+
+	function getCSRFToken(){
+		const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+		return csrfToken ? csrfToken.value : "";
+	}
+  
+	$("#zoneForm").on('submit', function(e){
+		e.preventDefault();
+		let formData = new FormData(this)
+
+		$.ajax({
+			url: $("#zoneForm").attr("action"),
+			method: "POST",
+			data: formData,
+			processData: false,
+			contentType: false,
+			success: function(res){
+				if(res.success){
+					console.log(res)
+					$("#responseMessageZone").text(res.msg)
+					$('#responseMessageZone').addClass('bg-success show').fadeIn();
+					setTimeout(function(){
+						$("#responseMessageZone").removeClass('show bg-success').fadeOut();
+					}, 3000)
+					$("#zoneForm")[0].reset()
+				}
+			},
+			error: function(err){
+				console.log(err)
+				$("#responseMessageZone").text(res.msg)
+				$('#responseMessageZone').addClass('bg-danger show').fadeIn();
+				setTimeout(function(){
+					$("#responseMessageZone").removeClass('show bg-danger').fadeOut();
+				}, 3000)     
+			},
+		})
+	})
+    
+    $("#submitLocation").on('click', function (e) {
+        e.preventDefault();  // Empêche le rechargement de la page
+
+		const id_client = $("#clients-select").val()
+		const id_zone = $("#id_zone").val()
+		const montant_a_payer = $("#id_montant_a_payer").val()
+		const remise = $("#id_montant_reduit").val() || 0
+		const date_debut = $("#id_date_debut").val()
+		const date_fin = $("#id_date_fin").val()
+		const statut = $("#id_statut").val()
+		const type_location = $("#id_type_location").val()
+		const description = $("#id_description").val()
+
+		data = {
+			id_client,
+			id_zone,
+			montant_a_payer,
+			remise,
+			date_debut,
+			date_fin,
+			statut,
+			type_location,
+			description,
+		}
+
+		if(!data.id_client || !data.id_zone || !data.montant_a_payer || !data.date_debut || !data.date_fin || !data.statut || !data.type_location){
+			$("#responseMessageLouer").addClass("show bg-danger").fadeIn().removeClass("bg-success").text("Les champs notés du symbole * sont obligatoires");
+			setTimeout(() => $("#responseMessageLouer").removeClass("show").fadeOut(), 3000);
+			return;
+		}
+		
 
         $.ajax({
-            url: $("#zoneForm").attr("action"),
+            url: $("#locationForm").attr("action"), // Récupère l'URL de l'attribut action
             method: "POST",
-            data: formData,
-            processData: false,
-            contentType: false,
-            success: function(res){
-                if(res.success){
-                    console.log(res)
-                    $("#responseMessageZone").text(res.msg)
-                    $('#responseMessageZone').addClass('bg-success show').fadeIn();
-                    setTimeout(function(){
-                        $("#responseMessageZone").removeClass('show bg-success').fadeOut();
-                    }, 3000)
-                    $("#zoneForm")[0].reset()
-                }
-            },
-            error: function(err){
-                console.log(err)
-                $("#responseMessageZone").text(res.msg)
-                $('#responseMessageZone').addClass('bg-danger show').fadeIn();
-                setTimeout(function(){
-                    $("#responseMessageZone").removeClass('show bg-danger').fadeOut();
-                }, 3000)     
-            },
-        })
-      })
-
-    $("#plat-form").submit(function (e) {
-        e.preventDefault();  // Empêche le rechargement de la page
-
-        let formData = new FormData(this); // Récupère les données du formulaire, y compris les fichiers
-        $.ajax({
-            url: $("#plat-form").attr("action"), // Récupère l'URL de l'attribut action
-            type: "POST",
-            data: formData,
-            processData: false, // Ne pas traiter les données (obligatoire pour FormData)
-            contentType: false, // Ne pas définir le contentType (obligatoire pour FormData)
-            success: function (response) {
-                $("#response-message").addClass("show bg-success").fadeIn().removeClass("bg-danger").text("Plat ajouté avec succès !");
-                $("#plat-form")[0].reset(); // Réinitialise le formulaire
+			headers: { 'X-CSRFToken': getCSRFToken() },
+            data: JSON.stringify(data),
+            contentType: "application/json",
+            success: function (res) {
+				if(res.success){
+					
+					$("#responseMessageLouer").addClass("show bg-success").fadeIn().removeClass("bg-danger").text(res.msg);
+					$("#locationForm")[0].reset(); // Réinitialise le formulaire
+				}
             },
             error: function (xhr) {
                 let errMsg = xhr.responseJSON?.error || "Une erreur s'est produite";
-                $("#response-message").addClass("show bg-danger").fadeIn().removeClass("bg-success").text(errMsg);
+                $("#responseMessageLouer").addClass("show bg-danger").fadeIn().removeClass("bg-success").text(errMsg);
             }
         });
 
         // Cacher le message après 3 secondes
-        setTimeout(() => $("#response-message").removeClass("show").fadeOut(), 3000);
+        setTimeout(() => $("#responseMessageLouer").removeClass("show").fadeOut(), 3000);
     });
-    $("#boisson-form").submit(function (e) {
-        e.preventDefault();  // Empêche le rechargement de la page
-
-        let formData = new FormData(this); // Récupère les données du formulaire, y compris les fichiers
-        $.ajax({
-            url: $("#boisson-form").attr("action"), // Récupère l'URL de l'attribut action
-            type: "POST",
-            data: formData,
-            processData: false, // Ne pas traiter les données (obligatoire pour FormData)
-            contentType: false, // Ne pas définir le contentType (obligatoire pour FormData)
-            success: function (response) {
-                $("#response-message_boisson").addClass("show bg-success").fadeIn().removeClass("bg-danger").text(response.msg);
-                $("#boisson-form")[0].reset(); // Réinitialise le formulaire
-            },
-            error: function (xhr) {
-                let errMsg = xhr.responseJSON?.error || "Une erreur s'est produite";
-                $("#response-message_boisson").addClass("show bg-danger").fadeIn().removeClass("bg-success").text(errMsg);
-            }
-        });
-
-        // Cacher le message après 3 secondes
-        setTimeout(() => $("#response-message_boisson").removeClass("show").fadeOut(), 3000);
-    });
-  });
-
-
-$(document).ready(function () {
-    function getCSRFToken(){
-        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
-        return csrfToken ? csrfToken.value : "";
-    }
-    $("#appro-form").submit(function (e) {
-        e.preventDefault();  // Empêche le rechargement de la page
-
-        //let formData = new FormData(this); // Récupère les données du formulaire, y compris les fichiers
-
-        const actionUrl = $(this).attr('action');
-
-            // Collecte des données du formulaire
-            const formData = {
-                boisson: $('#id_boisson').val().trim(),
-                quantite: $('#id_quantite').val().trim(),
-                prix_achat_unit: $('#id_prix_achat_unit').val().trim(),
-            };
-
-            if (!formData.boisson || !formData.quantite || !formData.prix_achat_unit){
-              $("#response-message-appro").addClass("show bg-success").fadeIn().removeClass("bg-danger").text("Tous les champs sont obligatoires.");
-              setTimeout(() => $("#response-message-appro").removeClass("show").fadeOut(), 3000);
-            }
-
-        $.ajax({
-            url: actionUrl, // Récupère l'URL de l'attribut action
-            type: "POST",
-            data: formData,
-            headers: { 'X-CSRFToken': getCSRFToken() },
-            data: JSON.stringify(formData),
-            contentType: 'application/json',
-            dataType: 'json',
-            success: function (response) {
-
-                $("#response-message-appro").addClass("show bg-success").fadeIn().removeClass("bg-danger").text(response.msg);
-                $("#appro-form")[0].reset(); // Réinitialise le formulaire
-            },
-            error: function (xhr) {
-                let errMsg = xhr.responseJSON?.error || "Une erreur s'est produite";
-                $("#response-message-appro").addClass("show bg-danger").fadeIn().removeClass("bg-success").text(errMsg);
-            }
-        });
-
-        // Cacher le message après 3 secondes
-        setTimeout(() => $("#response-message-appro").removeClass("show").fadeOut(), 3000);
-    });
-
-    // Charger l'historique des controles
-    function loadHistoriqueControle(){
-      if ($.fn.DataTable.isDataTable('#tabHistoriqueControle')) {
-          $('#tabHistoriqueControle').DataTable().clear().destroy();
-      }
-      $("#tabHistoriqueControle").DataTable({
-        ajax: '/restaurant/historique_controles/',
-        columns: [
-          { data: null,
-            render: function(data, type, row, meta){
-              return meta.row + 1;
-            }
-          },
-          { data: 'date'},
-          { data: 'statut'},
-          { data: 'created_by'},
-          { data: 'updated_at' },
-          { data: 'details' },
-        ]
-      })
-    }
-
-    // Gestion du Controle des Boissons
-    // Verifie s'il y a un controle initialisé non cloturé; si oui: affiche le bouton pour le cloturer;
-    // sinon: affiche le boutton Nouveau controle pour initialiser un nouveau
-    var dataNouveauControle;
-    var dataOuvrirNouveauControlePlat;
-    var data_details_controle_boissons;
-    var id_controle_boissons;
-    function checkControleOuvert(){
-      $.ajax({
-        url: "/restaurant/boisson/controle/",
-        method: "GET",
-        dataType: "json",
-        success: function(res){
-          if(res.ouvert == true){
-
-            // S'il y a deja un controle Ouvert
-            const created_at = res.data.created_at
-            const control_date = new Date(created_at)
-            $("#dateControle").text(control_date.toLocaleString())
-
-            $("#container-btnClotureControle").removeClass("d-none").addClass("d-flex");
-
-            $("#btnClotureControle").on('click', function(){
-
-              const data = res.data.details
-
-              $("#id_controle").val(res.data.id)
-
-              // Afficher le tableau de cloture
-              $("#clotureControleTable").attr("hidden", false).fadeIn();
-              $("#container-btnClotureControle").slideUp(300, function(){
-                $(this).removeClass("d-flex").addClass("d-none");
-              })
-
-              // Charger les boissons qui ont ete controlées pour cloturer le controle
-              $("#tabClotureControle").DataTable({
-                data: data,
-                columns: [
-                  { data: null,
-                    render: function(data, type, row, meta){
-                      return meta.row + 1;
-                    }
-                  },
-                  { data: 'quantite_init'},
-                  { data: 'quantite_vendue'},
-                  { data: 'quantite_restante' },
-                  { data: 'manquant' },
-                  { data: 'control_date' },
-                ]
-              })
-
-            })
-          }
-        },
-        error: function(err){
-            // Aucun controle ouvert n'a été trouvé, alors on charge les Boissons pour demarer un nouveau controle
-            const data = err.responseJSON.data
-
-            if(err.responseJSON.ouvert == false){
-              $("#container-btnNouveauControle").addClass("d-flex").removeClass("d-none")
-
-              dataNouveauControle = data;
-
-            }
-          }
-      })
-    } // Fin checkControleOuvert
-    checkControleOuvert()
-
-    // Reçoit les donnees du contrôle des Plats actuellement ouvert
-    var dataControlePlatsOuvert;
-
-    function checkControlePlatOuvert(){
-      $.ajax({
-        url: "/restaurant/plat/controle/",
-        method: "GET",
-        dataType: "json",
-        success: function(res){
-          if(res.ouvert == true){
-
-            // S'il y a deja un controle Ouvert
-
-            const created_at = res.data.created_at
-            const control_date = new Date(created_at)
-            $("#dateControle").text(control_date.toLocaleString())
-
-            $("#container-btnClotureControlePlat").removeClass("d-none").addClass("d-flex");
-
-            $("#btnClotureControlePlat").on('click', function(){
-
-              const data = res.data.details
-              dataControlePlatsOuvert = res.data.details
-
-              $("#id_controlePlat").val(res.data.id)
-
-              // Afficher le tableau de cloture du controle des plats
-              $("#clotureControleTablePlat").attr("hidden", false).fadeIn();
-              $("#container-btnClotureControlePlat").slideUp(300, function(){
-                $(this).removeClass("d-flex").addClass("d-none");
-              })
-
-              // Charger les boissons qui ont ete controlées pour cloturer le controle
-              $("#tabClotureControlePlat").DataTable({
-                data: data,
-                columns: [
-                  { data: null,
-                    render: function(data, type, row, meta){
-                      return meta.row + 1;
-                    }
-                  },
-                  { data: 'nom_plat'},
-                  { data: 'quantite_disponible'},
-                  { data: 'quantite_vendue'},
-                  { data: 'quantite_restante' },
-                  { data: 'quantite_manquante' },
-                ]
-              })
-            })
-
-            //======================
-
-          }
-        },
-        error: function(err){
-            // Aucun controle ouvert n'a été trouvé, alors on charge les Boissons pour demarer un nouveau controle
-            const data = err.responseJSON.data
-
-            if(err.responseJSON.ouvert == false){
-              $("#container-btnNouveauControlePlat").addClass("d-flex").removeClass("d-none")
-
-              dataOuvrirNouveauControlePlat = data;
-
-            }
-          }
-      })
-    } // Fin checkControlePlatOuvert
-    checkControlePlatOuvert()
-
-    // Remplir la table tabClotureControle et Clorturé le controle de boisson en cours
-
-
-
-    // Initialiser un nouveau Controle des Plats
-    $("#btnNouveauControlePlat").on('click', function(){
-      $("#nouveauControleTablePlat").attr("hidden", false).fadeIn();
-      // Masquer le bouton Nouveau Contrôle
-      $("#container-btnNouveauControlePlat").slideDown(300, function(){
-        $(this).removeClass("d-flex").addClass("d-none").fadeIn(); // Supprimer, Apres l'animation
-      });
-
-      // vérifier si tabNouveauControle est déjà initialisé avant de réinitialiser
-      if ($.fn.DataTable.isDataTable('#tabNouveauControlePlat')) {
-          $('#tabNouveauControlePlat').DataTable().clear().destroy();
-      }
-
-      // Charger les donnees pour initialiser un nouveau controle des Boissons
-      $("#tabNouveauControlePlat").DataTable({
-        data: dataOuvrirNouveauControlePlat,
-        columns: [
-          { data: null,
-            render: function(data, type, row, meta){
-              return meta.row + 1; // Index de la ligne + 1
-            },
-          },
-          { data: 'nom_plat'},
-          { data: 'quantite_preparee'},
-        ]
-      })
-    })
-
-    // Annuler l'initialisation d'un nouveau controle des Plats
-    $("#annulerNouveauControlePlat").on("click", function(){
-      $("#nouveauControleTablePlat").attr("hidden", true).fadeOut();
-        // Afficher le boutton Nouveau Contrôle
-        $("#container-btnNouveauControlePlat").slideUp(300, function(){
-              $(this).removeClass("d-none").addClass("d-flex").fadeIn(); // Supprimer, Apres l'animation
-        });
-    })
-
-
-    // Initialiser un nouveau Controle de Boissons
-    $("#btnNouveauControle").on('click', function(){
-      $("#nouveauControleTable").attr("hidden", false).fadeIn();
-      // Masquer le bouton Nouveau Contrôle
-      $("#container-btnNouveauControle").slideDown(300, function(){
-        $(this).removeClass("d-flex").addClass("d-none").fadeIn(); // Supprimer, Apres l'animation
-      });
-
-      // vérifier si tabNouveauControle est déjà initialisé avant de réinitialiser
-      if ($.fn.DataTable.isDataTable('#tabNouveauControle')) {
-          $('#tabNouveauControle').DataTable().clear().destroy();
-      }
-
-      // Charger les donnees pour initialiser un nouveau controle des Boissons
-      $("#tabNouveauControle").DataTable({
-        data: dataNouveauControle,
-        columns: [
-          { data: null,
-            render: function(data, type, row, meta){
-              return meta.row + 1; // Index de la ligne + 1
-            },
-          },
-          { data: 'designation'},
-          { data: 'stock_val'},
-        ]
-      })
-    })
-
-    // Annuler la Clôture du Contrôle
-    $("#annulerClotureControle").on("click", function(){
-      $("#clotureControleTable").attr("hidden", true).fadeOut();
-      $("#container-btnClotureControle").slideDown(300, function(){
-        $(this).removeClass("d-none").addClass("d-flex").fadeIn();
-      })
-    })
-
-    loadHistoriqueControle()
-    $("#submitNouveauControle").on('click', function(){
-      let tabBoissons = [];
-      // Recuperer les boissons
-      $("#nouveauControleBody tr").each(function(){
-        let id_boisson = $(this).find(".id_boisson").val()
-        let quantite = $(this).find(".quantite").val()
-
-        if(id_boisson){
-          tabBoissons.push({
-            id: id_boisson,
-            quantite: parseInt(quantite)
-          })
-        }
-      })
-
-      if(tabBoissons.length === 0){
-        alert("Veuillez saisir au moins une boisson avec une quantité valide.");
-        return;
-      }
-
-      // Soumission de la requete pour creer/Enregistrer le Controle
-      $.ajax({
-        url: "/restaurant/boisson/nouveau_controle/",
-        method: "POST",
-        data: JSON.stringify({ boissons: tabBoissons}),
-        contentType: "application/json",
-        headers: { "X-CSRFToken": get_csrf_token() },
-        success: function(res){
-          alert(res.msg);
-          $("#nouveauControleTable").attr("hidden", true).fadeOut();
-          checkControleOuvert();
-
-          loadHistoriqueControle()
-
-          //$("#container-btnClotureControle").removeClass("d-none").addClass("d-flex").fadeIn();
-        },
-        error: function(err){
-          alert("Erreur lors de l'envoi des données.");
-        }
-      })
-    })
-
-    // Soumission de la requete pour Créer/Enregistrer le Contrôle des Plats
-    $("#submitNouveauControlePlat").on('click', function(){
-      let tabPlats = [];
-      // Recuperer les plats
-      $("#nouveauControleBodyPlat tr").each(function(){
-        let id_plat = $(this).find(".id_plat").text()
-        let quantite = $(this).find(".qtePreparee").val()
-
-        if(id_plat){
-          tabPlats.push({
-            id: id_plat,
-            quantite_preparee: parseInt(quantite)
-          })
-        }
-      })
-
-      if(tabPlats.length === 0){
-        alert("Veuillez saisir au moins un Plat avec une quantité valide.");
-        return;
-      }
-
-      // Soumission de la requete pour creer/Enregistrer le Controle
-      $.ajax({
-        url: "/restaurant/plat/nouveau_controle/",
-        method: "POST",
-        data: JSON.stringify({ plats: tabPlats}),
-        contentType: "application/json",
-        headers: { "X-CSRFToken": get_csrf_token() },
-        success: function(res){
-          alert(res.msg);
-          $("#nouveauControleTablePlat").attr("hidden", true).fadeOut();
-          checkControlePlatOuvert();
-
-          //loadHistoriqueControle()
-
-          //$("#container-btnClotureControle").removeClass("d-none").addClass("d-flex").fadeIn();
-        },
-        error: function(err){
-          alert("Erreur lors de l'envoi des données.");
-        }
-      })
-    })
-
-    // Annuler l'initialisation d'un nouveau controle
-    $("#annulerNouveauControle").on("click", function(){
-      $("#nouveauControleTable").attr("hidden", true).fadeOut();
-        // Afficher le boutton Nouveau Contrôle
-        $("#container-btnNouveauControle").slideUp(300, function(){
-              $(this).removeClass("d-none").addClass("d-flex").fadeIn(); // Supprimer, Apres l'animation
-        });
-    })
-
-    function get_csrf_token(){
-      return document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1]
-    }
-
-    // Envoie de la requête pour cloturer le controle
-    $("#submitClotureControle").on('click', function(){
-      // Tableau devant contenir les boissons du controle a cloturé
-      let tabDetailsCloture = []
-      let control_id = $("#id_controle").val()
-
-      // Recuperer les donnees de la Table
-      $("#tabClotureControleTBody tr").each(function(){
-        let id_boisson = $(this).find(".id_boisson").text()
-        let qteVendue = $(this).find(".qteVendue").val()
-        let qteRestante = $(this).find(".qteRestante").val()
-        let manquante = $(this).find(".manquante").val()
-
-
-        if(id_boisson){
-          tabDetailsCloture.push({
-            id_boisson,
-            qteVendue,
-            qteRestante,
-            manquante,
-          })
-        }
-      }) // End du Each
-
-      $.ajax({
-        url: "/restaurant/boisson/cloture_controle/",
-        method: "POST",
-        headers: { "X-CSRFToken": get_csrf_token() },
-        data: JSON.stringify({ detail_cloture: tabDetailsCloture, control_id}),
-        dataType: "json",
-        contentType: "application/json",
-        success: function(res){
-          $('#response-message-controle').text(res.msg);
-          $('#response-message-controle').addClass('show');
-
-          // Faire disparaître après 3 secondes (3000 ms)
-          setTimeout(function () {
-              $('#response-message-controle').removeClass('show').fadeOut();
-          }, 3000);
-          location.reload();
-        },
-        error: function(err){
-          console.log("err:", err)
-        }
-      }) // End ajax
-    }) // End submitClotureControle
-
-
-    // ### ============== Calculer les Quantités Restantes et Manquantes des Plats  ================= ###
-    $("#btnClotureControlePlat").on('click', function(){
-      setTimeout(()=>{
-        $("#tabClotureControleTBodyPlat tr").each(function(){
-          const row = $(this);
-
-          // Recuperer les Inputs de Quantités
-          const inputQtePreparee = row.find('.qtePreparee');
-          const inputVendue = row.find('.qteVendue');
-          const inputRestante = row.find('.qteRestante');
-          const inputManquante = row.find('.qteManquante');
-
-          // Quand la quantite vendue change
-          inputVendue.off('input').on('input', function(){
-            const vendue = parseInt($(this).val()) || 0;
-            const restante = inputQtePreparee.val() - vendue;
-            inputRestante.val(restante >= 0 ? restante : 0);
-
-            calculQuantiteManquante(inputQtePreparee, inputVendue, inputRestante, inputManquante);
-          })
-
-          // Quand la quantité restante est modifiée manuellement
-          inputRestante.off('input').on('input', function(){
-            calculQuantiteManquante(inputQtePreparee, inputVendue, inputRestante, inputManquante);
-          })
-        })
-      }, 300)
-    })
-
-    // ### =============================================== ####
-    // Envoie de la requête pour cloturer le controle des Plats
-    $("#submitClotureControlePlat").on('click', function(){
-      // Tableau devant contenir les plats du controle a cloturé
-      let tabDetailsCloturePlat = []
-      let id_controlePlat = $("#id_controlePlat").val()
-
-      // Recuperer les donnees de la Table
-      $("#tabClotureControleTBodyPlat tr").each(function(){
-        let id_plat = $(this).find(".id_plat").text()
-        let qteVendue = $(this).find(".qteVendue").val()
-        let qteRestante = $(this).find(".qteRestante").val()
-
-
-        if(id_plat){
-          tabDetailsCloturePlat.push({
-            id_plat,
-            qteVendue,
-            qteRestante,
-          })
-        }
-      }) // End du Each
-
-      $.ajax({
-        url: "/restaurant/plat/cloture_controle/",
-        method: "POST",
-        headers: { "X-CSRFToken": get_csrf_token() },
-        data: JSON.stringify({ detail_cloture: tabDetailsCloturePlat, id_controlePlat}),
-        dataType: "json",
-        contentType: "application/json",
-        success: function(res){
-          $('#response-message-controle').text(res.msg);
-          $('#response-message-controle').addClass('show');
-
-          // Faire disparaître après 3 secondes (3000 ms)
-          setTimeout(function () {
-              $('#response-message-controle').removeClass('show').fadeOut();
-          }, 3000);
-          location.reload();
-        },
-        error: function(err){
-          console.log("err:", err)
-        }
-      }) // End ajax
-    }) // End submitClotureControlePlat
-
-    function calculQuantiteManquante(inputQtePreparee, inputVendue, inputRestante, inputManquante){
-      const qVendue = parseInt(inputVendue.val()) || 0;
-      const qRestante = parseInt(inputRestante.val()) || 0;
-      const qteInitiale = parseInt(inputQtePreparee.val()) || 0;
-
-      const manquant = qteInitiale - (qVendue + qRestante);
-      inputManquante.val(manquant);
-    }
-
-  })
-
-
-
-$(document).ready(function(){
-        $("#btnClotureControle").on("click", function(){
-
-          // Verifier si la table est deja initialiser avant de reinitialiser
-          if ( $.fn.DataTable.isDataTable('#tabClotureControle') ) {
-              $('#tabClotureControle').DataTable().clear().destroy();
-          }
-
-          // Calculer la Quantite Restante apres la saisie de la quantite Vendue
-          setTimeout(()=>{
-              const lignes = $("#tabClotureControleTBody tr")
-              // Initialise les handlers apres affichage
-              $("#tabClotureControleTBody tr").each(function(){
-                const row = $(this);
-
-                const qteInitiale = parseInt(row.find('.qteInit').text().trim()) || 0;
-                const inputVendue = row.find('.qteVendue');
-                const inputRestante = row.find('.qteRestante');
-                const inputManquante = row.find('.manquante');
-
-                // Quand la quantite vendue change
-                inputVendue.off('input').on('input', function(){
-                  const vendue = parseInt($(this).val()) || 0;
-                  const restante = qteInitiale - vendue;
-                  inputRestante.val(restante >= 0 ? restante : 0);
-                  calculerManquant();
-                })
-
-                // Quand la quantité restante est modifiée manuellement
-                inputRestante.off('input').on('input', function(){
-                  calculerManquant();
-                })
-
-                function calculerManquant(){
-                  const qVendue = parseInt(inputVendue.val()) || 0;
-                  const qRestante = parseInt(inputRestante.val()) || 0;
-                  const total = qVendue + qRestante;
-                  const manquant = qteInitiale - total
-                  inputManquante.val(manquant < 0 ? Math.abs(manquant) : 0);
-                }
-              })
-          }, 300) // End setTimeout
-        }) // End Click "btnClotureControle"
-    })
-
-
-$(document).on('click', '.details-controle', function(e){
-
-      e.preventDefault();
-      let url = $(this).attr('href')
-      $.ajax({
-        url: url,
-        method: 'GET',
-        dataType: 'json',
-        success: function(res){
-            $("#btnModalDetail").trigger("click");
-            $("#modalDetailBody").empty();
-            $("#staticBackdrop").off('shown.bs.modal').on('shown.bs.modal', function(){
-              $("#date-controle").text(res.data[0].date_controle.toString())
-              for(let i=0; i < res.data.length; i++){
-                  let boisson = res.data[i].boisson
-
-                  let date_controle = res.data[i].date_controle
-                  let manquant = res.data[i].manquant
-                  let qte_init = res.data[i].qte_init
-                  let qte_restante = res.data[i].qte_restante
-                  let qte_vendue = res.data[i].qte_vendue
-
-                  createDetailCard(boisson, date_controle, manquant, qte_init, qte_restante, qte_vendue)
-              }
-            });
-        },
-        error: function(err){
-          alert(err.responseJSON.msg)
-        }
-      }) // End Ajax
-
-      $('.btn[data-bs-dismiss="modal"]').on('click', function () {
-          // Retirer le focus pour éviter l’erreur d’accessibilité
-          $(this).blur();
-      });
-
-      function createDetailCard(boisson, date_controle, manquant, qte_init, qte_restante, qte_vendue){
-        let container = $("<div>").addClass("col-lg-5 col-sm-5");
-
-        let card = $("<div>")
-          .addClass("border border-info p-3 rounded-2 mb-4");
-
-        let header = $("<div>")
-          .addClass("mb-3 d-flex align-items-start");
-
-        let img = $("<img>")
-          .attr("src", "/static/assets/images/LogoMarbika.png") // ajuster si besoin
-          .addClass("rounded-circle me-2 img-3x")
-          .attr("alt", "Bootstrap Dashboards");
-
-        let userInfo = $("<div>")
-          .addClass("flex-grow-1");
-
-        let designation = $("<strong>").text(boisson);
-        let date = $("<br>").add(
-          $("<small>").addClass("text-muted").text(date_controle.toString())
-        );
-
-        userInfo.append(designation, date);
-        header.append(img, userInfo);
-
-        let body = $("<div>").addClass("notes-body");
-        let qte_initial = $("<h6>").text("Qte Initiale : " + qte_init.toString());
-        let vendue = $("<h6>").text("Vendue : " + qte_vendue.toString());
-        let restant = $("<h6>").text("Restant: " + qte_restante.toString());
-        let qte_manquant = $("<h6>").text("Manquant : " + manquant.toString());
-
-        body.append(qte_initial, vendue, restant, qte_manquant);
-
-        card.append(header, body);
-        container.append(card);
-
-        // Ensuite tu peux l'ajouter au DOM où tu veux, par exemple :
-        $("#modalDetailBody").append(container);
-      }
-  }) 
+});
