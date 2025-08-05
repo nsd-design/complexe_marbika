@@ -23,3 +23,15 @@ class LocationForm(forms.ModelForm):
             'date_debut' : forms.DateInput(attrs={'type': 'date'}),
             'date_fin' : forms.DateInput(attrs={'type': 'date'})
         }
+
+
+class ZoneForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        for field_name in self.fields:
+            self.fields[field_name].label = ''
+
+    class Meta:
+        model = models.ZoneAReserver
+        fields = ['nom', 'statut']
