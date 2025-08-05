@@ -1,3 +1,4 @@
+import http
 import json
 from django.utils.html import escape
 
@@ -5,9 +6,9 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
 
-from client.models import Client
+from client.models import Client, ZoneAReserver
 from . import forms
-
+from .forms import ZoneForm
 
 tmp_base = "client/"
 
@@ -54,5 +55,22 @@ def location_reservation(request):
     context = {
         "page_title": "Location & Réservation",
         "form": forms.LocationForm(),
+        "zone_form": ZoneForm()
     }
     return render(request, tmp_base + "location_reservation.html", context)
+
+
+@require_http_methods(["POST"])
+def create_zone(request):
+    zone_form = ZoneForm(request.POST)
+    if zone_form.is_valid():
+        nom = zone_form.cleaned_data["nom"]
+        statut = zone_form.cleaned_data["statut"]
+        try:
+            ZoneAReserver.objects.create(nom=nom, statut=statut)
+            return JsonResponse({"success": True, "msg": "Zone crée avec succès !"})
+        except Exception as e:
+            print("Erreur :", e)
+            return JsonResponse({"error": True, "msg": str(e)}, status=400)
+    else:
+        return JsonResponse({"error": True, "msg": "Données invalides"}, status=400)
