@@ -6,7 +6,10 @@ from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
 
 from client.models import Client
+from . import forms
 
+
+tmp_base = "client/"
 
 def telephone_exists(telephone):
     # Check if Telephone already Exists
@@ -44,3 +47,12 @@ def create_client(request):
     except Exception as e:
         print(e)
         return JsonResponse({"error": True, "msg": "Une erreur est survenue lors de la création du Client, réessayer"}, status=400)
+
+
+@require_http_methods(["GET"])
+def location_reservation(request):
+    context = {
+        "page_title": "Location & Réservation",
+        "form": forms.LocationForm(),
+    }
+    return render(request, tmp_base + "location_reservation.html", context)
