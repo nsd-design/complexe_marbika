@@ -39,3 +39,21 @@ class ZoneForm(forms.ModelForm):
     class Meta:
         model = models.ZoneAReserver
         fields = ['nom', 'statut']
+
+
+class ReservationForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        for field_name in self.fields:
+            self.fields[field_name].label = ''
+
+    class Meta:
+        model = models.Reservation
+        fields = ["type", "client", "zone", "etat_reservation", "date_debut", "date_fin", "commentaire"]
+
+        widgets = {
+            'date_debut' : forms.DateInput(attrs={'type': 'date', 'id': 'date_debut_reservation'}),
+            'date_fin' : forms.DateInput(attrs={'type': 'date', 'id': 'date_fin_reservation'}),
+            'zone' : forms.Select(attrs={'id': 'zone_reservation'})
+        }

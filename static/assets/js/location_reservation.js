@@ -1,7 +1,6 @@
 $(document).ready(function () {
-	function chargerClients()
+	function chargerClients($select)
 	{
-		const $select = $('#clients-select');
 		$.ajax({
 			url: '/salon/produits/list_clients/',
 			method: 'GET',
@@ -22,7 +21,12 @@ $(document).ready(function () {
 			}
 		});
 	}
-	chargerClients();
+
+	const $selectClientLocation = $("#clients-select")
+	const $selectClientReservation = $("#clientsSelectReservation")
+
+	chargerClients($selectClientLocation);
+	chargerClients($selectClientReservation);
 
 	function getCSRFToken(){
 		const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
@@ -115,4 +119,69 @@ $(document).ready(function () {
         // Cacher le message après 3 secondes
         setTimeout(() => $("#responseMessageLouer").removeClass("show").fadeOut(), 3000);
     });
+    
+    $("#submitReservation").on('click', function () {
+        // e.preventDefault();  // Empêche le rechargement de la page
+
+		const id_client = $("#clientsSelectReservation").val()
+		const id_zone = $("#zone_reservation").val()
+		const type = $("#id_type").val()
+		const statut = $("#id_etat_reservation").val()
+		const date_debut = $("#date_debut_reservation").val()
+		const date_fin = $("#date_fin_reservation").val()
+		const commentaire = $("#id_commentaire").val()
+
+		// console.log("id_client :", id_client)
+
+		data = {
+			id_client,
+			id_zone,
+			type,
+			statut,
+			date_debut,
+			date_fin,
+			commentaire,
+		}
+		console.log("id client :", id_client)
+		console.log("id zone :", id_zone)
+		console.log("type :", type)
+		console.log("etat reservation :", statut)
+		console.log("date debut " + date_debut, "date fin " +date_fin)
+		console.log("commentaire ", commentaire)
+		
+		if(!data.id_client || !data.id_zone || !data.date_debut || !data.date_fin || !data.statut || !data.type){
+			$("#responseMessageReservation").addClass("show bg-danger").fadeIn().removeClass("bg-success").text("Les champs notés du symbole * sont obligatoires");
+			setTimeout(() => $("#responseMessageReservation").removeClass("show").fadeOut(), 3000);
+			return;
+		}
+		
+        $.ajax({
+            url: '/client/location_reservation/reserver/',
+            method: "POST",
+			headers: { 'X-CSRFToken': getCSRFToken() },
+            data: JSON.stringify(data),
+            contentType: "application/json",
+            success: function (res) {
+				if(res.success){
+					
+					$("#responseMessageReservation").addClass("show bg-success").fadeIn().removeClass("bg-danger").text(res.msg);
+					$("#clientsSelectReservation").val('')
+					$("#zone_reservation").val('')
+					$("#id_type").val('')
+					$("#id_etat_reservation").val('')
+					$("#date_debut_reservation").val('')
+					$("#date_fin_reservation").val('')
+					$("#id_commentaire").val('')
+				}
+            },
+            error: function (xhr) {
+                let errMsg = xhr.responseJSON?.msg || "Une erreur s'est produite";
+                $("#responseMessageReservation").addClass("show bg-danger").fadeIn().removeClass("bg-success").text(errMsg);
+            }
+        });
+
+        // Cacher le message après 3 secondes
+        setTimeout(() => $("#responseMessageReservation").removeClass("show").fadeOut(), 3000);
+    });
+	
 });

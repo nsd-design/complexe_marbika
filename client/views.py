@@ -1,14 +1,16 @@
 import http
 import json
+
+from django.db import transaction
 from django.utils.html import escape
 
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
 
-from client.models import Client, ZoneAReserver, Location
+from client.models import Client, ZoneAReserver, Location, Reservation
 from . import forms
-from .forms import ZoneForm, LocationForm
+from .forms import ZoneForm, LocationForm, ReservationForm
 
 tmp_base = "client/"
 
@@ -55,7 +57,8 @@ def location_reservation(request):
     context = {
         "page_title": "Location & Réservation",
         "form": forms.LocationForm(),
-        "zone_form": ZoneForm()
+        "zone_form": ZoneForm(),
+        "reservation_form": ReservationForm(),
     }
     return render(request, tmp_base + "location_reservation.html", context)
 
@@ -104,6 +107,61 @@ def create_location(request):
         return JsonResponse({"error": True, "msg": "Le Client n'a été trouvé dans la Base de données"})
     except ZoneAReserver.DoesNotExist:
         return JsonResponse({"error": True, "msg": "La Zone à louer n'a été trouvé dans la Base de données"})
+    except Exception as e:
+        print("Erreur :", e)
+        return JsonResponse({"error": True, "msg": str(e)})
+
+
+# Verifier si la zone à reserver est 'libre' et renvoyer 'True'
+def check_zone_libre(id_zone):
+    try:
+        ZoneAReserver.objects.get(id=id_zone, statut='libre')
+        return True
+    except ZoneAReserver.DoesNotExist:
+        return False
+
+
+@require_http_methods(["POST"])
+def create_reservation(request):
+    try:
+        data = json.loads(request.body)
+
+        id_client = escape(data.get("id_client"))
+        id_zone = escape(data.get("id_zone"))
+
+        if not check_zone_libre(id_zone):
+            return JsonResponse({"error": True, "msg": "Cette Zone est déjà réservée."}, status=404)
+
+        with transaction.atomic():
+
+            reservation_reussie = False
+
+            current_client = Client.objects.get(id=id_client)
+            current_zone = ZoneAReserver.objects.get(id=id_zone)
+
+            # Créer la Réservation
+            new_reservation = Reservation.objects.create(
+                type=escape(data.get("type")), client=current_client, zone=current_zone, etat_reservation=escape(data.get("statut")),
+                date_debut=escape(data.get("date_debut")), date_fin=escape(data.get("date_fin")), commentaire=escape(data.get("commentaire"))
+            )
+
+            # Mettre à jour la Zone réservée, mettre son statut sur "reserve"
+            if new_reservation:
+                current_zone.statut = 'reserve'
+                current_zone.save()
+
+                reservation_reussie = True
+
+            if not reservation_reussie:
+                raise Exception("Erreur inattendue")
+        return JsonResponse({"success": True, "msg": "Réservation effectuée avec succès."})
+
+    except Client.DoesNotExist:
+        return JsonResponse({"error": True, "msg": "Le Client est introuvable."}, status=404)
+
+    except ZoneAReserver.DoesNotExist:
+        return JsonResponse({"error": True, "msg": "La zone à reserver est introuvable."}, status=404)
+
     except Exception as e:
         print("Erreur :", e)
         return JsonResponse({"error": True, "msg": str(e)})
