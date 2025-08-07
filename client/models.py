@@ -21,7 +21,7 @@ class ZoneAReserver(MyBaseModel):
     statut = models.CharField(max_length=20, choices=STATUT_CHOICES, default='libre')
 
     def __str__(self):
-        return f"Zone: {self.nom} - {self.statut}"
+        return f"Zone: {self.nom} - {self.get_statut_display()}"
 
 class Reservation(MyBaseModel):
     TYPE = [(1, "Service"), (2, "Evénement")]

@@ -114,7 +114,70 @@
             </div> <!-- Tab Form -->
 
             <div class="tab-pane fade" id="twoAA" role="tabpanel" aria-labelledby="tab-twoAA">
-                Tab Two
+                <div class="row gx-4">
+                    {% csrf_token %}
+                        <!-- Liste Clients -->
+                    <div class="col-xl-3 col-sm-4 col-12">
+                      <div class="mb-3">
+                        <label class="form-label" for="clients-select">Selectionnez un Client <span style="color: red">*</span></label>
+                        <select name="reservation" required class="form-select bg-secondary" id="clientsSelectReservation"
+                                aria-label="Default select example">
+                            <option value="">-- Selectionner un Client --</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="col-xl-3 col-sm-4 col-12">
+                      <div class="mb-3">
+                        <label class="form-label" for="id_zone">Zone <span style="color: red">*</span></label>
+                        {{ reservation_form.zone | as_crispy_field  }}
+                      </div>
+                    </div>
+                    <div class="col-xl-3 col-sm-4 col-12">
+                      <div class="mb-3">
+                        <label class="form-label" for="id_type">Type de réservation <span style="color: red">*</span></label>
+                        {{ reservation_form.type | as_crispy_field  }}
+                      </div>
+                    </div>
+                    <div class="col-xl-3 col-sm-4 col-12">
+                      <div class="mb-3">
+                        <label class="form-label" for="id_etat_reservation">Statut</label>
+                        {{ reservation_form.etat_reservation | as_crispy_field  }}
+                      </div>
+                    </div>
+                    <div class="col-xl-3 col-sm-4 col-12">
+                      <div class="mb-3" id="date_debut_reservation_container">
+                        <label class="form-label" for="id_date_debut">Date de debut <span style="color: red">*</span></label>
+                        {{ reservation_form.date_debut | as_crispy_field  }}
+                      </div>
+                    </div>
+                    <div class="col-xl-3 col-sm-4 col-12">
+                      <div class="mb-3">
+                        <label class="form-label" for="id_date_fin">Date de fin <span style="color: red">*</span></label>
+                        {{ reservation_form.date_fin | as_crispy_field  }}
+                      </div>
+                    </div>
+                    <div class="col-xl-3 col-sm-4 col-12">
+                      <div class="mb-3">
+                        <label class="form-label" for="id_commentaire">Commentaire</label>
+                        {{ reservation_form.commentaire | as_crispy_field  }}
+                      </div>
+                    </div>
+
+
+                    <!-- Zone d'affichage des messages -->
+                    <div id="responseMessageReservation" class="alert bg-success text-white alert-dismissible fade" role="alert">
+
+                      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"
+                        aria-label="Close"></button>
+                    </div>
+
+                    <div class="col-sm-12 col-12">
+                      <div class="d-flex gap-4 justify-content-end">
+                        <button type="button" id="submitReservation" class="btn btn-primary">Céer</button>
+                        <button type="reset" class="btn btn-outline-secondary">Annuler</button>
+                      </div>
+                    </div>
+                  </div>
             </div>
             <div class="tab-pane fade" id="threeAA" role="tabpanel" aria-labelledby="tab-threeAA">
                 <form method="POST" action="{% url 'create_zone' %}" class="row gx-4" id="zoneForm">
@@ -164,6 +227,7 @@
 {% block custom_js %}
 <script src="{% static 'assets/js/jquery.min.js' %}"></script>
 <script src="{% static 'assets/js/datatables.min.js' %}"></script>
-<script defer src="{% static 'assets/js/location_reservation.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="{% static 'assets/js/location_reservation.js' %}"></script>
 {% endblock %}
 
