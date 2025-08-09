@@ -86,21 +86,23 @@ def create_location(request):
 
         id_client = escape(data.get("id_client"))
         id_zone = escape(data.get("id_zone"))
-        montant_a_payer = escape(data.get("montant_a_payer"))
-        remise = escape(data.get("remise"))
-        date_debut = escape(data.get("date_debut"))
-        date_fin = escape(data.get("date_fin"))
-        statut = escape(data.get("statut"))
-        type_location = escape(data.get("type_location"))
-        description = escape(data.get("description"))
 
-        current_client = Client.objects.get(id=id_client)
-        current_zone = ZoneAReserver.objects.get(id=id_zone)
+        if not check_zone_libre(id_zone):
+            return JsonResponse({"error": True, "msg": "Cette Zone est déjà réservée."}, status=404)
 
-        Location.objects.create(
-            locateur=current_client, zone=current_zone, description=description, montant_a_payer=montant_a_payer,
-            montant_reduit=int(remise), date_debut=date_debut, date_fin=date_fin, statut=statut, type_location=type_location,
-        )
+        with transaction.atomic():
+
+            current_client = Client.objects.get(id=id_client)
+            current_zone = ZoneAReserver.objects.get(id=id_zone)
+
+            Location.objects.create(
+                locateur=current_client, zone=current_zone, description=escape(data.get("description")), montant_a_payer=escape(data.get("montant_a_payer")),
+                montant_reduit=escape(data.get("remise")), date_debut=escape(data.get("date_debut")),
+                date_fin=escape(data.get("date_fin")), statut=escape(data.get("statut")), type_location=escape(data.get("type_location")),
+            )
+
+            current_zone.statut = 'reserve'
+            current_zone.save()
 
         return JsonResponse({"success": True, "msg": f"Location enregistrée avec succès."})
     except Client.DoesNotExist:
