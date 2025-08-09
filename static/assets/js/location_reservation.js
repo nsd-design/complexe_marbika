@@ -32,6 +32,14 @@ $(document).ready(function () {
 		const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
 		return csrfToken ? csrfToken.value : "";
 	}
+
+	// Definir la Date au format annee moise jour
+	function normaliserDate(date) {
+		if(!(date instanceof Date)){
+			date = new Date(date)
+		}
+		return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+	}
   
 	$("#zoneForm").on('submit', function(e){
 		e.preventDefault();
@@ -65,6 +73,8 @@ $(document).ready(function () {
 		})
 	})
     
+	
+
     $("#submitLocation").on('click', function (e) {
         e.preventDefault();  // Empêche le rechargement de la page
 
@@ -77,6 +87,22 @@ $(document).ready(function () {
 		const statut = $("#id_statut").val()
 		const type_location = $("#id_type_location").val()
 		const description = $("#id_description").val()
+
+		// Controler la Date debut de Location par rapport a la date du jour
+		const dateDebut = normaliserDate(date_debut);
+		const dateFin = normaliserDate(date_fin)
+		const today = normaliserDate(new Date());
+
+		if(dateDebut.getTime() < today.getTime()){
+			alert("La Date de Début est incorrecte")
+			return;
+		}
+
+		// Controller la Date de Fin de Location par rapport a la Date de debut
+		if(dateFin.getTime() < dateDebut.getTime()){
+			alert("La date de fin doit être supérieur ou égale à la date de début");
+			return;
+		}
 
 		data = {
 			id_client,
@@ -111,7 +137,7 @@ $(document).ready(function () {
 				}
             },
             error: function (xhr) {
-                let errMsg = xhr.responseJSON?.error || "Une erreur s'est produite";
+                let errMsg = xhr.responseJSON?.msg || "Une erreur s'est produite";
                 $("#responseMessageLouer").addClass("show bg-danger").fadeIn().removeClass("bg-success").text(errMsg);
             }
         });
@@ -131,7 +157,22 @@ $(document).ready(function () {
 		const date_fin = $("#date_fin_reservation").val()
 		const commentaire = $("#id_commentaire").val()
 
-		// console.log("id_client :", id_client)
+		// Controler la Date debut de Location par rapport a la date du jour
+		const dateDebut = normaliserDate(date_debut);
+		const dateFin = normaliserDate(date_fin)
+		const today = normaliserDate(new Date());
+
+		if(dateDebut.getTime() < today.getTime()){
+			alert("La Date de Début est incorrecte")
+			return;
+		}
+
+		// Controller la Date de Fin de Location par rapport a la Date de debut
+		if(dateFin.getTime() < dateDebut.getTime()){
+			alert("La date de fin doit être supérieur ou égale à la date de début");
+			return;
+		}
+
 
 		data = {
 			id_client,
