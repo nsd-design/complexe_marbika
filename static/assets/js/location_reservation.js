@@ -1,4 +1,31 @@
 $(document).ready(function () {
+	var tabLocation = $("#tableLocation").DataTable({
+		ajax: {
+			url: '/client/location_reservation/locations/',
+			dataSrc: 'data',
+		},
+		columns: [
+			{
+				data: null,
+				render: function(data, type, row, meta){
+					return meta.row + 1;
+					}
+			},
+			{ data: 'locateur' },
+			{ data: 'telephone' },
+			{ data: 'zone' },
+			{ data: 'montant_a_payer' },
+			{ data: 'remise' },
+			{ data: 'net_paye' },
+			{ data: 'date_debut' },
+			{ data: 'date_fin' },
+			{ data: 'statut' },
+			{ data: 'type_location' },
+			{ data: 'description' },
+
+		]
+	})
+	
 	function chargerClients($select)
 	{
 		$.ajax({
@@ -183,12 +210,6 @@ $(document).ready(function () {
 			date_fin,
 			commentaire,
 		}
-		console.log("id client :", id_client)
-		console.log("id zone :", id_zone)
-		console.log("type :", type)
-		console.log("etat reservation :", statut)
-		console.log("date debut " + date_debut, "date fin " +date_fin)
-		console.log("commentaire ", commentaire)
 		
 		if(!data.id_client || !data.id_zone || !data.date_debut || !data.date_fin || !data.statut || !data.type){
 			$("#responseMessageReservation").addClass("show bg-danger").fadeIn().removeClass("bg-success").text("Les champs notés du symbole * sont obligatoires");

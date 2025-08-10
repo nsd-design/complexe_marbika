@@ -11,6 +11,7 @@ from django.views.decorators.http import require_http_methods
 from client.models import Client, ZoneAReserver, Location, Reservation
 from . import forms
 from .forms import ZoneForm, LocationForm, ReservationForm
+from salon.views import currency
 
 tmp_base = "client/"
 
@@ -167,3 +168,32 @@ def create_reservation(request):
     except Exception as e:
         print("Erreur :", e)
         return JsonResponse({"error": True, "msg": str(e)})
+
+
+@require_http_methods(["GET"])
+def get_locations(request):
+    try:
+        list_locations: list = []
+
+        locations = Location.objects.all()
+
+        for location in locations:
+            net_paye = location.montant_a_payer - location.montant_reduit
+            list_locations.append({
+                "id": location.id,
+                "locateur": location.locateur.nom_complet,
+                "telephone": location.locateur.telephone,
+                "objet": location.objet,
+                "zone": location.zone.nom,
+                "description": location.description,
+                "montant_a_payer": currency(location.montant_a_payer),
+                "remise": currency(location.montant_reduit),
+                "date_debut": location.date_debut.strftime("%d/%m/%Y"),
+                "date_fin": location.date_fin.strftime("%d/%m/%Y"),
+                "statut": location.get_statut_display(),
+                "type_location": location.get_type_location_display(),
+                "net_paye": f'<span class="text-success">{currency(net_paye)}</span>',
+            })
+        return JsonResponse({"success": True, "data": list_locations})
+    except Location.DoesNotExist:
+        return JsonResponse({"error": True, "msg": "Aucune Location enregistrée."}, status=404)
