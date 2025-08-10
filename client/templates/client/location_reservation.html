@@ -218,8 +218,81 @@
       </div>
     </div>
   </div>
+</div>
+<!-- Row ends -->
 
+<!-- Row starts -->
+<div class="row gx-4">
+  <div class="col-sm-12">
+    <div class="card mb-4">
+      <div class="card-body">
+        <div class="custom-tabs-container">
+          <ul class="nav nav-tabs" id="customTabLists" role="tablist">
+            <li class="nav-item" role="presentation">
+              <a class="nav-link active" id="tab-listLocations" data-bs-toggle="tab" href="#listLocations" role="tab"
+                aria-controls="listLocations" aria-selected="true">
+                  <i class="bi bi-columns"></i>
+                  Liste des Locations
+              </a>
+            </li>
+            <li class="nav-item" role="presentation">
+              <a class="nav-link" id="tab-listReservation" data-bs-toggle="tab" href="#listReservation" role="tab"
+                aria-controls="listReservation" aria-selected="false" tabindex="-1">
+                  <i class="bi bi-door-closed"></i>
+                  Liste des Réservations
+              </a>
+            </li>
+            <li class="nav-item" role="presentation">
+              <a class="nav-link" id="tab-listZones" data-bs-toggle="tab" href="#listZones" role="tab"
+                aria-controls="listZones" aria-selected="false" tabindex="-1">
+                  <i class="bi bi-record-circle"></i>
+                  Liste des Zones / Domaines
+              </a>
+            </li>
+          </ul>
+          <div class="tab-content" id="customTabContentLists">
+            <div class="tab-pane fade show active" id="listLocations" role="tabpanel" aria-labelledby="tab-listLocations">
+                <div class="table-outer">
+                  <div class="table-responsive">
+                    <table class="table table-striped truncate m-0" id="tableLocation">
+                      <thead>
+                        <tr>
+                          <th>#</th>
+                          <th>Client</th>
+                          <th>Téléphone</th>
+                          <th>Domaine</th>
+                          <th>Montant</th>
+                          <th>Rémise</th>
+                          <th>Net Payé</th>
+                          <th>Date Début</th>
+                          <th>Date Fin</th>
+                          <th>Statut</th>
+                          <th>Type</th>
+                          <th>Description</th>
+                        </tr>
+                      </thead>
+                      <tbody>
 
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="listReservation" role="tabpanel" aria-labelledby="tab-listReservation">
+                Reservation
+            </div>
+            <div class="tab-pane fade" id="listZones" role="tabpanel" aria-labelledby="tab-listZones">
+                Zones / Domaines
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
 </div>
 <!-- Row ends -->
 {% endblock main %}
