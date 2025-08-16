@@ -197,3 +197,27 @@ def get_locations(request):
         return JsonResponse({"success": True, "data": list_locations})
     except Location.DoesNotExist:
         return JsonResponse({"error": True, "msg": "Aucune Location enregistrée."}, status=404)
+
+
+@require_http_methods(["GET"])
+def get_reservations(request):
+    try:
+        reservations = Reservation.objects.all()
+
+        list_reservations: list = []
+
+        for reservation in reservations:
+            list_reservations.append({
+                "id": reservation.id,
+                "type": reservation.get_type_display(),
+                "client": reservation.client.nom_complet,
+                "telephone": reservation.client.telephone,
+                "zone": reservation.zone.nom,
+                "etat_reservation": reservation.get_etat_reservation_display(),
+                "date_debut": reservation.date_debut.strftime("%d/%m/%Y"),
+                "date_fin": reservation.date_fin.strftime("%d/%m/%Y"),
+                "commentaire": reservation.commentaire,
+            })
+        return JsonResponse({"success": True, "data": list_reservations}, status=200)
+    except Reservation.DoesNotExist:
+        return JsonResponse({"error": True, "msg": "Aucune reservation trouvée."}, status=404)

@@ -9,4 +9,5 @@ urlpatterns = [
     path("location_reservation/create_zone/", views.create_zone, name="create_zone"),
     path("location_reservation/reserver/", views.create_reservation, name="create_reservation"),
     path("location_reservation/locations/", views.get_locations, name="get_locations"),
+    path("location_reservation/reservations/", views.get_reservations, name="get_reservations"),
 ]

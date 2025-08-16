@@ -1,4 +1,6 @@
 $(document).ready(function () {
+
+	// Charger le contenu de la Table Liste des Locations
 	var tabLocation = $("#tableLocation").DataTable({
 		ajax: {
 			url: '/client/location_reservation/locations/',
@@ -22,6 +24,32 @@ $(document).ready(function () {
 			{ data: 'statut' },
 			{ data: 'type_location' },
 			{ data: 'description' },
+
+		]
+	})
+
+
+	// Charger le contenu de la Table liste des Reservation
+	var tabReservation = $("#tableReservation").DataTable({
+		ajax: {
+			url: '/client/location_reservation/reservations/',
+			dataSrc: 'data',
+		},
+		columns: [
+			{
+				data: null,
+				render: function(data, type, row, meta){
+					return meta.row + 1;
+					}
+			},
+			{ data: 'client' },
+			{ data: 'telephone' },
+			{ data: 'zone' },
+			{ data: 'date_debut' },
+			{ data: 'date_fin' },
+			{ data: 'etat_reservation' },
+			{ data: 'type' },
+			{ data: 'commentaire' },
 
 		]
 	})
