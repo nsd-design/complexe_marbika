@@ -61,7 +61,7 @@ class ApprovisionnementBoisson(MyBaseModel):
     quantite = models.PositiveIntegerField()
     prix_achat_unit = models.BigIntegerField()
     date_approvisionnement = models.DateTimeField(auto_now_add=True)
-    description = models.CharField(null=True, blank=True)
+    description = models.CharField(max_length=256, null=True, blank=True)
 
 
     def __str__(self):
