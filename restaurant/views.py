@@ -15,6 +15,8 @@ from restaurant.forms import PlatForm, BoissonForm, ApprovisionnementBoissonForm
 from restaurant.models import Plat, Boisson, Commande, CommandePlat, CommandeBoisson, ControleBoisson, \
     DetailsControleBoissons, InitControlePlats, PlatsControlles
 
+from salon.views import currency
+
 tmp = "restaurant/"
 def plats_boissons(request):
 
@@ -132,13 +134,14 @@ def get_commandes(request):
         data = []
 
         for commande in commandes:
+            net_paye = commande.prix_total - commande.reduction
             data.append({
                 'id': commande.id,
                 'reference': commande.reference,
                 'date': commande.created_at.strftime("%d/%m/%Y %H:%M"),
-                'montant': commande.prix_total,
-                'reduction': commande.reduction,
-                'montant_a_payer': commande.prix_total - commande.reduction,
+                'montant': currency(commande.prix_total),
+                'reduction': currency(commande.reduction),
+                'montant_a_payer': currency(net_paye),
                 # Boutons d'action avec HTML (vous pouvez personnaliser)
                 'actions': f'<a href="/restaurant/commandes/details/{commande.id}" class="text-danger details"><i class="bi bi-box-arrow-up-right fs-5"></i></a>'
             })
@@ -202,7 +205,7 @@ def passer_commande(request):
                     raise ValueError("Aucun élément de commande valide trouvé.")
 
                 # Mise à jour du prix total
-                current_commande.prix_total = prix_total - int(reduction)
+                current_commande.prix_total = prix_total
                 current_commande.save()
 
             return JsonResponse({"success": True, "msg": "Commande reçue"})
