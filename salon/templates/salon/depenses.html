@@ -5,76 +5,162 @@
 {% block page_title %} {{ page_title }} {% endblock %}
 {% block main %}
 <!-- Row starts -->
-<div class="row gx-4 mb-4">
+<div class="row gx-4">
   <div class="col-sm-12">
-
-    <!-- Card starts -->
-    <div class="card">
+    <div class="card mb-4">
       <div class="card-body">
-        <!-- Row starts -->
-        <div class="row gx-4">
-          <div class="col-12 col-md">
-            <div class="card border border-secondary mb-4">
-              <div class="card-body text-center">
-                <h6 class="m-0">Semaine Passée</h6>
-                <h4 class="fw-bold my-2" id="totalSemainePassee">GNF</h4>
-                <div class="mb-2">
-<!--                  <span class="badge bg-danger">8%</span>-->
+        <div class="custom-tabs-container">
+          <ul class="nav nav-tabs" id="customTabLists" role="tablist">
+            <li class="nav-item" role="presentation">
+              <a class="nav-link active" id="tab-salon" data-bs-toggle="tab" href="#salon" role="tab"
+                aria-controls="salon" aria-selected="true">
+                  <i class="bi bi-flower1"></i>
+                  Salon
+              </a>
+            </li>
+            <li class="nav-item" role="presentation">
+              <a class="nav-link" id="tab-restaurant" data-bs-toggle="tab" href="#restaurant" role="tab"
+                aria-controls="restaurant" aria-selected="false" tabindex="-1">
+                  <i class="bi bi-cup-straw"></i>
+                  Restaurant
+              </a>
+            </li>
+          </ul>
+          <div class="tab-content" id="customTabContentLists">
+            <div class="tab-pane fade show active" id="salon" role="tabpanel" aria-labelledby="tab-salon">
+                <!-- Row starts -->
+                <div class="row gx-4">
+                  <div class="col-12 col-md">
+                    <div class="card border border-secondary mb-4">
+                      <div class="card-body text-center">
+                        <h6 class="m-0">Semaine Passée</h6>
+                        <h4 class="fw-bold my-2" id="totalSemainePasseeSalon">GNF</h4>
+                        <div class="mb-2">
+                        <!--<span class="badge bg-danger">8%</span>-->
+                        </div>
+                        <div class="small" id="numeroSemainePasseeSalon">
+                          S-1
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-12 col-md">
+                    <div class="card border border-secondary mb-4">
+                      <div class="card-body text-center">
+                        <h6 class="m-0">Semaine En Cours</h6>
+                        <h4 class="fw-bold my-2" id="totalSemaineEnCoursSalon">GNF</h4>
+                        <div class="mb-2">
+                        <!--<span class="badge bg-danger">8%</span>-->
+                        </div>
+                        <div class="small" id="numeroSemaineEnCoursSalon">
+                          S-N°
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-12 col-md">
+                    <div class="card border border-secondary mb-4">
+                      <div class="card-body text-center">
+                        <h6 class="m-0">Total du Mois</h6>
+                        <h4 class="fw-bold my-2" id="totalMoisSalon">GNF</h4>
+                        <div class="mb-2">
+                        <!--<span class="badge bg-danger">8%</span>-->
+                        </div>
+                        <div class="small" id="moisEnCoursSalon">
+                          mois en cours
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-12 col-md">
+                    <div class="card border border-secondary mb-4">
+                      <div class="card-body text-center">
+                        <h6 class="m-0">Total Année</h6>
+                        <h4 class="fw-bold my-2" id="totalAnneeSalon">GNF</h4>
+                        <div class="mb-2">
+                        <!--<span class="badge bg-danger">8%</span>-->
+                        </div>
+                        <div class="small" id="anneeEnCoursSalon">
+                          année en cours
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div class="small" id="numeroSemainePassee">
-                  S-1
+                <!-- Row ends -->
+            </div>
+
+            <div class="tab-pane fade" id="restaurant" role="tabpanel" aria-labelledby="tab-restaurant">
+                <!-- Row starts -->
+                <div class="row gx-4">
+                  <div class="col-12 col-md">
+                    <div class="card border border-secondary mb-4">
+                      <div class="card-body text-center">
+                        <h6 class="m-0">Semaine Passée</h6>
+                        <h4 class="fw-bold my-2" id="totalSemainePasseeResto">GNF</h4>
+                        <div class="mb-2">
+                        <!--<span class="badge bg-danger">8%</span>-->
+                        </div>
+                        <div class="small" id="numeroSemainePasseeResto">
+                          S-1
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-12 col-md">
+                    <div class="card border border-secondary mb-4">
+                      <div class="card-body text-center">
+                        <h6 class="m-0">Semaine En Cours</h6>
+                        <h4 class="fw-bold my-2" id="totalSemaineEnCoursResto">GNF</h4>
+                        <div class="mb-2">
+                        <!--<span class="badge bg-danger">8%</span>-->
+                        </div>
+                        <div class="small" id="numeroSemaineEnCoursResto">
+                          S-N°
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-12 col-md">
+                    <div class="card border border-secondary mb-4">
+                      <div class="card-body text-center">
+                        <h6 class="m-0">Total du Mois</h6>
+                        <h4 class="fw-bold my-2" id="totalMoisResto">GNF</h4>
+                        <div class="mb-2">
+                        <!--<span class="badge bg-danger">8%</span>-->
+                        </div>
+                        <div class="small" id="moisEnCoursResto">
+                          mois en cours
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-12 col-md">
+                    <div class="card border border-secondary mb-4">
+                      <div class="card-body text-center">
+                        <h6 class="m-0">Total Année</h6>
+                        <h4 class="fw-bold my-2" id="totalAnneeResto">GNF</h4>
+                        <div class="mb-2">
+                        <!--<span class="badge bg-danger">8%</span>-->
+                        </div>
+                        <div class="small" id="anneeEnCoursResto">
+                          année en cours
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
+                <!-- Row ends -->
             </div>
           </div>
-          <div class="col-12 col-md">
-            <div class="card border border-secondary mb-4">
-              <div class="card-body text-center">
-                <h6 class="m-0">Semaine En Cours</h6>
-                <h4 class="fw-bold my-2" id="totalSemaineEnCours">GNF</h4>
-                <div class="mb-2">
-<!--                  <span class="badge bg-danger">8%</span>-->
-                </div>
-                <div class="small" id="numeroSemaineEnCours">
-                  S-N°
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="col-12 col-md">
-            <div class="card border border-secondary mb-4">
-              <div class="card-body text-center">
-                <h6 class="m-0">Total du Mois</h6>
-                <h4 class="fw-bold my-2" id="totalMois">GNF</h4>
-                <div class="mb-2">
-<!--                  <span class="badge bg-danger">8%</span>-->
-                </div>
-                <div class="small" id="moisEnCours">
-                  2000 Vs Target
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="col-12 col-md">
-            <div class="card border border-secondary mb-4">
-              <div class="card-body text-center">
-                <h6 class="m-0">Total Année</h6>
-                <h4 class="fw-bold my-2" id="totalAnnee">GNF</h4>
-                <div class="mb-2">
-<!--                  <span class="badge bg-danger">8%</span>-->
-                </div>
-                <div class="small" id="anneeEnCours">
-                  2000 Vs Target
-                </div>
-              </div>
-            </div>
-          </div>
+
         </div>
-        <!-- Row ends -->
+
       </div>
-      </div>
+    </div>
   </div>
 </div>
+
 <!-- Row ends -->
 <!-- Row starts -->
 <div class="row gx-4">
@@ -231,17 +317,29 @@
                method: 'GET',
                dataType: 'json',
                success: function(res){
-                   $("#totalSemaineEnCours").text(res.data.total_semaine_en_cours)
-                   $("#totalSemainePassee").text(res.data.total_semaine_passe)
-                   $("#totalMois").text(res.data.total_mois_en_cours)
-                   $("#totalAnnee").text(res.data.total_annee_en_cours)
+                   // Les Donnees du Salon
+                   $("#totalSemaineEnCoursSalon").text(res.data.salon.total_semaine_en_cours)
+                   $("#totalSemainePasseeSalon").text(res.data.salon.total_semaine_passe)
+                   $("#totalMoisSalon").text(res.data.salon.total_mois_en_cours)
+                   $("#totalAnneeSalon").text(res.data.salon.total_annee_en_cours)
 
-                   // Afficher les numeros de Semaine
-                   $("#numeroSemainePassee").text("S-" + res.data.numero_semaine_passe);
-                   $("#numeroSemaineEnCours").text("S-" + res.data.numero_semaine_en_cours);
+                   // Les Donnees du Restaurant
+                   $("#totalSemaineEnCoursResto").text(res.data.restaurant.total_semaine_en_cours)
+                   $("#totalSemainePasseeResto").text(res.data.restaurant.total_semaine_passe)
+                   $("#totalMoisResto").text(res.data.restaurant.total_mois_en_cours)
+                   $("#totalAnneeResto").text(res.data.restaurant.total_annee_en_cours)
 
-                   $("#moisEnCours").text(res.data.nom_du_mois)
-                   $("#anneeEnCours").text(res.data.annee_en_cours)
+                   // Afficher les périodes de l'onglet Salon
+                   $("#numeroSemainePasseeSalon").text("S-" + res.data.numero_semaine_passe);
+                   $("#numeroSemaineEnCoursSalon").text("S-" + res.data.numero_semaine_en_cours);
+                   $("#moisEnCoursSalon").text(res.data.nom_du_mois)
+                   $("#anneeEnCoursSalon").text(res.data.annee_en_cours)
+
+                   // Afficher les périodes de l'onglet Restaurant
+                   $("#numeroSemainePasseeResto").text("S-" + res.data.numero_semaine_passe);
+                   $("#numeroSemaineEnCoursResto").text("S-" + res.data.numero_semaine_en_cours);
+                   $("#moisEnCoursResto").text(res.data.nom_du_mois)
+                   $("#anneeEnCoursResto").text(res.data.annee_en_cours)
                },
                error: function(xhr){
                   console.log("error", xhr)

@@ -646,6 +646,20 @@ def creer_depense(request):
         return JsonResponse({"error": True, "msg": str(e)})
 
 
+# Cetter fonciton permet de recuperer les Depenses par periode et par Section selon les parametres fournis
+# Ces periodes sont : Semaine en cours, Semaine precedente, Mois en cours et Annee en cours
+# Il y a deux sections : Salon et Restaurant
+def get_expenses_by_date_and_section(filtres):
+    # Depense.objects.filter(
+    #     created_at__date__gte=start_of_week,
+    #     created_at__date__lte=today
+    # ).aggregate(Sum("montant"))["montant__sum"] or 0
+    return (
+        Depense.objects.filter(**filtres)
+        .aggregate(Sum("montant"))["montant__sum"] or 0
+    )
+
+
 @require_http_methods(["GET"])
 def depense_semaine_mois_annee(request):
     try:
@@ -670,34 +684,87 @@ def depense_semaine_mois_annee(request):
 
         # Debut de calcul des montants
         # Montant total des depenses de la semaine en cours
-        total_semaine_en_cours = Depense.objects.filter(
-            created_at__date__gte=start_of_week,
-            created_at__date__lte=today
-        ).aggregate(Sum("montant"))["montant__sum"] or 0
+        # montant_total_service_semaine = get_montant_total_par_service(
+        #     service_semaine["service__id"], {"created_at__date__week": week_num}
+        # )
+        total_semaine_en_cours_salon = get_expenses_by_date_and_section(
+            {
+                "section": "SALON",
+                "created_at__date__gte": start_of_week,
+                "created_at__date__lte": today
+            }
+        )
+        total_semaine_en_cours_resto = get_expenses_by_date_and_section(
+            {
+                "section": "RESTAURANT",
+                "created_at__date__gte": start_of_week,
+                "created_at__date__lte": today
+            }
+        )
+        # total_semaine_en_cours = Depense.objects.filter(
+        #     created_at__date__gte=start_of_week,
+        #     created_at__date__lte=today
+        # ).aggregate(Sum("montant"))["montant__sum"] or 0
 
         # Montant total des depenses de la semaine passée
-        total_semaine_passe = Depense.objects.filter(
-            created_at__date__gte=start_of_last_week,
-            created_at__date__lte=end_of_last_week,
-        ).aggregate(Sum("montant"))["montant__sum"] or 0
+        total_semaine_passe_salon = get_expenses_by_date_and_section(
+            {
+                "section": "SALON",
+                "created_at__date__gte": start_of_last_week,
+                "created_at__date__lte": end_of_last_week,
+            }
+        )
+        total_semaine_passe_resto = get_expenses_by_date_and_section(
+            {
+                "section": "RESTAURANT",
+                "created_at__date__gte": start_of_last_week,
+                "created_at__date__lte": end_of_last_week,
+            }
+        )
 
         # Montant total des depenses du Mois en Cours
-        total_mois_en_cours = Depense.objects.filter(
-            created_at__date__gte=start_of_month
-        ).aggregate(Sum("montant"))["montant__sum"] or 0
+        total_mois_en_cours_salon = get_expenses_by_date_and_section(
+            {
+                "section": "SALON",
+                "created_at__date__gte": start_of_month
+            }
+        )
+        total_mois_en_cours_resto = get_expenses_by_date_and_section(
+            {
+                "section": "RESTAURANT",
+                "created_at__date__gte": start_of_month
+            }
+        )
 
-        total_annee_en_cours = Depense.objects.filter(
-            created_at__date__gte=start_of_year
-        ).aggregate(Sum("montant"))["montant__sum"] or 0
+        total_annee_en_cours_salon = get_expenses_by_date_and_section(
+            {
+                "section": "SALON",
+                "created_at__date__gte": start_of_year
+            }
+        )
+        total_annee_en_cours_resto = get_expenses_by_date_and_section(
+            {
+                "section": "RESTAURANT",
+                "created_at__date__gte": start_of_year
+            }
+        )
 
         data = {
-            "total_semaine_en_cours": currency(total_semaine_en_cours),
+            "salon": {
+                "total_semaine_en_cours": currency(total_semaine_en_cours_salon),
+                "total_semaine_passe": currency(total_semaine_passe_salon),
+                "total_mois_en_cours": currency(total_mois_en_cours_salon),
+                "total_annee_en_cours": currency(total_annee_en_cours_salon),
+            },
+            "restaurant": {
+                "total_semaine_en_cours": currency(total_semaine_en_cours_resto),
+                "total_semaine_passe": currency(total_semaine_passe_resto),
+                "total_mois_en_cours": currency(total_mois_en_cours_resto),
+                "total_annee_en_cours": currency(total_annee_en_cours_resto),
+            },
             "numero_semaine_en_cours": current_week_number,
-            "total_semaine_passe": currency(total_semaine_passe),
             "numero_semaine_passe": last_week_number,
-            "total_mois_en_cours": currency(total_mois_en_cours),
             "nom_du_mois": today.strftime("%B"),
-            "total_annee_en_cours": currency(total_annee_en_cours),
             "annee_en_cours": today.strftime("%Y"),
         }
 
