@@ -69,10 +69,12 @@ def groupe_prestations_par_reference(year: int):
             "services": list(),
         })
 
+        print("prestation :",init_pres.prestation_set.all())
         for prestation in init_pres.prestation_set.all():
-            prestataire = prestation.fait_par
+            prestataire = prestation.fait_par.all()
+            print("prestataire :", prestataire)
             service = prestation.service
-
+            print("prestataire :", prestataire)
             if prestataire and service:
                 key = prestataire.id
                 employe_data[key]["nom"] = prestataire.last_name
@@ -104,11 +106,11 @@ def groupe_prestations_par_reference(year: int):
 def dashmin(request):
     current_year = date.today().year
 
-    prestations_par_reference = groupe_prestations_par_reference(year=current_year)
+    # prestations_par_reference = groupe_prestations_par_reference(year=current_year)
     context = {
         "semaines": semaines(),
         "page_title": "Analytics",
-        "prestations_par_reference": prestations_par_reference,
+        "prestations_par_reference": [],
     }
     return render(request, "dashboard.html", context)
 

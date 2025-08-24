@@ -1,0 +1,24 @@
+/* Correction Select2 multiple dans tableau */
+.select2-container {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+.select2-container--default .select2-selection--multiple {
+    width: 100% !important;
+    max-width: 100% !important;
+    white-space: normal !important;
+    height: auto !important;
+}
+
+.select2-container--default .select2-selection--multiple .select2-selection__choice {
+    margin: 2px 3px 2px 0;
+    max-width: calc(100% - 10px);
+    white-space: normal;
+}
+
+.cellPrestataire {
+    width: 300px !important; /* Ajustez selon vos besoins */
+    max-width: 300px !important;
+    overflow: hidden;
+}
