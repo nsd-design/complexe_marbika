@@ -280,11 +280,11 @@ def get_prestation_details(request, id_prestation):
 
         list_service: list = []
         for service in prestation_services:
+            list_prestataires = [presta for presta in service.fait_par.all().values("first_name", "last_name", "email")]
             list_service.append({
                 "designation": service.service.designation,
                 "prix": service.service.prix_service,
-                "nom_prestataire": service.fait_par.first_name + " " + service.fait_par.last_name,
-                "email_prestataire": service.fait_par.email,
+                "prestataires": list_prestataires,
             })
 
         data = {
