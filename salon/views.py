@@ -328,11 +328,12 @@ def get_prix_service(request, service_id):
 def add_prestation(request):
     try:
         data = json.loads(request.body)
-
+        print("Data :", data)
         prestations_faites = data.get("prestations", [])
         remise = escape(data.get("remise", 0))
         id_client = escape(data.get("client"))
 
+        print("prestataire: ", prestations_faites)
         with transaction.atomic():
             prestation_saved = False # Flag pour savoir si chacune des prestations a été enregistré sans interruption
 
@@ -350,21 +351,22 @@ def add_prestation(request):
 
                 id_service = escape(prestation.get("idService"))
                 prix_service = escape(prestation.get("prixService"))
-                id_prestataire = escape(prestation.get('prestataire'))
+                prestataires_ids = prestation.get('prestataire', [])
+
                 current_service = Service.objects.get(id=id_service)
 
-                prestataire = Employe.objects.get(id=id_prestataire)
+                prestataires = Employe.objects.filter(id__in=prestataires_ids)
 
                 # Enregistré la Prestation
-                Prestation.objects.create(service=current_service, prix_service=prix_service, init_prestation=init_prestation,
-                                          fait_par=prestataire
-                                          )
+                new_prestation = Prestation.objects.create(service=current_service, prix_service=prix_service, init_prestation=init_prestation)
+                new_prestation.fait_par.set(prestataires)
 
                 montant_total += int(prix_service)
 
                 prestation_saved = True # True, pour dire la Prestation a bien été enregistré, sinon il reste sur False
                 # Et toutes les operations dans ce block sont annulées
-
+            if montant_total <= 0:
+                raise Exception("Le montant est incorrect.")
         # Mise à jour du prix total de la Prestation
         init_prestation.montant_total = montant_total
         init_prestation.save()

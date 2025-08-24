@@ -65,37 +65,9 @@
                             </tr>
                           </thead>
                           <tbody id="tBodyCreatePrestations">
-                            <tr class="rowPrestation" id="row-1">
-                              <td>
-                                <!-- Form group starts Liste des Services -->
-                                <select class="form-select selServices" id="1">
-                                </select>
-                                <!-- Form group ends -->
-                              </td>
-                              <td>
-                                <!-- Form group starts Liste des Prestataires -->
-                                <select class="form-select selPrestataires">
-                                </select>
-                                <!-- Form group ends -->
-                              </td>
-                              <td>
-                                <!-- Form group starts -->
-                                <div class="input-group m-0">
-                                  <input type="number" disabled class="form-control prix">
-                                  <span class="input-group-text">
-                                    <span>GNF</span>
-                                  </span>
-                                </div>
-                                <!-- Form group ends -->
-                              </td>
-                              <td>
-                                <div class="custom-icon-group">
-                                  <button class="btn btn-outline-dark removeRow">
-                                    <i class="bi bi-trash"></i>
-                                  </button>
-                                </div>
-                              </td>
-                            </tr>
+                            <!-- Le contenu est créé dynamiquement au click du Bouton Ajouter -->
+                            <!-- qui ajoutera une nouvelle ligne de prestation -->
+
                             <tr id="ligneRemise">
                               <td>
                                 <button class="btn btn-danger" id="ajouterLignePrestation">
@@ -270,6 +242,7 @@
 <script src="{% static 'assets/js/datatables.min.js' %}"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script defer src="{% static 'assets/js/JsBarcode.all.min.js' %}"></script>
+<!--<script defer src="{% static 'assets/select2/js/select2.min.js' %}"></script>-->
 <script src="https://printjs-4de6.kxcdn.com/print.min.js"></script>
 
 
@@ -338,6 +311,8 @@
     })
 </script>
 <script>
+
+
     $(document).ready(function(){
         var table_prestation = $("#table-prestation").DataTable({
             ajax: {
@@ -368,6 +343,11 @@
                 $('td:eq(0)', row).html(index + 1)
             },
         });
+
+        // Transformer les listes de Prestataires en Select2
+        var tabSelPresta = ["selPresta-1"]
+        //let el = $("[data-selPresta='selPresta-1']").select2()
+        //console.log("1er sel", el)
 
         // Calculer le montant de la Prestation
         function calculerMontant(){
@@ -400,40 +380,31 @@
         {% endfor %}
 
         // Charger La liste de select des Services
-        function fillSelectService(){
-            const $selServices = $(".selServices").first()
-            idSelService += 1;
-            $selServices.attr("id", idSelService)
-            $selServices.attr("name", idSelService)
-            $selServices.empty(); // Vider l'ancien contenu
-            $selServices.append(new Option("-- Sélectionnez un Service --", "", true, true));
+        function fillSelectService(selectServices){
+            selectServices.empty(); // Vider l'ancien contenu
+            selectServices.append(new Option("-- Sélectionnez un Service --", "", true, true));
 
             tabServices.forEach(function(service){
-                $selServices.append(new Option(service.designation, service.id));
+                selectServices.append(new Option(service.designation, service.id));
             });
         }
-        fillSelectService()
 
         // Recuperer les Prestataires depuis la View 'prestations'
         const $selPrestataires = $(".selPrestataires").first()
         let tabPrestataires = []
-        function fillPrestationSelect(prestationSelect){
-            {% for prestataire in prestataires %}
-                tabPrestataires.push({
-                    "full_name": "{{ prestataire.first_name }} {{ prestataire.last_name}}",
-                    "objPrestataire": "{{ prestataire }}",
-                    "id": "{{ prestataire.id }}",
-                })
-            {% endfor %}
-
-            prestationSelect.empty(); // Vider l'ancien contenu
-            prestationSelect.append(new Option("-- Sélectionnez un Prestataire --", "", true, true));
-
+        {% for prestataire in prestataires %}
+            tabPrestataires.push({
+                "full_name": "{{ prestataire.first_name }} {{ prestataire.last_name}}",
+                "objPrestataire": "{{ prestataire }}",
+                "id": "{{ prestataire.id }}",
+            })
+        {% endfor %}
+        function fillPrestataireSelect(prestataireSelect){
+            prestataireSelect.empty(); // Vider l'ancien contenu
             tabPrestataires.forEach(function(prestataire){
-                prestationSelect.append(new Option(prestataire.full_name, prestataire.id));
+                prestataireSelect.append(new Option(prestataire.full_name, prestataire.id));
             });
         }
-        fillPrestationSelect($selPrestataires)
 
         // Va contenir l'id des lignes de prestations
         var tabRowId = ["row-1"] // initialiser avec l'id de la ligne "tr" presente dès le chargement de la page
@@ -470,22 +441,57 @@
 
         // Ajouter une nouvelle ligne de Prestation
         $("#ajouterLignePrestation").on("click", function(){
-            const $clonedRowPrestation = $(".rowPrestation").first().clone(true)
-            const $inputPrix = $clonedRowPrestation.find(".prix")
-            $inputPrix.val("")
+            const $tBodyCreatePrestations = $("#tBodyCreatePrestations")
+            const $rowPrestation = $("<tr>").addClass("rowPrestation w-100")
 
-            const $selService = $clonedRowPrestation.find(".selServices")
+            // Cellule de la liste des Services
+            const $cellServices = $("<td>")
+            const $selectServices = $("<select>").addClass("form-select selServices")
             idSelService += 1;
-            $selService.attr("id", idSelService)
-            $selService.attr("name", idSelService)
+            $selectServices.attr("id", idSelService)
+            $selectServices.attr("name", idSelService)
+            $cellServices.append($selectServices)
 
-            let rowId = "row-" + idSelService // Forme l'id de la ligne "tr", l'incrémentation est faite à chaque ajout de nouvelle ligne
-            $clonedRowPrestation.attr("id", rowId)
+            // Cellule de la liste des Prestataires
+            const $cellPrestataires = $("<td>")
+            const $selectPrestataires = $("<select>").addClass("form-select selPrestataires")
+            $selectPrestataires.attr("multiple", true)
+            $cellPrestataires.append($selectPrestataires)
 
-            // Contient l'ID des Row "tr" de prestations
-            tabRowId.push(rowId)
+            // Cellule du champ de saisie du Prix
+            const $cellPrix = $("<td>").addClass("w-25")
+            const $divPrixContainer = $("<div>").addClass("input-group m-0")
+            const $inputPrix = $("<input>").attr("type", "number").addClass("form-control prix")
+            $inputPrix.attr("disabled", true)
 
-            $("#ligneRemise").before($clonedRowPrestation)
+            const $deviseSpanContainer = $("<span>").addClass("input-group-text")
+            const $deviseSpan = $("<span>").text("GNF")
+            $deviseSpanContainer.append($deviseSpan)
+
+            $divPrixContainer.append($inputPrix)
+            $divPrixContainer.append($deviseSpanContainer)
+            $cellPrix.append($divPrixContainer)
+
+            // Cellule du Bouton de suppression d'une ligne de prestation
+            const $cellRemove = $("<td>")
+            const $btnRemoveContainer = $("<div>").addClass("custom-icon-group")
+            const $btnRemove = $("<button>").addClass("btn btn-outline-dark removeRow")
+            const $removeIcon = $("<i>").addClass("bi bi-trash")
+            $btnRemove.append($removeIcon)
+            $btnRemoveContainer.append($btnRemove)
+            $cellRemove.append($btnRemoveContainer)
+
+            fillSelectService($selectServices)
+            fillPrestataireSelect($selectPrestataires)
+            $selectPrestataires.select2({
+                placeholder: "Sélectionner un Prestataire",
+                 width: '100%', // Forcer 100% de la largeur du conteneur parent
+            })
+
+
+           // Ligne de Prestation devant contenir toutes les autres cellule de créées ci-dessus
+           $rowPrestation.append($cellServices, $cellPrestataires, $cellPrix, $cellRemove)
+           $("#ligneRemise").before($rowPrestation)
         })
 
         // Supprimer une ligne de prestation
@@ -552,12 +558,14 @@
 
             let remise = $("#remise").val() || 0;
             let client = $("#clients-select").val();
+            console.log("client :", client)
 
             data = {
                 prestations: tabPrestations,
                 remise: remise,
                 client: client
             }
+            console.log("data.client :", data.client)
 
             if(data.prestations.length <= 0){
                 $("#response-message-service").text("Vous devez sélectionner au moins un Service.")
