@@ -707,14 +707,13 @@
                             const $designation = $('<span>', { class: 'feed-date pb-1 fw-bold', text: service.designation });
 
                             const $prestataireContainer = $('<div>', { class: 'mb-1' });
-                            const $nomPrestataire = $('<p>', {
-                                class: 'fw-bold',
-                                text: service.nom_prestataire
+
+                             const $nomPrestataire = $('<p>', {
+                                class: 'fw-normal',
+                                text: service.prestataires.map(item=>(
+                                    ` ${item.first_name} ${item.last_name} - ${item.email}`
+                                ))
                              });
-                            const $emailPrestataire = $('<span>', {text: " - " + service.email_prestataire,
-                                class: 'fw-normal'
-                            })
-                            $nomPrestataire.append($emailPrestataire)
 
                             const $prixService = $('<div>', {
                                 class: 'text-primary',
@@ -732,7 +731,7 @@
                     }
                 },
                 error: function(err){
-                    console.log(err)
+
                 },
             })
         })
