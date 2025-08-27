@@ -163,12 +163,12 @@
                 email: $('#id_email').val().trim(),
             };
 
-            if(!formData.first_name || !formData.last_name || !formData.telephone || !formData.email){
+            if(!formData.first_name || !formData.last_name || !formData.telephone){
                 $("#response-message").text("Tous les champs sont obligatoires.")
-                $('#response-message').addClass('show').fadeIn();
+                $('#response-message').removeClass("bg-success").addClass('show bg-warning').fadeIn();
                 setTimeout(function(){
-                    $("#response-message").removeClass('show').fadeOut();
-                }, 3000)
+                    $("#response-message").removeClass('bg-warning show').fadeOut();
+                }, 5000)
                 return
             }
 
