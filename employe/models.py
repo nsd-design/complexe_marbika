@@ -3,21 +3,25 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 from django.db import models
 
 class EmployeManager(BaseUserManager):
-    def create_user(self, email, password=None, **extra_fields):
-        if not email:
-            raise ValueError("L'adresse e-mail est obligatoire.")
-        email = self.normalize_email(email)
+    def create_user(self, username, password=None, **extra_fields):
+        if not username:
+            raise ValueError("Le nom d'utilisateur est obligatoire")
+
         extra_fields.setdefault('is_active', True)
-        user = self.model(email=email, **extra_fields)
+        # Normaliser l'email s'il est fourni
+        if 'email' in extra_fields and extra_fields['email']:
+            extra_fields['email'] = self.normalize_email(extra_fields['email'])
+
+        user = self.model(username=username, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, email, password=None, **extra_fields):
+    def create_superuser(self, username, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
 
-        return self.create_user(email, password, **extra_fields)
+        return self.create_user(username, password, **extra_fields)
 
 class Employe(AbstractBaseUser, PermissionsMixin):
     id = models.UUIDField(
@@ -25,7 +29,8 @@ class Employe(AbstractBaseUser, PermissionsMixin):
         editable=False,
         default=uuid.uuid4
     )
-    email = models.EmailField(unique=True)
+    username = models.CharField(max_length=150, unique=True)
+    email = models.EmailField(null=True, blank=True, max_length=255)
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
     telephone = models.CharField(max_length=18)
@@ -34,11 +39,11 @@ class Employe(AbstractBaseUser, PermissionsMixin):
 
     objects = EmployeManager()
 
-    USERNAME_FIELD = 'email'  # Définit l'identifiant principal
+    USERNAME_FIELD = 'username'  # Définit l'identifiant principal
     REQUIRED_FIELDS = ['first_name', 'last_name']
 
     def __str__(self):
-        return self.email
+        return f'{self.first_name} {self.last_name} {self.telephone}'
 
 
 

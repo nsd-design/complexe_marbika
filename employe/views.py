@@ -1,5 +1,6 @@
 import http
 import json
+import uuid
 from collections import defaultdict
 from datetime import date, timedelta
 
@@ -146,15 +147,21 @@ def add_employe(request):
         try:
             data = json.loads(request.body)
             #  Verification des champs cote serveur
-            required_fields = ['first_name', 'last_name', 'telephone', 'email']
+            required_fields = ['first_name', 'last_name', 'telephone']
             for field in required_fields:
                 if not escape(data.get(field)):
                     return JsonResponse({"error": f"{field} est obligatoire"}, status=400)
 
             # Enregistrement de l'employe
+            # Recuperer le prenom de l'employe et le mettre tout en minuscule sans espace
+            base_first_name = data['first_name'].lower().replace(" ", "")
+
+            # Ajouter 8 caracteres uniques d'un uuid au prenom pour former le username par default
+            unique_part = str(uuid.uuid4())[:8]
+            username = f"{base_first_name}_{unique_part}"
             employee = Employe.objects.create_user(
                 first_name=data['first_name'], last_name=data['last_name'],
-                email=data['email'], telephone=data['telephone']
+                email=data['email'], telephone=data['telephone'], username=username,
             )
 
 
