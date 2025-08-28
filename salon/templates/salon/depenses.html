@@ -231,43 +231,87 @@
         </div>
     </div>
 </div>
+
 <!-- Row starts -->
 <div class="row gx-4">
   <div class="col-sm-12">
-
-    <!-- Card starts -->
-    <div class="card">
-      <div class="card-header">
-        <h5 class="card-title">Historique des Dépenses</h5>
-      </div>
+    <div class="card mb-4">
       <div class="card-body">
+        <div class="custom-tabs-container">
+          <ul class="nav nav-tabs" id="customTabHistorique" role="tablist">
+            <li class="nav-item" role="presentation">
+              <a class="nav-link active" id="tab-historiqueSalon" data-bs-toggle="tab" href="#historiqueSalon" role="tab"
+                aria-controls="historiqueSalon" aria-selected="true">
+                  <i class="bi bi-flower1"></i>
+                  Dépenses du Salon
+              </a>
+            </li>
+            <li class="nav-item" role="presentation">
+              <a class="nav-link" id="tab-historiqueRestaurant" data-bs-toggle="tab" href="#historiqueRestaurant" role="tab"
+                aria-controls="historiqueRestaurant" aria-selected="false" tabindex="-1">
+                  <i class="bi bi-cup-straw"></i>
+                  Dépenses du Restaurant
+              </a>
+            </li>
+          </ul>
+          <div class="tab-content" id="customTabContentHistorique">
+            <div class="tab-pane fade show active" id="historiqueSalon" role="tabpanel" aria-labelledby="tab-historiqueSalon">
+                <!-- Row starts -->
+                <div class="row gx-4">
+                  <div class="col-sm-12">
+                    <!-- Table Dépenses Salon starts -->
+                    <div class="table-responsive">
+                        <table id="tableDepensesSalon" class="table align-middle truncate">
+                          <thead>
+                            <tr>
+                              <th>#</th>
+                              <th>Motifs Dépenses</th>
+                              <th>Montant</th>
+                              <th>Date</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <!-- Contenu chargé via AJAX -->
 
-        <!-- Table starts -->
-        <div class="table-bg">
-          <div class="table-responsive">
-            <table id="tableDepenses" class="table align-middle truncate">
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Motifs Dépenses</th>
-                  <th>Montant</th>
-                  <th>Section</th>
-                  <th>Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                <!-- Contenu chargé via AJAX -->
+                          </tbody>
+                        </table>
+                      </div>
+                    <!-- Table Dépenses Salon ends -->
+                  </div>
+                </div>
+                <!-- Row ends -->
+            </div>
 
-              </tbody>
-            </table>
+            <div class="tab-pane fade" id="historiqueRestaurant" role="tabpanel" aria-labelledby="tab-historiqueRestaurant">
+                <!-- Row starts -->
+                <div class="row gx-4">
+                  <div class="col-sm-12">
+                    <!-- Table Dépenses Salon starts -->
+                    <div class="table-responsive">
+                        <table id="tableDepensesRestaurant" class="table align-middle truncate">
+                          <thead>
+                            <tr>
+                              <th>#</th>
+                              <th>Motifs Dépenses</th>
+                              <th>Montant</th>
+                              <th>Date</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <!-- Contenu chargé via AJAX -->
+
+                          </tbody>
+                        </table>
+                      </div>
+                    <!-- Table Dépenses Salon ends -->
+                  </div>
+                </div>
+                <!-- Row ends -->
+            </div>
           </div>
         </div>
-        <!-- Table ends -->
-
       </div>
     </div>
-    <!-- Card ends -->
-
   </div>
 </div>
 <!-- Row ends -->
@@ -280,36 +324,46 @@
 <script>
     $(document).ready(function(){
 
-        var tableDepenses = $("#tableDepenses").DataTable({
-            ajax: '/salon/depenses/list/',
-            columns: [
-                {
-                    data: null,
-                    render: function(data, type, row, meta){
-                        return meta.row + 1;
-                      }
-                },
-                { data: 'motif' },
-                { data: 'montant' },
-                { data: 'section' },
-                { data: 'date' }
+        var tableDepensesSalon = $("#tableDepensesSalon");
+        var tableDepensesRestaurant = $("#tableDepensesRestaurant");
 
-            ],
-            language: {
-                processing: "Traitement en cours...",
-                search: "Rechercher&nbsp;:&nbsp;",
-                lengthMenu:    "Afficher _MENU_ &eacute;l&eacute;ments",
-                info:           "Affichage de l'&eacute;lement _START_ &agrave; _END_ sur _TOTAL_ &eacute;l&eacute;ments",
-                infoEmpty:      "Affichage de l'&eacute;lement 0 &agrave; 0 sur 0 &eacute;l&eacute;ments",
-                loadingRecords: "Chargement en cours...",
-                zeroRecords:    "Aucun &eacute;l&eacute;ment &agrave; afficher",
-                emptyTable:     "Aucune donnée disponible dans le tableau",
-                aria: {
-                    sortAscending:  ": activer pour trier la colonne par ordre croissant",
-                    sortDescending: ": activer pour trier la colonne par ordre décroissant"
+        function getHistoriqueDepenses(tableDepenses, dataSrc){
+            tableDepenses.DataTable({
+                ajax: {
+                    url: '/salon/depenses/list/',
+                    dataSrc: dataSrc,
+                },
+                columns: [
+                    {
+                        data: null,
+                        render: function(data, type, row, meta){
+                            return meta.row + 1;
+                          }
+                    },
+                    { data: 'motif' },
+                    { data: 'montant' },
+                    { data: 'date' }
+
+                ],
+                language: {
+                    processing: "Traitement en cours...",
+                    search: "Rechercher&nbsp;:&nbsp;",
+                    lengthMenu:    "Afficher _MENU_ &eacute;l&eacute;ments",
+                    info:           "Affichage de l'&eacute;lement _START_ &agrave; _END_ sur _TOTAL_ &eacute;l&eacute;ments",
+                    infoEmpty:      "Affichage de l'&eacute;lement 0 &agrave; 0 sur 0 &eacute;l&eacute;ments",
+                    loadingRecords: "Chargement en cours...",
+                    zeroRecords:    "Aucun &eacute;l&eacute;ment &agrave; afficher",
+                    emptyTable:     "Aucune donnée disponible dans le tableau",
+                    aria: {
+                        sortAscending:  ": activer pour trier la colonne par ordre croissant",
+                        sortDescending: ": activer pour trier la colonne par ordre décroissant"
+                    }
                 }
-            }
-        });
+            });
+        }
+
+        getHistoriqueDepenses(tableDepensesSalon, 'data.salon')
+        getHistoriqueDepenses(tableDepensesRestaurant, 'data.resto')
 
         function depense_semaine_mois_annee(){
            $.ajax({
@@ -366,7 +420,7 @@
                         $('#response-message').addClass('show').fadeIn();
 
                         // Refresh la table
-                        tableDepenses.ajax.reload();
+                        tableDepensesSalon.ajax.reload();
 
                         // Recalculer les montants totaux des Dépenses
                         depense_semaine_mois_annee();

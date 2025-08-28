@@ -612,20 +612,33 @@ def depenses(request):
 @require_http_methods(["GET"])
 def get_depenses(request):
     try:
-        qs_depenses = Depense.objects.all()
+        depenses_resto = Depense.objects.filter(section="RESTAURANT")
+        depenses_salon = Depense.objects.filter(section="SALON")
 
-        list_depenses: list = []
+        list_depenses_resto: list = []
+        list_depenses_salon: list = []
 
-        for depense in qs_depenses:
-            border_color = "danger" if depense.section == "RESTAURANT" else "info"
+        for depense in depenses_resto:
             montant = float(depense.montant)
-            list_depenses.append({
+            list_depenses_resto.append({
                 "motif": depense.motif,
                 "montant": f'<span class="text-danger">' +"-{:,.0f} GNF".format(montant).replace(",", " ") + '</span>',
                 "date": depense.created_at.strftime("%d/%m/%Y %H:%M"),
-                "section": f'<span class="badge border border-{border_color} text-{border_color}">{depense.section}</span>',
             })
-        return JsonResponse({"success": True, "data": list_depenses})
+
+        for depense in depenses_salon:
+            montant = float(depense.montant)
+            list_depenses_salon.append({
+                "motif": depense.motif,
+                "montant": f'<span class="text-danger">' +"-{:,.0f} GNF".format(montant).replace(",", " ") + '</span>',
+                "date": depense.created_at.strftime("%d/%m/%Y %H:%M"),
+            })
+
+        data = {
+            "resto": list_depenses_resto,
+            "salon": list_depenses_salon,
+        }
+        return JsonResponse({"success": True, "data": data})
     except Depense.DoesNotExist:
         return JsonResponse({"error": "Aucune dépense trouvée"})
 
