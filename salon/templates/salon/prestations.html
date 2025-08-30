@@ -135,7 +135,8 @@
                             <tr>
                               <th>Services</th>
                               <th>Prestataires</th>
-                              <th>Prix</th>
+                              <th>Quantité</th>
+                              <th>Prix U</th>
                               <th >Actions</th>
                             </tr>
                           </thead>
@@ -247,7 +248,8 @@
                     <table id="tabTicketPrestation" class="col-12 col-xl-12 mt-3" style="color: #000">
                         <thead style="border-top: 1px dashed black; border-bottom: 1px dashed black; color: #000;">
                         <tr>
-                            <th class="border-end py-2">Designation</th>
+                            <th class="border-end py-2">Qte</th>
+                            <th class="border-end py-2">Désignation</th>
                             <th class="text-center">Prix</th>
                         </tr>
                         </thead>
@@ -433,8 +435,9 @@
             $(".rowPrestation").each(function(){
                 let prix_service = Number($(this).find(".prix").val()) || 0
                 let remise = Number($("#remise").val()) || 0
+                let quantite = Number($(this).find(".quantite").val())
 
-                subtotal += prix_service
+                subtotal += prix_service * quantite
                 let total = subtotal - remise
 
                 $("#subtotalValue").text(subtotal.toLocaleString() + " GNF")
@@ -442,6 +445,11 @@
                 $("#totalValue").text(total.toLocaleString() + " GNF")
             })
         }
+
+        // Mettre a jour le montant total a chaque modification de valeur du champs Quantite
+      $(document).on("input", ".quantite", function(){
+        calculerMontant();
+      })
 
         // Cette variable sera utilisée comme ID des Select de Service, elle est incrémentée à chaque nouvel ajout de ligne de prestation
         var idSelService = 0;
@@ -530,6 +538,13 @@
             $selectPrestataires.attr("multiple", true)
             $cellPrestataires.append($selectPrestataires)
 
+            // Cellule Quantité
+            const $cellQuantite = $("<td>")
+            const $inputQuantite = $("<input>").attr("type", "number").addClass("form-control quantite")
+            $inputQuantite.attr("min", 1)
+            $inputQuantite.attr("value", 1)
+            $cellQuantite.append($inputQuantite)
+
             // Cellule du champ de saisie du Prix
             const $cellPrix = $("<td>").addClass("w-25")
             const $divPrixContainer = $("<div>").addClass("input-group m-0")
@@ -562,7 +577,7 @@
 
 
            // Ligne de Prestation devant contenir toutes les autres cellule de créées ci-dessus
-           $rowPrestation.append($cellServices, $cellPrestataires, $cellPrix, $cellRemove)
+           $rowPrestation.append($cellServices, $cellPrestataires, $cellQuantite, $cellPrix, $cellRemove)
            $("#ligneRemise").before($rowPrestation)
         })
 
@@ -615,38 +630,48 @@
         // Soumettre l'enregistrement d'une Prestation
         $("#submitPrestations").on("click", function(){
             let tabPrestations = []
+            let prestataires = [];
 
             $(".rowPrestation").each(function(){
                 let id_selService = $(this).find(".selServices").attr("id")
                 let $currentSelect = $(this).find("select").attr("id");
                 let id_service = $(this).find(".selServices").val()
                 let prix_service = $(this).find(".prix").val()
-                let prestataire = $(this).find(".selPrestataires").val()
 
-                if(id_selService && id_service && prix_service && prestataire){
-                    tabPrestations.push({"idService" : id_service, "prixService" : prix_service, "prestataire" : prestataire, "idSelect": $currentSelect})
+                prestataires = [];
+                prestataires = $(this).find(".selPrestataires").val()
+                let quantite = $(this).find(".quantite").val()
+
+                if(id_selService && id_service && prix_service && quantite){
+                    tabPrestations.push({
+                        idService : id_service,
+                        prixService : prix_service,
+                        prestataire : prestataires,
+                        idSelect: $currentSelect,
+                        quantite: quantite,
+                    })
                 }
             })
 
+            if(prestataires.length <= 0){
+                $("#response-message-service").text("Vous devez sélectionner au moins un Prestataire.")
+                $('#response-message-service').addClass('bg-danger show').fadeIn();
+                    setTimeout(function(){
+                        $("#response-message-service").removeClass('show bg-danger').fadeOut();
+                }, 4500)
+                return
+            }
+
             let remise = $("#remise").val() || 0;
             let client = $("#clients-select").val();
-            console.log("client :", client)
 
             data = {
                 prestations: tabPrestations,
                 remise: remise,
                 client: client
             }
-            console.log("data.client :", data.client)
 
-            if(data.prestations.length <= 0){
-                $("#response-message-service").text("Vous devez sélectionner au moins un Service.")
-                $('#response-message-service').addClass('bg-danger show').fadeIn();
-                setTimeout(function(){
-                    $("#response-message-service").removeClass('show bg-danger').fadeOut();
-                }, 3500)
-                return
-            }
+
 
             if(!data.client){
                 $("#response-message-service").text("Veuillez sélectionner un Client.")
@@ -668,12 +693,13 @@
               success: function(res){
                 $("#response-message-service").text(res.msg)
                 $('#response-message-service').addClass('bg-success show').fadeIn();
-                setTimeout(function(){
+                setTimeout(() => {
                     $("#response-message-service").removeClass('show bg-success').fadeOut();
-                }, 3000)
 
-                // Refresh la page pour réinitialiser les champs
-                $("#cancel").trigger('click')
+                    // Refresh la page pour réinitialiser les champs
+                    $("#cancel").trigger('click')
+                }, 3500)
+
               },
               error: function(err){
                 $("#response-message-service").text(err.msg)
@@ -831,7 +857,7 @@
 
                             const $prixService = $('<div>', {
                                 class: 'text-primary',
-                                text: service.prix.toLocaleString() + " GNF"
+                                text: service.quantite + " x " + service.prix.toLocaleString() + " GNF"
                             });
 
                             $prestataireContainer.append($nomPrestataire);
@@ -861,6 +887,7 @@
                 $("#prestationServices").empty()
                 prestation.services.forEach(item => {
                     const $row = $('<tr>').append(
+                        $('<td>', { class: ' py-1', text: item.quantite + " x " }),
                         $('<td>', { class: ' py-1', text: item.designation }),
                         $('<td>', { class: ' text-center', text: item.prix.toLocaleString() + " GNF" }),
                     );
