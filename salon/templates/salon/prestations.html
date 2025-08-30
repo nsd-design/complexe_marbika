@@ -14,6 +14,81 @@
         <h5 class="card-title">Prestation du Personnel</h5>
       </div>
       <div class="card-body">
+       <!-- Button trigger modal -->
+        <button type="button" class="btn btn-primary col-6 col-md-2 my-3" data-bs-toggle="modal"
+                data-bs-target="#staticBackdrop">
+            Nouveau Client <i class="bi bi-plus-lg"></i>
+        </button>
+
+        <!-- Modal Ajout Nouveau Client -->
+        <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static"
+             data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="staticBackdropLabel">
+                            Céer un nouveau Client
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- Row starts -->
+                        <div class="row gx-4">
+                            <div class="col-sm-12">
+                                <div class="mb-3 fw-bold">
+                                    Informations sur le Client
+                                </div>
+                            </div>
+                            <div class="col-lg-5 col-sm-5 col-12">
+                                <div class="mb-3">
+                                    <label class="form-label">Nom et Prénoms</label>
+                                    <input type="text" class="form-control"
+                                       placeholder="Entrez le nom et le prénom du client" id="fullname">
+                                </div>
+                            </div>
+                            <div class="col-lg-5 col-sm-5 col-12">
+                                <div class="mb-3">
+                                    <label class="form-label">Téléphone</label>
+                                    <input type="tel" class="form-control"
+                                       placeholder="Entrez le numéro de téléphone" id="telephoneNewClient">
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-sm-6 col-12">
+                                <div class="mb-3">
+                                    <label class="form-label">Sexe</label>
+                                    <div class="m-0">
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="sexe"
+                                                   id="inlineRadio1" value="1">
+                                            <label class="form-check-label"
+                                                   for="inlineRadio1">Homme</label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="sexe"
+                                                   id="inlineRadio2" value="2">
+                                            <label class="form-check-label"
+                                                   for="inlineRadio2">Femme</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Row ends -->
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal">
+                            Annuler
+                        </button>
+                        <button type="button" id="submitClient" class="btn btn-primary me-5">
+                            Créer
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- End Modal Ajout Nouveau Client -->
         <div class="accordion" id="accordionSpecialTitle">
           <div class="accordion-item">
             <h2 class="accordion-header" id="headingSpecialTitleOne">
@@ -311,9 +386,12 @@
     })
 </script>
 <script>
-
-
     $(document).ready(function(){
+        function getCSRFToken(){
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+            return csrfToken ? csrfToken.value : "";
+        }
+
         var table_prestation = $("#table-prestation").DataTable({
             ajax: {
                 url: '/salon/get_prestations/',
@@ -432,12 +510,6 @@
                 calculerMontant()
             }
         })
-
-        function getCSRFToken(){
-            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
-            return csrfToken ? csrfToken.value : "";
-        }
-
 
         // Ajouter une nouvelle ligne de Prestation
         $("#ajouterLignePrestation").on("click", function(){
@@ -613,11 +685,53 @@
             })
 
         })
+
+        // Creation d'un Nouveau Client
+      $("#submitClient").on('click', function(){
+        let fullname = $("#fullname").val()
+        let telephoneClient = $("#telephoneNewClient").val()
+        let sexe = $("input[name='sexe']:checked").val()
+
+        const clientData = {
+            fullname: fullname,
+            telephone: telephoneClient,
+            sexe: sexe
+        }
+
+        if(!clientData.sexe){
+            alert("Vous devez specifier le sexe du Client");
+            return;
+        }
+
+        $.ajax({
+            url: "/client/create/",
+            method: "POST",
+            data: JSON.stringify({ client: clientData }),
+            contentType: "application/json",
+            dataType: "json",
+            headers: {"X-CSRFToken": getCSRFToken()},
+            success: function(res){
+                if(res.success){
+                    alert(res.msg)
+
+                    // Vider les Champs
+                    $("#fullname").val('')
+                    $("#telephoneClient").val('')
+                    $("input[name='sexe']").prop("checked", false)
+
+                    chargerClients(); // Refresh la liste de Client dans le Select
+                }
+
+            },
+            error: function(err){
+                alert(err.responseJSON.msg)
+            }
+        })
+      }) // End Submit Client
     })
 </script>
 <script defer>
     $(document).ready(function(){
-
         $(document).on("click", ".showTicket", function(e){
             e.preventDefault()
 
