@@ -59,7 +59,7 @@ class PrestationForm(forms.ModelForm):
 
     class Meta:
         model = Prestation
-        fields = ['service', 'prix_service', 'init_prestation']
+        fields = ['service', 'prix_service', 'init_prestation', 'quantite']
 
 
 class ProduitForm(forms.ModelForm):

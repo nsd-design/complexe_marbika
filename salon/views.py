@@ -283,6 +283,7 @@ def get_prestation_details(request, id_prestation):
             list_prestataires = [presta for presta in service.fait_par.all().values("first_name", "last_name", "email")]
             list_service.append({
                 "designation": service.service.designation,
+                "quantite": service.quantite,
                 "prix": service.service.prix_service,
                 "prestataires": list_prestataires,
             })
@@ -328,12 +329,10 @@ def get_prix_service(request, service_id):
 def add_prestation(request):
     try:
         data = json.loads(request.body)
-        print("Data :", data)
         prestations_faites = data.get("prestations", [])
         remise = escape(data.get("remise", 0))
         id_client = escape(data.get("client"))
 
-        print("prestataire: ", prestations_faites)
         with transaction.atomic():
             prestation_saved = False # Flag pour savoir si chacune des prestations a été enregistré sans interruption
 
@@ -351,17 +350,24 @@ def add_prestation(request):
 
                 id_service = escape(prestation.get("idService"))
                 prix_service = escape(prestation.get("prixService"))
+                quantite = escape(prestation.get("quantite"))
                 prestataires_ids = prestation.get('prestataire', [])
+
+                if not prestataires_ids:
+                    raise ValueError("Veuillez sélectionner les Prestataires")
 
                 current_service = Service.objects.get(id=id_service)
 
                 prestataires = Employe.objects.filter(id__in=prestataires_ids)
 
                 # Enregistré la Prestation
-                new_prestation = Prestation.objects.create(service=current_service, prix_service=prix_service, init_prestation=init_prestation)
+                new_prestation = Prestation.objects.create(
+                    service=current_service, prix_service=prix_service,
+                    init_prestation=init_prestation, quantite=quantite,
+                )
                 new_prestation.fait_par.set(prestataires)
 
-                montant_total += int(prix_service)
+                montant_total += int(prix_service) * int(quantite)
 
                 prestation_saved = True # True, pour dire la Prestation a bien été enregistré, sinon il reste sur False
                 # Et toutes les operations dans ce block sont annulées
