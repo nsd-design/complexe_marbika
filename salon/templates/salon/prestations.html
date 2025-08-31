@@ -493,7 +493,7 @@
         }
 
         // Va contenir l'id des lignes de prestations
-        var tabRowId = ["row-1"] // initialiser avec l'id de la ligne "tr" presente dès le chargement de la page
+        var tabRowId = [] // initialiser avec l'id de la ligne "tr" presente dès le chargement de la page
 
         // Charger le prix du service selon le service selectionné
         $("#tBodyCreatePrestations").on("change", ".selServices", function(){
@@ -578,6 +578,10 @@
 
            // Ligne de Prestation devant contenir toutes les autres cellule de créées ci-dessus
            $rowPrestation.append($cellServices, $cellPrestataires, $cellQuantite, $cellPrix, $cellRemove)
+           // Former l'id de la ligne en combinant le numero increment des Select au texte "row-"
+           const idRow = "row-" + idSelService
+           $rowPrestation.attr("id", idRow)
+           tabRowId.push(idRow)
            $("#ligneRemise").before($rowPrestation)
         })
 
@@ -585,11 +589,10 @@
         $(document).on("click", ".removeRow", function(){
             const $currentRow = $(this).closest(".rowPrestation");
             const $rowId = $currentRow.attr("id")
-            if(tabRowId.length > 1){
-                $currentRow.remove(); // Supprimer la ligne, "row du tableau"
+
+            if(tabRowId.length >= 1){
+                $currentRow.remove(); // Supprimer la ligne du DOM, "row du tableau"
                 tabRowId = tabRowId.filter(id => id != $rowId)
-            }else if(tabRowId.length == 1){
-                $("#cancel").trigger('click')
             }
 
             setTimeout(()=>{
