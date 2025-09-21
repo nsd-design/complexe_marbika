@@ -7,6 +7,7 @@ from datetime import date, timedelta
 import django.db.utils
 from django.db import IntegrityError
 from django.db.models import Sum, Q, Count
+from django.db.models.functions import Extract, ExtractWeek
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
@@ -358,3 +359,81 @@ def filtre_dashmin_data(request):
         return JsonResponse({"success": True, "data": data}, status=http.HTTPStatus.OK)
     except json.JSONDecodeError:
         return JsonResponse({"error": True, "msg": "Format de données invalides"}, status=400)
+
+
+
+current_week = date.today().isocalendar().week
+@require_http_methods(["POST"])
+def entrees_sorties_salon(request):
+    try:
+        filters = get_date_filters(json.loads(request.body))
+
+        list_prestations_salon: list = []
+
+        prestations_salon = (
+            InitPrestation.objects
+            .filter(**filters)
+            .annotate(week=ExtractWeek("created_at"))
+            .values("week")
+            .annotate(
+                total_montant=Sum("montant_total"),
+                total_remise=Sum("remise")
+            )
+        )
+        for presta in prestations_salon:
+            presta_formatee = presta.copy()
+            presta_formatee['total_montant'] = currency(presta['total_montant'])
+            list_prestations_salon.append(
+                presta_formatee
+            )
+
+        sum_montant = prestations_salon.aggregate(Sum("total_montant"))["total_montant__sum"] or 0
+        sum_remise = prestations_salon.aggregate(Sum("total_remise"))["total_remise__sum"] or 0
+        total_net_entree = sum_montant - sum_remise
+
+        depenses_salon, details_depenses_salon = depenses_par_section("SALON", request)
+
+        data = {
+            "total_net_entree_salon": total_net_entree,
+            "details_entrees_salon": list_prestations_salon,
+            "depenses_salon": depenses_salon,
+            "details_depenses_salon": details_depenses_salon,
+        }
+        return JsonResponse({"success": True, "data": data}, status=200)
+    except Exception as e:
+        print("Erreur: ", str(e))
+        return JsonResponse({"success": False, "msg": str(e)}, status=400)
+
+def get_date_filters(data: dict) -> dict:
+    week_num = int(data['week_num'])
+    month_num = int(data['month_num'])
+
+    if week_num:
+        return {"created_at__date__week": week_num}
+    return {"created_at__date__month": month_num or date.today().month}
+
+
+# Renvoie les Depenses d'une Section du Complexe par Date a savoir :
+# Salon ou le Restaurant
+# Le param Filters represente soit le numero de la semaine ou du mois
+def depenses_par_section(section, req):
+    list_depenses: list = []
+
+    filters = get_date_filters(json.loads(req.body))
+
+    depenses = (
+        Depense.objects
+        .filter(section=section, **filters)
+        .annotate(week=ExtractWeek("created_at"))
+        .values("week")
+        .annotate(
+            sum_montant=Sum("montant")
+        )
+    )
+    for depense in depenses:
+        depense_formatee = depense.copy()
+        depense_formatee['sum_montant'] = currency(depense['sum_montant'])
+        list_depenses.append(depense_formatee)
+
+    sum_depenses = depenses.aggregate(Sum("montant"))["montant__sum"] or 0
+    return sum_depenses, list_depenses
