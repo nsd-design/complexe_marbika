@@ -16,6 +16,7 @@ from django.views.decorators.http import require_http_methods
 
 from employe.forms import EmployeForm
 from employe.models import Employe
+from restaurant.models import Commande
 from salon.models import Vente, Depense, InitPrestation, Prestation
 from salon.views import currency
 
@@ -368,9 +369,9 @@ def entrees_sorties_salon(request):
     try:
         filters = get_date_filters(json.loads(request.body))
 
-        list_prestations_salon: list = []
+        list_prestations: list = []
 
-        prestations_salon = (
+        prestations = (
             InitPrestation.objects
             .filter(**filters)
             .annotate(week=ExtractWeek("created_at"))
@@ -380,24 +381,24 @@ def entrees_sorties_salon(request):
                 total_remise=Sum("remise")
             )
         )
-        for presta in prestations_salon:
+        for presta in prestations:
             presta_formatee = presta.copy()
             presta_formatee['total_montant'] = currency(presta['total_montant'])
-            list_prestations_salon.append(
+            list_prestations.append(
                 presta_formatee
             )
 
-        sum_montant = prestations_salon.aggregate(Sum("total_montant"))["total_montant__sum"] or 0
-        sum_remise = prestations_salon.aggregate(Sum("total_remise"))["total_remise__sum"] or 0
+        sum_montant = prestations.aggregate(Sum("total_montant"))["total_montant__sum"] or 0
+        sum_remise = prestations.aggregate(Sum("total_remise"))["total_remise__sum"] or 0
         total_net_entree = sum_montant - sum_remise
 
-        depenses_salon, details_depenses_salon = depenses_par_section("SALON", request)
+        depenses, details_depenses = depenses_par_section("SALON", request)
 
         data = {
-            "total_net_entree_salon": total_net_entree,
-            "details_entrees_salon": list_prestations_salon,
-            "depenses_salon": depenses_salon,
-            "details_depenses_salon": details_depenses_salon,
+            "total_net_entree": total_net_entree,
+            "details_entrees": list_prestations,
+            "depenses": depenses,
+            "details_depenses": details_depenses,
         }
         return JsonResponse({"success": True, "data": data}, status=200)
     except Exception as e:
@@ -417,23 +418,68 @@ def get_date_filters(data: dict) -> dict:
 # Salon ou le Restaurant
 # Le param Filters represente soit le numero de la semaine ou du mois
 def depenses_par_section(section, req):
-    list_depenses: list = []
+    try:
+        list_depenses: list = []
 
-    filters = get_date_filters(json.loads(req.body))
+        filters = get_date_filters(json.loads(req.body))
 
-    depenses = (
-        Depense.objects
-        .filter(section=section, **filters)
-        .annotate(week=ExtractWeek("created_at"))
-        .values("week")
-        .annotate(
-            sum_montant=Sum("montant")
+        depenses = (
+            Depense.objects
+            .filter(section=section, **filters)
+            .annotate(week=ExtractWeek("created_at"))
+            .values("week")
+            .annotate(
+                sum_montant=Sum("montant")
+            )
         )
-    )
-    for depense in depenses:
-        depense_formatee = depense.copy()
-        depense_formatee['sum_montant'] = currency(depense['sum_montant'])
-        list_depenses.append(depense_formatee)
+        for depense in depenses:
+            depense_formatee = depense.copy()
+            depense_formatee['sum_montant'] = currency(depense['sum_montant'])
+            list_depenses.append(depense_formatee)
 
-    sum_depenses = depenses.aggregate(Sum("montant"))["montant__sum"] or 0
-    return sum_depenses, list_depenses
+        sum_depenses = depenses.aggregate(Sum("montant"))["montant__sum"] or 0
+        return sum_depenses, list_depenses
+    except Depense.DoesNotExist:
+        return None, None
+
+
+def entrees_sorties_restaurant(request):
+    try:
+        filters = get_date_filters(json.loads(request.body))
+
+        list_commandes: list = []
+
+        commandes = (
+            Commande.objects
+            .filter(**filters)
+            .annotate(week=ExtractWeek("created_at"))
+            .values("week")
+            .annotate(
+                total_montant=Sum("prix_total"),
+                total_remise=Sum("reduction")
+            )
+        )
+
+        for cmd in commandes:
+            cmd_formatee = cmd.copy()
+            cmd_formatee['total_montant'] = currency(cmd['total_montant'])
+            list_commandes.append(
+                cmd_formatee
+            )
+
+        sum_montant = commandes.aggregate(Sum("total_montant"))["total_montant__sum"] or 0
+        sum_remise = commandes.aggregate(Sum("total_remise"))["total_remise__sum"] or 0
+        total_net_entree = sum_montant - sum_remise
+
+        depenses, details_depenses = depenses_par_section("RESTAURANT", request)
+
+        data = {
+            "total_net_entree": total_net_entree,
+            "details_entrees": list_commandes,
+            "depenses": depenses,
+            "details_depenses": details_depenses,
+        }
+        return JsonResponse({"success": True, "data": data}, status=200)
+    except Exception as e:
+        print("Erreur: ", str(e))
+        return JsonResponse({"success": False, "msg": str(e)}, status=400)

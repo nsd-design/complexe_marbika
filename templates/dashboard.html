@@ -311,13 +311,111 @@
             <div id="collapseSpecialTitleTwo" class="accordion-collapse collapse"
               aria-labelledby="headingSpecialTitleTwo" data-bs-parent="#accordionEnreesSorties">
               <div class="accordion-body">
+                <!-- Les Graphs-->
+                  <div class="row gx-4">
+                      <div class="col-sm-4">
 
-                <strong>This is the second item's accordion body.</strong> It is hidden by default, until
-                the collapse plugin adds the appropriate classes that we use to style each element. These
-                classes control the overall appearance, as well as the showing and hiding via
-                CSS transitions. You can modify any of this with custom CSS or overriding our default
-                variables. It's also worth noting that just about any HTML can go within the
-                <code>.accordion-body</code>, though the transition does limit overflow.
+                        <!-- Graph starts -->
+                        <div class="graph-body">
+                          <div id="incomeResto"></div>
+                        </div>
+                        <!-- Graph ends -->
+
+                        <!-- Stats starts -->
+                        <div class="text-center mb-5">
+                          <h2 id="montantEntreeResto"></h2>
+    <!--                      <span class="badge bg-secondary small mb-2">-->
+    <!--                        <i class="bi bi-exclamation-circle-fill me-1 text-warning"></i>3 higher income-->
+    <!--                      </span>-->
+    <!--                      <div class=""><span class="badge bg-dark me-1">+26% Compared to last week</span></div>-->
+                        </div>
+                        <!-- Stats ends -->
+
+                      </div>
+                      <div class="col-sm-4">
+
+                        <!-- Graph starts -->
+                        <div class="graph-body">
+                          <div id="expensesResto"></div>
+                        </div>
+                        <!-- Graph ends -->
+
+                        <!-- Stats starts -->
+                        <div class="text-center mb-5">
+                          <h2 id="montantSortisResto"></h2>
+    <!--                      <span class="badge bg-secondary small mb-2">-->
+    <!--                        <i class="bi bi-exclamation-circle-fill me-1 text-warning"></i>6 higher expenses-->
+    <!--                      </span>-->
+    <!--                      <div class=""><span class="badge bg-dark me-1">+33% Compared to last week</span></div>-->
+                        </div>
+                        <!-- Stats ends -->
+
+                      </div>
+                      <div class="col-sm-4">
+
+                        <!-- Graph starts -->
+                        <div class="graph-body">
+                          <div id="revenueResto"></div>
+                        </div>
+                        <!-- Graph ends -->
+
+                        <!-- Stats starts -->
+                        <div class="text-center mb-5">
+                          <h2 id="beneficeResto"></h2>
+    <!--                      <span class="badge bg-secondary small mb-2">-->
+    <!--                        <i class="bi bi-exclamation-circle-fill me-1 text-warning"></i>9 higher revenue-->
+    <!--                      </span>-->
+    <!--                      <div class=""><span class="badge bg-danger me-1">+49% compared to last week</span></div>-->
+                        </div>
+                        <!-- Stats ends -->
+                      </div>
+                  </div>
+                  <!-- Tableaux des Entrees/Sorties du Restaurant Starts -->
+                <div class="row gx-4">
+                  <div class="col-sm-12 col-md-12 col-lg-6">
+                    <!-- Tableau Affichant les Entrées du Restaurant Starts -->
+                    <div class="table-outer p-2">
+                      <div class="table-responsive">
+                        <h3>Commandes Plats & Boissons</h3>
+                        <table class="table table-striped truncate m-0" id="entreesResto">
+                          <thead>
+                            <tr>
+                              <th>#</th>
+                              <th>Montant</th>
+                              <th>Semaine</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                          <!-- Contenu chargé via ajax -->
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- Tableau Affichant les Entrées du Salon End -->
+
+                  <!-- Tableau Affichant les Dépenses du Salon Starts -->
+                  <div class="col-sm-12 col-md-12 col-lg-6">
+                    <div class="table-outer p-2">
+                      <div class="table-responsive">
+                        <h3>Dépenses</h3>
+                        <table class="table table-striped truncate m-0" id="sortiesResto">
+                          <thead>
+                            <tr>
+                              <th>#</th>
+                              <th>Montant</th>
+                              <th>Semaine</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                          <!-- Contenu chargé via ajax -->
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                   <!-- Tableaux des Entrees/Sorties du Restaurant Ends -->
+                </div>
 
               </div>
             </div>
@@ -898,50 +996,54 @@
     }
 
 
-    function situationEntreesSorties(week_num, month_num){
+    function situationEntreesSorties(
+        url, week_num, month_num, $montantEntree,
+        $montantSorti, $benefice, $tabEntree, $tabDepenses,
+        incomeGraph, expensesGraph, revenueGraph
+    ){
       const data = {
           week_num,
           month_num,
       }
 
+
       $.ajax({
-          url: "/employe/dashmin/situation/",
+          url: url,
           method: "POST",
           contentType: "application/json",
           data: JSON.stringify(data),
           headers: { 'X-CSRFToken': getCSRFToken() },
           success: function(res){
-            const dataSourceEntreesSalon = res.data.details_entrees_salon
-            const dataSourceDepensesSalon = res.data.details_depenses_salon
+            const dataSourceEntree = res.data.details_entrees
+            const dataSourceDepenses = res.data.details_depenses
 
-            const montant_entrees_salon = res.data.total_net_entree_salon
-            const montant_sorties_salon = res.data.depenses_salon
-            const benefice_salon = montant_entrees_salon - montant_sorties_salon
+            const montant_entrees = res.data.total_net_entree
+            const montant_sorties = res.data.depenses
+            const benefice = montant_entrees - montant_sorties
 
             // Calcule des Montants et Pourcentage
-            $("#montantEntreeSalon").text(montant_entrees_salon.toLocaleString() + " GNF")
-            $("#montantSortisSalon").text(montant_sorties_salon.toLocaleString() + " GNF")
-            $("#beneficeSalon").text(benefice_salon.toLocaleString() + " GNF")
+            $montantEntree.text(montant_entrees.toLocaleString() + " GNF")
+            $montantSorti.text(montant_sorties.toLocaleString() + " GNF")
+            $benefice.text(benefice.toLocaleString() + " GNF")
 
-            const totalEntreesSorties = montant_entrees_salon + montant_sorties_salon
-            const percent_entrees_salon = montant_entrees_salon ? Math.round((montant_entrees_salon / montant_entrees_salon) * 100) : 0
-            const percent_sorties_salon = montant_entrees_salon ? Math.round((montant_sorties_salon / montant_entrees_salon) * 100) : montant_sorties_salon ? Math.round(montant_sorties_salon / montant_sorties_salon) * 100 : 0
-            const percent_benefice_salon = montant_entrees_salon ? Math.round((benefice_salon / montant_entrees_salon) * 100) : 0
+            const totalEntreesSorties = montant_entrees + montant_sorties
+            const percent_entrees = montant_entrees ? Math.round((montant_entrees / montant_entrees) * 100) : 0
+            const percent_sorties = montant_entrees ? Math.round((montant_sorties / montant_entrees) * 100) : montant_sorties ? Math.round(montant_sorties / montant_sorties) * 100 : 0
+            const percent_benefice = montant_entrees ? Math.round((benefice / montant_entrees) * 100) : 0
 
-            setTimeout(()=>{
+            // Statistiques des mouvements
+            graphStatistics(incomeGraph, percent_entrees, "Entrées", ["#9196a2", "#ba1654", "#EEEEEE", "#CCCCCC", "#ba1654", "#222222"])
+            graphStatistics(expensesGraph, percent_sorties, "Dépenses", ["#ba1654", "#EEEEEE", "#CCCCCC", "#ba1654", "#222222"])
+            graphStatistics(revenueGraph, percent_benefice, "Bénéfices", ["#126621"])
 
-            graphSalon("income", percent_entrees_salon, "Entrées", ["#9196a2", "#ba1654", "#EEEEEE", "#CCCCCC", "#ba1654", "#222222"])
-            graphSalon("expenses", percent_sorties_salon, "Dépenses", ["#ba1654", "#EEEEEE", "#CCCCCC", "#ba1654", "#222222"])
-            graphSalon("revenue", percent_benefice_salon, "Bénéfices", ["#126621"])
-            }, 300)
 
-            if($.fn.DataTable.isDataTable("#entreesSalon")){
-              $("#entreesSalon").DataTable().clear().rows.add(dataSourceEntreesSalon).draw();
+            if($.fn.DataTable.isDataTable($tabEntree)){
+              $tabEntree.DataTable().clear().rows.add(dataSourceEntree).draw();
             }
             else{
-              $("#entreesSalon").DataTable({
+              $tabEntree.DataTable({
                 destroy: true,
-                data: dataSourceEntreesSalon,
+                data: dataSourceEntree,
                 columns: [
                   {
                       data: null,
@@ -956,13 +1058,13 @@
               })
             }
 
-            if($.fn.DataTable.isDataTable("#sortiesSalon")){
-              $("#sortiesSalon").DataTable().clear().rows.add(dataSourceDepensesSalon).draw();
+            if($.fn.DataTable.isDataTable($tabDepenses)){
+              $tabDepenses.DataTable().clear().rows.add(dataSourceDepenses).draw();
             }
             else{
-              $("#sortiesSalon").DataTable({
+              $tabDepenses.DataTable({
                 destroy: true,
-                data: dataSourceDepensesSalon,
+                data: dataSourceDepenses,
                 columns: [
                   {
                       data: null,
@@ -992,20 +1094,75 @@
         if($(this).val() != 0){$("#selectMonthSalon").val(0)}
     })
 
+    // Definition des urls pour recuperer les mouvements Entrees/Sorties du Salon et du Restaurant
+    const url_salon = "/employe/dashmin/situation_salon/"
+    const url_resto = "/employe/dashmin/situation_resto/"
+
+    let montantEntree = $("#montantEntreeSalon")
+    let montantSorti = $("#montantSortisSalon")
+    let benefice = $("#beneficeSalon")
+    let tabEntree = $("#entreesSalon")
+    let tabDepenses = $("#sortiesSalon")
+
+    let montantEntreeResto = $("#montantEntreeResto")
+    let montantSortiResto = $("#montantSortisResto")
+    let beneficeResto = $("#beneficeResto")
+    let tabEntreeResto = $("#entreesResto")
+    let tabDepensesResto = $("#sortiesResto")
+
+    // Les Graphs du Salon
+    const incomeGraphSalon = "income"
+    const expensesGraphSalon = "expenses"
+    const revenueGraphSalon = "revenue"
+
+    // Les Graphs du Restaurant
+    const incomeGraphResto = "incomeResto"
+    const expensesGraphResto = "expensesResto"
+    const revenueGraphResto = "revenueResto"
+
     //Recuperer les Entrees/Sorties du Salon via le filtre (par semaine ou par mois)
     $("#submitFiltreSalon").on('click', function(e){
       const week_num = $("#selectWeekSalon").val()
       const month_num = $("#selectMonthSalon").val()
 
-      situationEntreesSorties(week_num, month_num)
+      montantEntree = $("#montantEntreeSalon")
+      montantSorti = $("#montantSortisSalon")
+      benefice = $("#beneficeSalon")
+      tabEntree = $("#entreesSalon")
+      tabDepenses = $("#sortiesSalon")
+
+      // Filtrer les Donnees Entrees/Sorties du Salon
+      const url_salon = "/employe/dashmin/situation_salon/"
+      situationEntreesSorties(url_salon, week_num, month_num,
+        montantEntree, montantSorti, benefice, tabEntree, tabDepenses,
+        incomeGraphSalon, expensesGraphSalon, revenueGraphSalon
+      )
+
+      // Filtrer les Donnees Entrees/Sorties du Restaurant
+      montantEntreeResto = $("#montantEntreeResto")
+      montantSortiResto = $("#montantSortisResto")
+      beneficeResto = $("#beneficeResto")
+      tabEntreeResto = $("#entreesResto")
+      tabDepensesResto = $("#sortiesResto")
+
+      situationEntreesSorties(url_resto, week_num, month_num, montantEntreeResto, montantSortiResto,
+        beneficeResto, tabEntreeResto, tabDepensesResto,
+        incomeGraphResto, expensesGraphResto, revenueGraphResto
+      )
     })
 
+    // Recuperer les Entrees/Sorties du Salon à l'initialisation de la page
+    situationEntreesSorties(url_salon, 0, 0, montantEntree, montantSorti, benefice, tabEntree, tabDepenses, "income", "expenses", "revenue")
 
-    situationEntreesSorties(0, 0)
+    // Recuperer les Entrees/Sorties du Restaurant à l'initialisation de la page
+    situationEntreesSorties(url_resto, 0, 0, montantEntreeResto, montantSortiResto, beneficeResto,
+        tabEntreeResto, tabDepensesResto,
+        incomeGraphResto, expensesGraphResto, revenueGraphResto
+    )
 
     // Graph 1
     let chart = {};
-    function graphSalon(idGraph, percent, graphLabel, tabColors){
+    function graphStatistics(idGraph, percent, graphLabel, tabColors){
       if(chart[idGraph]){
         chart[idGraph].updateSeries([percent]);
         chart[idGraph].updateOptions({
