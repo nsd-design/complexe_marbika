@@ -140,6 +140,195 @@
 </div>
 <!-- Row ends -->
 
+<!-- Row Entrées / Sorties -->
+<div class="row gx-4">
+  <div class="col-sm-12">
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5 class="card-title">Entrées / Sorties</h5>
+      </div>
+      <div class="card-body">
+        <div class="row align-items-center">
+          <div class="col-lg-3 col-sm-4 col-12">
+            <div class="mb-3">
+              <label class="form-label" for="selectWeekSalon">Semaines</label>
+              <select class="form-select" id="selectWeekSalon">
+                <option value="0">Toutes</option>
+                {% for data in semaines %}
+                <option value="{{ data.numero_semaine }}">Semaine - {{ data.numero_semaine }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="col-lg-3 col-sm-4 col-12">
+            <div class="mb-3">
+              <label class="form-label" for="selectMonthSalon">Mois</label>
+                <select class="form-select" id="selectMonthSalon">
+                <!--Charger Dynamiquement via JS-->
+                </select>
+            </div>
+          </div>
+          <div class="col-lg-3 col-sm-4 col-12">
+              <button type="button" id="submitFiltreSalon" class="btn btn-outline-primary">
+                Filtrer
+              </button>
+          </div>
+        </div>
+        <div class="accordion" id="accordionEnreesSorties">
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingSpecialTitleOne">
+              <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                data-bs-target="#collapseSpecialTitleOne" aria-expanded="true"
+                aria-controls="collapseSpecialTitleOne">
+                <div class="d-flex flex-column">
+                  <h5 class="m-0">SALON</h5>
+                </div>
+              </button>
+            </h2>
+            <div id="collapseSpecialTitleOne" class="accordion-collapse collapse show"
+              aria-labelledby="headingSpecialTitleOne" data-bs-parent="#accordionEnreesSorties">
+              <div class="accordion-body">
+                <!-- Row starts -->
+                <div class="row gx-4">
+                  <div class="col-sm-4">
+
+                    <!-- Graph starts -->
+                    <div class="graph-body">
+                      <div id="income"></div>
+                    </div>
+                    <!-- Graph ends -->
+
+                    <!-- Stats starts -->
+                    <div class="text-center mb-5">
+                      <h2 id="montantEntreeSalon"></h2>
+<!--                      <span class="badge bg-secondary small mb-2">-->
+<!--                        <i class="bi bi-exclamation-circle-fill me-1 text-warning"></i>3 higher income-->
+<!--                      </span>-->
+<!--                      <div class=""><span class="badge bg-dark me-1">+26% Compared to last week</span></div>-->
+                    </div>
+                    <!-- Stats ends -->
+
+                  </div>
+                  <div class="col-sm-4">
+
+                    <!-- Graph starts -->
+                    <div class="graph-body">
+                      <div id="expenses"></div>
+                    </div>
+                    <!-- Graph ends -->
+
+                    <!-- Stats starts -->
+                    <div class="text-center mb-5">
+                      <h2 id="montantSortisSalon"></h2>
+<!--                      <span class="badge bg-secondary small mb-2">-->
+<!--                        <i class="bi bi-exclamation-circle-fill me-1 text-warning"></i>6 higher expenses-->
+<!--                      </span>-->
+<!--                      <div class=""><span class="badge bg-dark me-1">+33% Compared to last week</span></div>-->
+                    </div>
+                    <!-- Stats ends -->
+
+                  </div>
+                  <div class="col-sm-4">
+
+                    <!-- Graph starts -->
+                    <div class="graph-body">
+                      <div id="revenue"></div>
+                    </div>
+                    <!-- Graph ends -->
+
+                    <!-- Stats starts -->
+                    <div class="text-center mb-5">
+                      <h2 id="beneficeSalon"></h2>
+<!--                      <span class="badge bg-secondary small mb-2">-->
+<!--                        <i class="bi bi-exclamation-circle-fill me-1 text-warning"></i>9 higher revenue-->
+<!--                      </span>-->
+<!--                      <div class=""><span class="badge bg-danger me-1">+49% compared to last week</span></div>-->
+                    </div>
+                    <!-- Stats ends -->
+
+                  </div>
+                </div>
+                  <!-- Row ends -->
+                <!-- Tableaux des Entrées/Sorties du Salon -->
+                <div class="row gx-4">
+                  <div class="col-sm-12 col-md-12 col-lg-6">
+                    <!-- Tableau Affichant les Entrées du Salon Starts -->
+                    <div class="table-outer p-2">
+                      <div class="table-responsive">
+                        <h3>Prestations</h3>
+                        <table class="table table-striped truncate m-0" id="entreesSalon">
+                          <thead>
+                            <tr>
+                              <th>#</th>
+                              <th>Montant</th>
+                              <th>Semaine</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                          <!-- Contenu chargé via ajax -->
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- Tableau Affichant les Entrées du Salon End -->
+
+                  <!-- Tableau Affichant les Dépenses du Salon Starts -->
+                  <div class="col-sm-12 col-md-12 col-lg-6">
+                    <div class="table-outer p-2">
+                      <div class="table-responsive">
+                        <h3>Dépenses</h3>
+                        <table class="table table-striped truncate m-0" id="sortiesSalon">
+                          <thead>
+                            <tr>
+                              <th>#</th>
+                              <th>Montant</th>
+                              <th>Semaine</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                          <!-- Contenu chargé via ajax -->
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                   <!--Tableau Affichant les Dépenses du Salon End -->
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="headingSpecialTitleTwo">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                data-bs-target="#collapseSpecialTitleTwo" aria-expanded="false"
+                aria-controls="collapseSpecialTitleTwo">
+                <div class="d-flex flex-column">
+                  <h5 class="m-0">RESTAURANT</h5>
+                </div>
+              </button>
+            </h2>
+            <div id="collapseSpecialTitleTwo" class="accordion-collapse collapse"
+              aria-labelledby="headingSpecialTitleTwo" data-bs-parent="#accordionEnreesSorties">
+              <div class="accordion-body">
+
+                <strong>This is the second item's accordion body.</strong> It is hidden by default, until
+                the collapse plugin adds the appropriate classes that we use to style each element. These
+                classes control the overall appearance, as well as the showing and hiding via
+                CSS transitions. You can modify any of this with custom CSS or overriding our default
+                variables. It's also worth noting that just about any HTML can go within the
+                <code>.accordion-body</code>, though the transition does limit overflow.
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Row Entrées / Sorties ends -->
+
 <!-- Row starts -->
 <div class="row gx-4">
   <div class="col-lg-4 col-sm-6 col-12">
@@ -579,6 +768,7 @@
 {% endblock %}
 
 {% block custom_js %}
+<script src="{% static 'assets/js/datatables.min.js' %}"></script>
 <script>
     $(document).ready(function(){
         // Tableau contenant les Dates
@@ -599,7 +789,7 @@
 
         // Charger le Mois de la Semaine sélectionnée dans l'input mois
         const $week_num = $(this).val()
-        const $select = $("#selectMonth")
+        const $select = $("#selectMonth, #selectMonthSalon")
 
         $select.append(new Option("Tous", 0));
         tabMois.forEach(function(mois, index){
@@ -699,5 +889,169 @@
     option.textContent = year;
     select.appendChild(option);
   }
+</script>
+<script>
+  $(document).ready(function(){
+    function getCSRFToken(){
+      const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+      return csrfToken ? csrfToken.value : "";
+    }
+
+
+    function situationEntreesSorties(week_num, month_num){
+      const data = {
+          week_num,
+          month_num,
+      }
+
+      $.ajax({
+          url: "/employe/dashmin/situation/",
+          method: "POST",
+          contentType: "application/json",
+          data: JSON.stringify(data),
+          headers: { 'X-CSRFToken': getCSRFToken() },
+          success: function(res){
+            const dataSourceEntreesSalon = res.data.details_entrees_salon
+            const dataSourceDepensesSalon = res.data.details_depenses_salon
+
+            const montant_entrees_salon = res.data.total_net_entree_salon
+            const montant_sorties_salon = res.data.depenses_salon
+            const benefice_salon = montant_entrees_salon - montant_sorties_salon
+
+            // Calcule des Montants et Pourcentage
+            $("#montantEntreeSalon").text(montant_entrees_salon.toLocaleString() + " GNF")
+            $("#montantSortisSalon").text(montant_sorties_salon.toLocaleString() + " GNF")
+            $("#beneficeSalon").text(benefice_salon.toLocaleString() + " GNF")
+
+            const totalEntreesSorties = montant_entrees_salon + montant_sorties_salon
+            const percent_entrees_salon = montant_entrees_salon ? Math.round((montant_entrees_salon / montant_entrees_salon) * 100) : 0
+            const percent_sorties_salon = montant_entrees_salon ? Math.round((montant_sorties_salon / montant_entrees_salon) * 100) : montant_sorties_salon ? Math.round(montant_sorties_salon / montant_sorties_salon) * 100 : 0
+            const percent_benefice_salon = montant_entrees_salon ? Math.round((benefice_salon / montant_entrees_salon) * 100) : 0
+
+            setTimeout(()=>{
+
+            graphSalon("income", percent_entrees_salon, "Entrées", ["#9196a2", "#ba1654", "#EEEEEE", "#CCCCCC", "#ba1654", "#222222"])
+            graphSalon("expenses", percent_sorties_salon, "Dépenses", ["#ba1654", "#EEEEEE", "#CCCCCC", "#ba1654", "#222222"])
+            graphSalon("revenue", percent_benefice_salon, "Bénéfices", ["#126621"])
+            }, 300)
+
+            if($.fn.DataTable.isDataTable("#entreesSalon")){
+              $("#entreesSalon").DataTable().clear().rows.add(dataSourceEntreesSalon).draw();
+            }
+            else{
+              $("#entreesSalon").DataTable({
+                destroy: true,
+                data: dataSourceEntreesSalon,
+                columns: [
+                  {
+                      data: null,
+                      render: function(data, type, row, meta){
+                          return meta.row + 1;
+                        }
+                  },
+                  { data: 'total_montant'},
+                  { data: 'week' }
+                ],
+                lengthMenu: [5, 10, 25, 50, 75, 100]
+              })
+            }
+
+            if($.fn.DataTable.isDataTable("#sortiesSalon")){
+              $("#sortiesSalon").DataTable().clear().rows.add(dataSourceDepensesSalon).draw();
+            }
+            else{
+              $("#sortiesSalon").DataTable({
+                destroy: true,
+                data: dataSourceDepensesSalon,
+                columns: [
+                  {
+                      data: null,
+                      render: function(data, type, row, meta){
+                          return meta.row + 1;
+                        }
+                  },
+                  { data: 'sum_montant' },
+                  { data: 'week' }
+                ],
+                lengthMenu: [5, 10, 25, 50, 75, 100]
+              })
+            }
+          },
+          error: function(error){
+              console.log("erreur :", error)
+          },
+      })
+    }
+
+    // Definir le numero de semaine sur 'Toutes (0)' lorsqu'un mois est selectioné
+    $("#selectMonthSalon").on('change', function(){
+        if($(this).val() != 0){$("#selectWeekSalon").val(0)}
+    })
+    // Definir le numero de mois sur 'Tous (0)' lorsqu'une semaine est selectionée
+    $("#selectWeekSalon").on('change', function(){
+        if($(this).val() != 0){$("#selectMonthSalon").val(0)}
+    })
+
+    //Recuperer les Entrees/Sorties du Salon via le filtre (par semaine ou par mois)
+    $("#submitFiltreSalon").on('click', function(e){
+      const week_num = $("#selectWeekSalon").val()
+      const month_num = $("#selectMonthSalon").val()
+
+      situationEntreesSorties(week_num, month_num)
+    })
+
+
+    situationEntreesSorties(0, 0)
+
+    // Graph 1
+    let chart = {};
+    function graphSalon(idGraph, percent, graphLabel, tabColors){
+      if(chart[idGraph]){
+        chart[idGraph].updateSeries([percent]);
+        chart[idGraph].updateOptions({
+          labels: [graphLabel],
+          colors: tabColors
+        });
+      }
+      else{
+        var options = {
+          series: [percent],
+          chart: {
+              height: 280,
+              type: "radialBar",
+              offsetY: -10,
+          },
+          plotOptions: {
+              radialBar: {
+                  startAngle: -135,
+                  endAngle: 135,
+                  dataLabels: {
+                      name: {
+                          fontSize: "16px",
+                          color: undefined,
+                          offsetY: 0,
+                      },
+                      value: {
+                          offsetY: 20,
+                          fontSize: "22px",
+                          color: undefined,
+                          formatter: function (val) {
+                              return val + "%";
+                          },
+                      },
+                  },
+              },
+          },
+          colors: tabColors,
+          stroke: {
+              dashArray: 4,
+          },
+          labels: [graphLabel],
+        };
+        chart[idGraph] = new ApexCharts(document.querySelector("#" + idGraph), options);
+        chart[idGraph].render();
+      }
+    }
+  })
 </script>
 {% endblock %}
