@@ -248,7 +248,7 @@ def prestations(request):
 @require_http_methods(["GET"])
 def get_prestations(request):
     try:
-        list_init_prestations = InitPrestation.objects.all()
+        list_init_prestations = InitPrestation.objects.filter(statut="confirmé")
         data: list = []
         for prestation in list_init_prestations:
             remise = float(prestation.remise)
@@ -332,6 +332,7 @@ def add_prestation(request):
         prestations_faites = data.get("prestations", [])
         remise = escape(data.get("remise", 0))
         id_client = escape(data.get("client"))
+        statut = data.get("statut")
 
         with transaction.atomic():
             prestation_saved = False # Flag pour savoir si chacune des prestations a été enregistré sans interruption
@@ -340,7 +341,7 @@ def add_prestation(request):
             current_client = Client.objects.get(id=id_client) if id_client else None
 
             # Init New Prestation
-            init_prestation = InitPrestation(montant_total=0, remise=remise, client=current_client)
+            init_prestation = InitPrestation(montant_total=0, remise=remise, client=current_client, statut=statut)
             init_prestation.reference = f"PS-{init_prestation.id.hex[:8].upper()}"
             init_prestation.save()
 
