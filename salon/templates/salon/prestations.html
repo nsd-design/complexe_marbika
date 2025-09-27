@@ -8,194 +8,201 @@
 
 <!-- Row starts -->
 <div class="row gx-4">
-  <div class="col-sm-12">
-    <div class="card mb-4">
-      <div class="card-header">
-        <h5 class="card-title">Prestation du Personnel</h5>
-      </div>
-      <div class="card-body">
-       <!-- Button trigger modal -->
-        <button type="button" class="btn btn-primary col-6 col-md-2 my-3" data-bs-toggle="modal"
-                data-bs-target="#staticBackdrop">
-            Nouveau Client <i class="bi bi-plus-lg"></i>
-        </button>
+    <div class="col-sm-12">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title">Prestation du Personnel</h5>
+            </div>
+            <div class="card-body">
+                <!-- Button trigger modal -->
+                <button type="button" class="btn btn-primary col-6 col-md-2 my-3" data-bs-toggle="modal"
+                        data-bs-target="#staticBackdrop">
+                    Nouveau Client <i class="bi bi-plus-lg"></i>
+                </button>
 
-        <!-- Modal Ajout Nouveau Client -->
-        <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static"
-             data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="staticBackdropLabel">
-                            Céer un nouveau Client
-                        </h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <!-- Row starts -->
-                        <div class="row gx-4">
-                            <div class="col-sm-12">
-                                <div class="mb-3 fw-bold">
-                                    Informations sur le Client
-                                </div>
+                <!-- Modal Ajout Nouveau Client -->
+                <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static"
+                     data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="staticBackdropLabel">
+                                    Céer un nouveau Client
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
                             </div>
-                            <div class="col-lg-5 col-sm-5 col-12">
-                                <div class="mb-3">
-                                    <label class="form-label">Nom et Prénoms</label>
-                                    <input type="text" class="form-control"
-                                       placeholder="Entrez le nom et le prénom du client" id="fullname">
-                                </div>
-                            </div>
-                            <div class="col-lg-5 col-sm-5 col-12">
-                                <div class="mb-3">
-                                    <label class="form-label">Téléphone</label>
-                                    <input type="tel" class="form-control"
-                                       placeholder="Entrez le numéro de téléphone" id="telephoneNewClient">
-                                </div>
-                            </div>
-                            <div class="col-lg-6 col-sm-6 col-12">
-                                <div class="mb-3">
-                                    <label class="form-label">Sexe</label>
-                                    <div class="m-0">
-                                        <div class="form-check form-check-inline">
-                                            <input class="form-check-input" type="radio" name="sexe"
-                                                   id="inlineRadio1" value="1">
-                                            <label class="form-check-label"
-                                                   for="inlineRadio1">Homme</label>
+                            <div class="modal-body">
+                                <!-- Row starts -->
+                                <div class="row gx-4">
+                                    <div class="col-sm-12">
+                                        <div class="mb-3 fw-bold">
+                                            Informations sur le Client
                                         </div>
-                                        <div class="form-check form-check-inline">
-                                            <input class="form-check-input" type="radio" name="sexe"
-                                                   id="inlineRadio2" value="2">
-                                            <label class="form-check-label"
-                                                   for="inlineRadio2">Femme</label>
+                                    </div>
+                                    <div class="col-lg-5 col-sm-5 col-12">
+                                        <div class="mb-3">
+                                            <label class="form-label">Nom et Prénoms</label>
+                                            <input type="text" class="form-control"
+                                                   placeholder="Entrez le nom et le prénom du client" id="fullname">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-5 col-sm-5 col-12">
+                                        <div class="mb-3">
+                                            <label class="form-label">Téléphone</label>
+                                            <input type="tel" class="form-control"
+                                                   placeholder="Entrez le numéro de téléphone" id="telephoneNewClient">
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6 col-sm-6 col-12">
+                                        <div class="mb-3">
+                                            <label class="form-label">Sexe</label>
+                                            <div class="m-0">
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="radio" name="sexe"
+                                                           id="inlineRadio1" value="1">
+                                                    <label class="form-check-label"
+                                                           for="inlineRadio1">Homme</label>
+                                                </div>
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="radio" name="sexe"
+                                                           id="inlineRadio2" value="2">
+                                                    <label class="form-check-label"
+                                                           for="inlineRadio2">Femme</label>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
+                                <!-- Row ends -->
+
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal">
+                                    Annuler
+                                </button>
+                                <button type="button" id="submitClient" class="btn btn-primary me-5">
+                                    Créer
+                                </button>
                             </div>
                         </div>
-                        <!-- Row ends -->
-
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal">
-                            Annuler
-                        </button>
-                        <button type="button" id="submitClient" class="btn btn-primary me-5">
-                            Créer
-                        </button>
                     </div>
                 </div>
-            </div>
-        </div>
-        <!-- End Modal Ajout Nouveau Client -->
-        <div class="accordion" id="accordionSpecialTitle">
-          <div class="accordion-item">
-            <h2 class="accordion-header" id="headingSpecialTitleOne">
-              <button class="accordion-button" type="button" data-bs-toggle="collapse"
-                data-bs-target="#collapseSpecialTitleOne" aria-expanded="true"
-                aria-controls="collapseSpecialTitleOne">
-                <div class="d-flex flex-column">
-                  <h5 class="m-0">Prestations</h5>
-                </div>
-              </button>
-            </h2>
-            <div id="collapseSpecialTitleOne" class="accordion-collapse collapse show"
-              aria-labelledby="headingSpecialTitleOne" data-bs-parent="#accordionSpecialTitle">
-              <div class="accordion-body">
-                <!-- Row starts -->
-                <div class="row">
-
-                    <!-- Liste Clients -->
-                    <div class="my-2 col-12 col-md-4 col-lg-4">
-                        <label class="form-label" for="clients-select">Liste des Clients</label>
-                        <select class="form-select bg-secondary" id="clients-select"
-                                aria-label="Default select example">
-                            <option value="">-- Selectionner un Client --</option>
-                        </select>
-                    </div>
-                    <!-- End Liste Clients-->
-                    <!-- Zone d'affichage des messages -->
-                    <div id="response-message-service" class="alert text-white alert-dismissible fade" role="alert">
-                        
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"
-                          aria-label="Close"></button>
-                    </div>
-                  <div class="col-12">
-                    <div class="table-outer">
-                      <div class="table-responsive">
-                        <table class="table truncate" id="tabCreatePrestations">
-                          <thead>
-                            <tr>
-                              <th colspan="7" class="pt-3 pb-3">
-                                Choisissez les Services
-                                {% csrf_token %}
-                              </th>
-                            </tr>
-                            <tr>
-                              <th>Services</th>
-                              <th>Prestataires</th>
-                              <th>Quantité</th>
-                              <th>Prix U</th>
-                              <th >Actions</th>
-                            </tr>
-                          </thead>
-                          <tbody id="tBodyCreatePrestations">
-                            <!-- Le contenu est créé dynamiquement au click du Bouton Ajouter -->
-                            <!-- qui ajoutera une nouvelle ligne de prestation -->
-
-                            <tr id="ligneRemise">
-                              <td>
-                                <button class="btn btn-danger" id="ajouterLignePrestation">
-                                  Ajouter
-                                </button>
-                              </td>
-                              <td colspan="6">
-                                <div class="row justify-content-end">
-                                  <div class="col-auto">
-                                    <label class="col-form-label" for="remise">Remise</label>
-                                  </div>
-                                  <div class="col-auto">
-                                    <input type="number" value="0" class="form-control" id="remise" min="0" >
-                                  </div>
+                <!-- End Modal Ajout Nouveau Client -->
+                <div class="accordion" id="accordionSpecialTitle">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingSpecialTitleOne">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#collapseSpecialTitleOne" aria-expanded="true"
+                                    aria-controls="collapseSpecialTitleOne">
+                                <div class="d-flex flex-column">
+                                    <h5 class="m-0">Prestations</h5>
                                 </div>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td colspan="5">&nbsp;</td>
-                              <td>
-                                <p class="m-0">Sous-total</p>
-                                <p class="m-0">Remise</p>
-                                <h5 class="mt-2 text-danger">Total</h5>
-                              </td>
-                              <td>
-                                <p class="m-0" id="subtotalValue">GNF</p>
-                                <p class="m-0" id="remiseValue">GNF</p>
-                                <h5 class="mt-2 text-success" id="totalValue">GNF</h5>
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
+                            </button>
+                        </h2>
+                        <div id="collapseSpecialTitleOne" class="accordion-collapse collapse show"
+                             aria-labelledby="headingSpecialTitleOne" data-bs-parent="#accordionSpecialTitle">
+                            <div class="accordion-body">
+                                <!-- Row starts -->
+                                <div class="row">
+
+                                    <!-- Liste Clients -->
+                                    <div class="my-2 col-12 col-md-4 col-lg-4">
+                                        <label class="form-label" for="clients-select">Liste des Clients</label>
+                                        <select class="form-select bg-secondary" id="clients-select"
+                                                aria-label="Default select example">
+                                            <option value="">-- Selectionner un Client --</option>
+                                        </select>
+                                    </div>
+                                    <!-- End Liste Clients-->
+                                    <!-- Zone d'affichage des messages -->
+                                    <div id="response-message-service" class="alert text-white alert-dismissible fade"
+                                         role="alert">
+
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"
+                                                aria-label="Close"></button>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="table-outer">
+                                            <div class="table-responsive">
+                                                <table class="table truncate" id="tabCreatePrestations">
+                                                    <thead>
+                                                    <tr>
+                                                        <th colspan="7" class="pt-3 pb-3">
+                                                            Choisissez les Services
+                                                            {% csrf_token %}
+                                                        </th>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>Services</th>
+                                                        <th>Prestataires</th>
+                                                        <th>Quantité</th>
+                                                        <th>Prix U</th>
+                                                        <th>Actions</th>
+                                                    </tr>
+                                                    </thead>
+                                                    <tbody id="tBodyCreatePrestations">
+                                                    <!-- Le contenu est créé dynamiquement au click du Bouton Ajouter -->
+                                                    <!-- qui ajoutera une nouvelle ligne de prestation -->
+
+                                                    <tr id="ligneRemise">
+                                                        <td>
+                                                            <button class="btn btn-danger" id="ajouterLignePrestation">
+                                                                Ajouter
+                                                            </button>
+                                                        </td>
+                                                        <td colspan="6">
+                                                            <div class="row justify-content-end">
+                                                                <div class="col-auto">
+                                                                    <label class="col-form-label"
+                                                                           for="remise">Remise</label>
+                                                                </div>
+                                                                <div class="col-auto">
+                                                                    <input type="number" value="0" class="form-control"
+                                                                           id="remise" min="0">
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td colspan="5">&nbsp;</td>
+                                                        <td>
+                                                            <p class="m-0">Sous-total</p>
+                                                            <p class="m-0">Remise</p>
+                                                            <h5 class="mt-2 text-danger">Total</h5>
+                                                        </td>
+                                                        <td>
+                                                            <p class="m-0" id="subtotalValue">GNF</p>
+                                                            <p class="m-0" id="remiseValue">GNF</p>
+                                                            <h5 class="mt-2 text-success" id="totalValue">GNF</h5>
+                                                        </td>
+                                                    </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="invoice-footer">
+                                            <div class="text-end mt-3">
+                                                <button id="enregistrerPrestations"
+                                                        class="btn btn-outline-secondary me-2">Enregistrer
+                                                </button>
+                                                <button id="submitPrestations" class="btn btn-primary me-2">Valider
+                                                </button>
+                                                <button id="cancel" class="btn btn-secondary">Annuler</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Row ends -->
+                            </div>
+                        </div>
                     </div>
-                  </div>
-                  <div class="col-12">
-                     <div class="invoice-footer">
-                          <div class="text-end mt-3">
-                            <button id="submitPrestations" class="btn btn-primary me-2">Valider</button>
-                            <button id="cancel" class="btn btn-secondary">Annuler</button>
-                          </div>
-                    </div>
-                  </div>
                 </div>
-                <!-- Row ends -->
-              </div>
             </div>
-          </div>
         </div>
-      </div>
     </div>
-  </div>
 
     <div class="card mb-4 col-12 col-sm-12 col-xl-8">
         <div class="card-header">
@@ -231,7 +238,8 @@
         <div class="card mb-4">
             <div class="d-flex justify-content-between card-header">
                 <h5 class="card-title" id="cardTitle">Ticket</h5>
-                <button id="btnPrintTicket" class="dt-button buttons-print" tabindex="0" aria-controls="customButtons" type="button"><span>Print</span></button>
+                <button id="btnPrintTicket" class="dt-button buttons-print" tabindex="0" aria-controls="customButtons"
+                        type="button"><span>Print</span></button>
             </div>
             <div class="card-body scroll350 overflow-auto" id="bodyCardTicket">
                 <div class="m-auto p-2" style="width: 303px; background-color: #fff" id="printTicket">
@@ -242,7 +250,8 @@
                     <div id="infoPrestation" class="my-2 " style="color: #000;">
                         <p class="my-0 fw-bold lh-lg">Prestation : <span class="fw-normal" id="referencePS"></span></p>
                         <p class="my-0 fw-bold lh-lg">Client : <span class="fw-normal" id="nomClient"></span></p>
-                        <p class="my-0 fw-bold lh-lg">Telephone : <span class="fw-normal" id="telephoneClient"></span></p>
+                        <p class="my-0 fw-bold lh-lg">Telephone : <span class="fw-normal" id="telephoneClient"></span>
+                        </p>
                         <p class="my-0 fw-bold lh-lg">Date : <span class="fw-normal" id="datePrestation"></span></p>
                     </div>
                     <table id="tabTicketPrestation" class="col-12 col-xl-12 mt-3" style="color: #000">
@@ -287,30 +296,30 @@
 
 <!-- Modal -->
 <div class="modal fade" id="modalPrestation" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false"
-  aria-labelledby="modalPrestationTitle" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-scrollable">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="modalPrestationTitle">
-          Details Prestation
-        </h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body" id="bodyModalPrestation">
+     aria-labelledby="modalPrestationTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalPrestationTitle">
+                    Details Prestation
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="bodyModalPrestation">
 
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-dark" data-bs-dismiss="modal">
-          Fermer
-        </button>
-      </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-dark" data-bs-dismiss="modal">
+                    Fermer
+                </button>
+            </div>
+        </div>
     </div>
-  </div>
 </div>
-    <!-- End Modal -->
+<!-- End Modal -->
 <button type="button" hidden="hidden" id="showModalPrestation" class="btn btn-primary" data-bs-toggle="modal"
-  data-bs-target="#modalPrestation">
-  Afficher Modal Prestation
+        data-bs-target="#modalPrestation">
+    Afficher Modal Prestation
 </button>
 
 <!-- Custom JS files -->
@@ -630,8 +639,7 @@
         }
         chargerClients();
 
-        // Soumettre l'enregistrement d'une Prestation
-        $("#submitPrestations").on("click", function(){
+        function submitPrestations(statut){
             let tabPrestations = []
             let prestataires = [];
 
@@ -671,10 +679,9 @@
             data = {
                 prestations: tabPrestations,
                 remise: remise,
-                client: client
+                client: client,
+                statut: statut
             }
-
-
 
             if(!data.client){
                 $("#response-message-service").text("Veuillez sélectionner un Client.")
@@ -712,7 +719,16 @@
                 }, 3500)
               }
             })
+        }
 
+        // Soumettre l'enregistrement d'une Prestation
+        $("#submitPrestations").on("click", function(){
+            let statut = "confirmé"
+            submitPrestations(statut)
+        })
+        $("#enregistrerPrestations").on("click", function(){
+            let statut = "en_attente"
+            submitPrestations(statut)
         })
 
         // Creation d'un Nouveau Client

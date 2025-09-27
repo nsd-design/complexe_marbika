@@ -30,10 +30,12 @@ class PrixService(MyBaseModel):
 
 
 class InitPrestation(MyBaseModel):
+    status = [("en_attente", "En attente"), ("confirmé", "Confirmé")]
     reference = models.CharField(max_length=20, unique=True, blank=True)
     montant_total = models.BigIntegerField()
     remise = models.BigIntegerField(default=0)
     client = models.ForeignKey(Client, null=True, on_delete=models.SET_NULL)
+    statut = models.CharField(max_length=10, choices=status, default="en_attente")
 
     def __str__(self):
         return self.reference
