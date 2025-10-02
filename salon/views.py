@@ -311,6 +311,28 @@ def get_prestation_details(request, id_prestation):
         return JsonResponse({"error": True, "msg": "Erreur inattendue"}, status=400)
 
 
+@require_http_methods(["GET"])
+def prestations_en_attentes(request):
+    try:
+        prestations = InitPrestation.objects.filter(statut="en_attente").order_by("-created_at")
+        nb_prestations = prestations.count()
+        liste_prestations: list = []
+
+        for prest in prestations:
+            liste_prestations.append({
+                "id": prest.id,
+                "reference": prest.reference,
+                "montant": prest.montant_total,
+                "nom_client": prest.client.nom_complet if prest.client else "",
+            })
+        data = {
+            "nb_prestations": nb_prestations,
+            "liste_prestations": liste_prestations,
+        }
+        return JsonResponse({"success": True, "data": data}, status=200)
+    except InitPrestation.DoesNotExist:
+        return JsonResponse({"success": False, "msg": "Aucune prestation en attente"}, status=404)
+
 def get_prix_service(request, service_id):
     if request.method == 'GET':
         try:
@@ -796,3 +818,21 @@ def depense_semaine_mois_annee(request):
         return JsonResponse({"error": True, "msg": "Erreur inattendue"})
     except (ValueError, TypeError):
         return JsonResponse({"error": True, "msg": "Erreur lors de la mise en forme du montant"})
+
+
+@require_http_methods(["POST"])
+def confirmer_prestation(request):
+    try:
+        data = json.loads(request.body)
+        id_prestation = data["id_prestation"]
+
+        prestation = InitPrestation.objects.get(pk=id_prestation)
+
+        prestation.statut = "confirmé"
+        prestation.save()
+        return JsonResponse({"success": True, "msg": "Prestation confirmée avec succès."}, status=HTTPStatus.OK)
+    except InitPrestation.DoesNotExist:
+        return JsonResponse({"success": False, "msg": "Prestation non existante"}, status=HTTPStatus.NOT_FOUND)
+    except (ValueError, TypeError):
+        print("Erreur inattendue")
+        return JsonResponse({"error": True, "msg": "Erreur inattendue"}, status=HTTPStatus.INTERNAL_SERVER_ERROR)
