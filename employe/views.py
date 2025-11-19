@@ -2,7 +2,7 @@ import http
 import json
 import uuid
 from collections import defaultdict
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 
 import django.db.utils
 from django.db import IntegrityError
@@ -13,6 +13,7 @@ from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
 from django.utils.html import escape
 from django.views.decorators.http import require_http_methods
+from django.utils import timezone
 
 from employe.forms import EmployeForm
 from employe.models import Employe
@@ -483,3 +484,56 @@ def entrees_sorties_restaurant(request):
     except Exception as e:
         print("Erreur: ", str(e))
         return JsonResponse({"success": False, "msg": str(e)}, status=400)
+
+
+def performances(request):
+    return render(request, tmp_base + "performances.html")
+
+@require_http_methods(["POST"])
+def performances_par_date(request):
+
+    try:
+        data = json.loads(request.body)
+        date_debut_str = data.get("dateDebut")
+        date_fin_str = data.get("dateFin")
+
+        # Convertir en datetime naive
+        date_debut_naive = datetime.strptime(date_debut_str, "%Y-%m-%d")
+        date_fin_naive = datetime.strptime(date_fin_str, "%Y-%m-%d") + timedelta(days=1) - timedelta(seconds=1)
+
+        # Rendre aware selon TIME_ZONE défini dans settings.py
+        date_debut = timezone.make_aware(date_debut_naive)
+        date_fin = timezone.make_aware(date_fin_naive)
+
+        init_prestations_du_jour = InitPrestation.objects.filter(
+            created_at__gte=date_debut, created_at__lte=date_fin
+        ).order_by("-created_at")
+
+        init_prestations: list = []
+        for init_prest in init_prestations_du_jour:
+            init_prestations.append({
+                "id": init_prest.id,
+                "created_at": init_prest.created_at,
+                "montant_total": init_prest.montant_total,
+                "remise": init_prest.remise,
+                "client": init_prest.client.nom_complet,
+            })
+        return JsonResponse({"success": True, "data": init_prestations}, status=200)
+    except Exception as e:
+        print("Erreur: ", str(e))
+        return JsonResponse({"success": False, "msg": str(e)}, status=400)
+
+def details_prestation_par_id(request, id_init_prest):
+    try:
+        details_prestation = Prestation.objects.filter(init_prestation__id=id_init_prest)
+        list_details_prestation: list = []
+        for prest in details_prestation:
+            list_details_prestation.append({
+                "id": prest.id,
+                "service": prest.service.designation,
+                "nb_prestataires": prest.fait_par.count(),
+                "prestataires": [(prestataire.id, prestataire.first_name, prestataire.last_name) for prestataire in prest.fait_par.all() ]
+            })
+        return JsonResponse({"success": True, "data": list_details_prestation}, status=200)
+    except Prestation.DoesNotExist:
+        return JsonResponse({"success": False, "msg": "Aucun service trouvé pour cette prestation"}, status=404)

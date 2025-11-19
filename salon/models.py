@@ -38,7 +38,7 @@ class InitPrestation(MyBaseModel):
     statut = models.CharField(max_length=10, choices=status, default="en_attente")
 
     def __str__(self):
-        return self.reference
+        return f"{self.reference} - {self.client} - Montant : {self.montant_total}"
 
 
 class Prestation(MyBaseModel):

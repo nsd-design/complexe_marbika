@@ -1,0 +1,291 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block page_title %} {{ page_title }} {% endblock %}
+{% block main %}
+<!-- Row starts -->
+<div class="row gx-4">
+    {% csrf_token %}
+
+    <div class="d-flex flex-row flex-wrap gap-2 align-items-center card">
+        <div class="col-sm-4 col-12">
+            <!-- Card starts -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="m-0">
+                        <label class="form-label" for="date_debut">Du</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                              <i class="bi bi-calendar4"></i>
+                            </span>
+                            <input type="text" id="date_debut" class="form-control datepicker"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Card ends -->
+        </div>
+        <div class="col-sm-4 col-12">
+            <!-- Card starts -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="m-0">
+                        <label class="form-label" for="date_fin">Au</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                              <i class="bi bi-calendar4"></i>
+                            </span>
+                            <input type="text" id="date_fin" class="form-control datepicker"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Card ends -->
+        </div>
+        <button type="button" class="btn btn-outline-primary" id="btnDateFilter">
+            Appliquer
+        </button>
+    </div>
+
+    <div class="col-sm-12 mt-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">Performance des Employés</h5>
+            </div>
+            <div class="card-body">
+                <div class="accordion" id="accordionPanelsStayOpenExample">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="panelsStayOpen-headingOne">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#panelsStayOpen-collapseOne" aria-expanded="true"
+                                    aria-controls="panelsStayOpen-collapseOne">
+                                Attribuer les montants de prestations
+                            </button>
+                        </h2>
+                        <div id="panelsStayOpen-collapseOne" class="accordion-collapse collapse show"
+                             aria-labelledby="panelsStayOpen-headingOne">
+                            <div class="accordion-body">
+                                <div class="row gx-4">
+                                    <div class="col-12 col-md-6 mb-4">
+                                        <label class="form-label" for="prestations">Selectionnez une prestation</label>
+                                        <select class="form-select p-2" id="prestations"
+                                                aria-label="Default select example">
+                                            <!-- Contenu chargé via Ajax-->
+                                        </select>
+                                    </div>
+                                    <div class="col-12 col-md-6 mb-4">
+                                        <label class="form-label" for="servicesPrestation">Selectionnez le
+                                            service</label>
+                                        <select class="form-select p-2" id="servicesPrestation"
+                                                aria-label="Default select example">
+                                            <!-- Contenu chargé via Ajax-->
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <p>Montant Total : <span id="montantTotalPrestation" class="text-primary"></span></p>
+                                    </div>
+                                    <!-- Zone d'affichage des messages -->
+                                    <div id="response-message" class="alert text-white alert-dismissible fade"
+                                         role="alert">
+                                        test
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"
+                                                aria-label="Close">
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="table-outer">
+                                    <div class="table-responsive">
+                                        <table class="table align-middle table-hover m-0 truncate">
+                                            <thead>
+                                            <tr>
+                                                <th>Service</th>
+                                                <th>Employee</th>
+                                                <th>Montant à attribuer</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody id="attributionTBody">
+
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="panelsStayOpen-headingTwo">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#panelsStayOpen-collapseTwo" aria-expanded="false"
+                                    aria-controls="panelsStayOpen-collapseTwo">
+                                Accordion Item #2
+                            </button>
+                        </h2>
+                        <div id="panelsStayOpen-collapseTwo" class="accordion-collapse collapse"
+                             aria-labelledby="panelsStayOpen-headingTwo">
+                            <div class="accordion-body">
+                                <strong>This is the second item's accordion body.</strong>
+                                It is hidden by default, until the collapse plugin
+                                adds the appropriate classes that we use to style
+                                each element. These classes control the overall
+                                appearance, as well as the showing and hiding via
+                                CSS transitions. You can modify any of this with
+                                custom CSS or overriding our default variables. It's
+                                also worth noting that just about any HTML can go
+                                within the <code>.accordion-body</code>, though the
+                                transition does limit overflow.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="panelsStayOpen-headingThree">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#panelsStayOpen-collapseThree" aria-expanded="false"
+                                    aria-controls="panelsStayOpen-collapseThree">
+                                Accordion Item #3
+                            </button>
+                        </h2>
+                        <div id="panelsStayOpen-collapseThree" class="accordion-collapse collapse"
+                             aria-labelledby="panelsStayOpen-headingThree">
+                            <div class="accordion-body">
+                                The Elite admin dashboard is the best choice for building powerful, modern web
+                                applications.
+                                It is built with the latest Bootstrap 5 and features a unique and comprehensive UI kit.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Row ends -->
+{% endblock %}
+<!-- Custom JS files -->
+{% block custom_js %}
+<!-- Date Range JS -->
+<script src="{% static 'assets/js/modernizr.js' %}"></script>
+<script src="{% static 'assets/vendor/daterange/daterange.js' %}"></script>
+<script src="{% static 'assets/vendor/daterange/custom-daterange.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+    $(document).ready(function(){
+
+        function getCSRFToken(){
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+            return csrfToken ? csrfToken.value : "";
+        }
+        // Appliquer le filtre pour Charger les donnees de Prestations
+        $("#btnDateFilter").on("click", function(){
+            const date_debut_str = $("#date_debut").val()
+            const date_fin_str = $("#date_fin").val()
+            const date_debut = `${date_debut_str.split('/')[2]}-${date_debut_str.split('/')[1]}-${date_debut_str.split('/')[0]}`;
+            const date_fin = `${date_fin_str.split('/')[2]}-${date_fin_str.split('/')[1]}-${date_fin_str.split('/')[0]}`;
+            loadInitPrestationByDate(date_debut, date_fin)
+        })
+
+        const myDate = new Date();
+        const start = `${myDate.getFullYear()}-${myDate.getMonth() + 1}-${myDate.getDate()}`;
+        const end = `${myDate.getFullYear()}-${myDate.getMonth() + 1}-${myDate.getDate()}`;
+
+        loadInitPrestationByDate(start, end)
+
+        function loadInitPrestationByDate(start, end){
+            const $select = $("#prestations")
+            data = {dateDebut: start, dateFin: end};
+
+            $.ajax({
+                url: "/employe/performances/performances_par_date/",
+                method: 'POST',
+                headers: { 'X-CSRFToken': getCSRFToken() },
+                data: JSON.stringify(data),
+                contentType: 'application/json',
+                dataType: 'json',
+                success: function(res){
+                    $select.empty(); // Vider l'ancien contenu
+                    $select.append(new Option("-- Sélectionnez une Prestation --", "", true, true));
+                    res.data.forEach(function(prest){
+                        const option = new Option(`${prest.client} Montant: ${prest.montant_total} - Remise ${prest.remise} | ${prest.created_at}`,prest.id);
+                        option.setAttribute("data-montant", prest.montant_total);
+                        $select.append(option);
+                    });
+                },
+                error: function(xhr){
+                    console.log(xhr);
+                    const errorResponse = xhr.responseJSON ? xhr.responseJSON.error : 'Erreur serveur.';
+                    $('#response-message').text(`Erreur: ${errorResponse}`);
+                    $('#response-message').removeClass('bg-success')
+                    $('#response-message').addClass('bg-warning show').fadeIn();
+                    // Faire disparaître après 3 secondes (3000 ms)
+                    setTimeout(function () {
+                        $('#response-message').removeClass('show').fadeOut();
+                        $('#response-message').removeClass('bg-warning');
+                    }, 3000);
+                }
+            })
+        }
+
+        // Charger les services d'une prestation
+        let listPrestations = []
+        $("#prestations").on("change", function(){
+            const idInitPrestation = $(this).val();
+            const montant = $(this).find("option:selected").data("montant");
+
+            $("#montantTotalPrestation").text(montant.toLocaleString() + " GNF")
+            $.ajax({
+                url: `/employe/performances/details_prestation_par_id/${idInitPrestation}/`,
+                method: 'GET',
+                success: function(res){
+                    listPrestations = res.data;
+                    $servicesPrestation = $("#servicesPrestation")
+                    $servicesPrestation.empty();
+                    $servicesPrestation.append(new Option("-- Sélectionnez le Service --", "", true, true));
+                    res.data.forEach(function(servicePrest){
+                        const option = new Option(servicePrest.service, servicePrest.id);
+                        $servicesPrestation.append(option);
+                    });
+                },
+                error: function(xhr){}
+            })
+        })
+
+        function createAttributionTBody(tabEmploye, service, idService, nb_prestataires){
+            $attributionTBody = $("#attributionTBody")
+            $attributionTBody.empty();
+
+            if(nb_prestataires > 1){
+                tabEmploye.forEach(function(employee){
+                    const $tr = $('<tr>')
+                    const $tdEmploye = $('<td>')
+                    const $tdMontant = $('<td>')
+                    const $tdService = $('<td>')
+                    const $inputMontant = $('<input>', {type: 'number', class: 'prixService'})
+                    $tdMontant.append($inputMontant)
+
+                    $tdService.text(service).attr('id', idService)
+                    $tdEmploye.text(employee[1] + " " + employee[2])
+                    $tr.append($tdService, $tdEmploye, $tdMontant)
+                    $attributionTBody.append($tr)
+                }) // End forEach
+            } else{
+                if(tabEmploye.length <= 0) return;
+                const $tr = $('<tr>')
+                $tdService.text(service).attr('id', idService)
+                $tdEmploye.text(tabEmploye[0][1] + " " + tabEmploye[0][2])
+                $tr.append($tdService, $tdEmploye, $tdMontant)
+                $attributionTBody.append($tr)
+            }
+        }
+
+        $("#servicesPrestation").on("change", function(){
+            const currentPrestation = listPrestations.find(prest => prest.id === $(this).val())
+            // Ajouter le Service dans le tableau d'attribution des Montants
+            createAttributionTBody(currentPrestation.prestataires, currentPrestation.service, currentPrestation.id, currentPrestation.nb_prestataires)
+        })
+    })
+</script>
+<!--<script defer src="{% static 'assets/select2/js/select2.min.js' %}"></script>-->
+
+{% endblock %}
