@@ -1,0 +1,208 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block page_title %} {{ page_title }} {% endblock %}
+{% block main %}
+<!-- Row starts -->
+<div class="row gx-4">
+    <div class="col-sm-12">
+        <div class="card mb-4">
+            <form method="POST" action="{% url 'pool_entry' %}" id="poolEntry">
+                <div class="card-header">
+                    <h5 class="card-title">Gestion de la Piscine</h5>
+                </div>
+                <div class="card-body">
+
+                    <!-- Row starts -->
+                    <div class="row gx-4">
+                        {% csrf_token %}
+
+                        <div class="col-lg-3 col-sm-4 col-12">
+                            <div class="mb-3">
+                                <label for="id_nb_client" class="form-label">Nombre de clients</label>
+                                {{ form.nb_client | as_crispy_field }}
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-sm-4 col-12">
+                            <div class="mb-3">
+                                <label class="form-label" for="id_prix_unitaire">Prix Unitaire</label>
+                                {{ form.prix_unitaire | as_crispy_field }}
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-sm-4 col-12">
+                            <div class="mb-3">
+                                <label class="form-label" for="id_reduction">Remise</label>
+                                {{ form.reduction | as_crispy_field }}
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-sm-4 col-12">
+                            <div class="mb-3">
+                                <label class="form-label" for="id_note">Commentaire</label>
+                                {{ form.note | as_crispy_field }}
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Row ends -->
+
+                </div>
+                <div class="card-footer">
+                    <div class="d-flex gap-2 justify-content-end">
+                        <button type="submit" class="btn btn-primary me-4">
+                            Valider
+                        </button>
+                        <button type="reset" class="btn btn-secondary" id="btnAnnuler">
+                            Annuler
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-sm-12">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title">Piscine</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-outer">
+                    <div class="table-responsive">
+                        <table class="table table-striped truncate m-0" id="piscineTable">
+                            <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Nombre de Personnes</th>
+                                <th>Prix Unitaire</th>
+                                <th>Total</th>
+                                <th>Date</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Row ends -->
+
+{% endblock main %}
+
+{% block custom_js %}
+<script src="{% static 'assets/js/datatables.min.js' %}"></script>
+<script>
+    $(document).ready(function () {
+        function getCSRFToken(){
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+            return csrfToken ? csrfToken.value : "";
+        }
+
+        var notyf = new Notyf();
+
+        $("#poolEntry").submit(function(event){
+            event.preventDefault();
+
+            const actionUrl = $(this).attr('action');
+            const formData = {
+                nb_client: $("#id_nb_client").val().trim(),
+                prix_unitaire: $("#id_prix_unitaire").val().trim(),
+                reduction: $("#id_reduction").val().trim(),
+                note: $("#id_note").val().trim()
+            }
+            console.log(formData);
+            $.ajax({
+                url: actionUrl,
+                method: "POST",
+                headers: { 'X-CSRFToken': getCSRFToken() },
+                data: JSON.stringify(formData),
+                contentType: 'application/json',
+                dataType: 'json',
+                success: function (res) {
+                    notyf.success({
+                      message: res.msg,
+                      duration: 3000,
+                      position: {
+                        x: 'right',
+                        y: 'top'
+                      }
+                    })
+                    $("#btnAnnuler").trigger("click")
+                },
+                error: function (err) {
+                    notyf.error({
+                      message: res.msg,
+                      duration: 3000,
+                      position: {
+                        x: 'right',
+                        y: 'top'
+                      }
+                    })
+                }
+            })
+        })
+
+        var piscineTable = $("#piscineTable").DataTable({
+            processing: true,
+            searching: true,
+            paging: true,
+            info: false,
+            columns: [
+                {
+                    data: null,
+                    render: function(data, type, row, meta){
+                        return meta.row + 1;
+                      }
+                },
+                { data: 'nb_client' },
+                { data: 'prix_unitaire' },
+                { data: 'total' },
+                { data: 'created_at' },
+                { data: 'note' },
+            ],
+             columnDefs: [{
+                "targets": 0,
+                "searchable": false,
+                "orderable": false
+            }],
+            order: [],
+            rowCallback: function(row, data, index){
+                $('td:eq(0)', row).html(index + 1)
+            },
+        });
+
+        const myDate = new Date();
+        const start = `${myDate.getFullYear()}-${myDate.getMonth() + 1}-${myDate.getDate()}`;
+        const end = `${myDate.getFullYear()}-${myDate.getMonth() + 1}-${myDate.getDate()}`;
+
+        loadPoolData(start, end)
+
+        function loadPoolData(start, end){
+            data = {dateDebut: start, dateFin: end};
+
+            $.ajax({
+                url: "/client/gestion_piscine/pool_records_per_date/",
+                method: 'POST',
+                headers: { 'X-CSRFToken': getCSRFToken() },
+                data: JSON.stringify(data),
+                contentType: 'application/json',
+                dataType: 'json',
+                success: function(res){
+                    const data = res.data;
+                    piscineTable.clear();
+                    piscineTable.rows.add(data).draw();
+                },
+                error: function(err){
+                    console.log(err);
+
+                }
+            })
+        }
+    })
+</script>
+
+{% endblock %}
+

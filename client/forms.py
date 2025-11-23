@@ -57,3 +57,18 @@ class ReservationForm(forms.ModelForm):
             'date_fin' : forms.DateInput(attrs={'type': 'date', 'id': 'date_fin_reservation'}),
             'zone' : forms.Select(attrs={'id': 'zone_reservation'})
         }
+
+class PiscineForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name in self.fields:
+            self.fields[field_name].label = ''
+
+        self.fields['reduction'].widget.attrs['min'] = 0
+        self.fields['nb_client'].widget.attrs['min'] = 1
+        self.fields['prix_unitaire'].widget.attrs['min'] = 10000
+
+
+    class Meta:
+        model = models.Piscine
+        fields = ['nb_client', 'prix_unitaire', 'reduction', 'note']
