@@ -10,4 +10,7 @@ urlpatterns = [
     path("location_reservation/reserver/", views.create_reservation, name="create_reservation"),
     path("location_reservation/locations/", views.get_locations, name="get_locations"),
     path("location_reservation/reservations/", views.get_reservations, name="get_reservations"),
+    path("gestion_piscine/", views.gestion_piscine, name="gestion_piscine"),
+    path("gestion_piscine/pool_entry/", views.pool_entry, name="pool_entry"),
+    path("gestion_piscine/pool_records_per_date/", views.pool_records_per_date, name="pool_records_per_date"),
 ]

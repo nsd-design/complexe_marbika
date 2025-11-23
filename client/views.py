@@ -1,5 +1,6 @@
 import http
 import json
+from datetime import datetime, timedelta
 
 from django.db import transaction
 from django.utils.html import escape
@@ -7,10 +8,11 @@ from django.utils.html import escape
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
+from django.utils import timezone
 
-from client.models import Client, ZoneAReserver, Location, Reservation
+from client.models import Client, ZoneAReserver, Location, Reservation, Piscine
 from . import forms
-from .forms import ZoneForm, LocationForm, ReservationForm
+from .forms import ZoneForm, LocationForm, ReservationForm, PiscineForm
 from salon.views import currency
 
 tmp_base = "client/"
@@ -221,3 +223,65 @@ def get_reservations(request):
         return JsonResponse({"success": True, "data": list_reservations}, status=200)
     except Reservation.DoesNotExist:
         return JsonResponse({"error": True, "msg": "Aucune reservation trouvée."}, status=404)
+
+def gestion_piscine(request):
+    context = {
+        "page_title": "Gestion de la Piscine",
+        "form": PiscineForm(),
+    }
+    return render(request, tmp_base + "gestion_piscine.html", context=context)
+
+@require_http_methods(["POST"])
+def pool_entry(request):
+    try:
+        data = json.loads(request.body)
+        nb_client = data.get('nb_client')
+        prix_unitaire = data.get('prix_unitaire')
+        reduction = data.get('reduction')
+        note = data.get('note')
+        Piscine.objects.create(nb_client=nb_client, prix_unitaire=prix_unitaire, reduction=reduction, note=note)
+        return JsonResponse({"success": True, "msg": "Enregistrement effectué avec succès."}, status=201)
+    except json.decoder.JSONDecodeError:
+        print("Erreur, format de données invalide")
+        return JsonResponse({"success": False, "msg": "Erreur, format de données invalide"}, 400)
+    except Exception as e:
+        print("Erreur ", str(e))
+        return JsonResponse({"success": False, "msg": str(e)})
+
+
+@require_http_methods(["POST"])
+def pool_records_per_date(request):
+    try:
+        data = json.loads(request.body)
+        date_debut_str = data.get("dateDebut")
+        date_fin_str = data.get("dateFin")
+        date_debut_str = "2025-11-22"
+        date_fin_str = "2025-11-22"
+
+        # Convertir en datetime naive
+        date_debut_naive = datetime.strptime(date_debut_str, "%Y-%m-%d")
+        date_fin_naive = datetime.strptime(date_fin_str, "%Y-%m-%d") + timedelta(days=1) - timedelta(seconds=1)
+
+        # Rendre aware selon TIME_ZONE défini dans settings.py
+        date_debut = timezone.make_aware(date_debut_naive)
+        date_fin = timezone.make_aware(date_fin_naive)
+
+        records = Piscine.objects.filter(
+            created_at__gte=date_debut, created_at__lte=date_fin
+        ).order_by("-created_at")
+
+        records_list: list = []
+
+        for record in records:
+            records_list.append({
+                "id": record.id,
+                "nb_client": record.nb_client,
+                "prix_unitaire": currency(record.prix_unitaire),
+                "total": currency(record.nb_client * record.prix_unitaire),
+                "reduction": record.reduction,
+                "created_at": record.created_at.strftime("%d/%m/%Y"),
+                "note": record.note,
+            })
+        return JsonResponse({"success": True, "data": records_list}, status=200)
+    except Piscine.DoesNotExist:
+        return JsonResponse({"success": False, "msg": "Aucun enregistrement trouvé."}, status=404)

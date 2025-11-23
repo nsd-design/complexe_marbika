@@ -68,8 +68,8 @@ class Location(MyBaseModel):
 class Piscine(MyBaseModel):
     nb_client = models.IntegerField()
     prix_unitaire = models.BigIntegerField()
-    reduction = models.BigIntegerField(null=True)
-    note = models.CharField(max_length=255, null=True)
+    reduction = models.BigIntegerField(null=True, default=0)
+    note = models.CharField(max_length=255, null=True, blank=True)
 
 
 class AbonnementGym(MyBaseModel):
