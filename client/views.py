@@ -33,7 +33,7 @@ def create_client(request):
         data = json.loads(request.body)
         client = data.get('client')
 
-        required_fields = ['sexe']
+        required_fields = ['sexe', 'fullname']
         for field in required_fields:
             if not escape(client.get(field)):
                 return JsonResponse({"error": True, "msg": f"Le champ '{field}' est obligatoire."}, status=400)
@@ -41,7 +41,7 @@ def create_client(request):
         fullname = escape(client.get('fullname'))
         telephone = escape(client.get('telephone'))
         sexe = escape(client.get('sexe'))
-        if telephone_exists(telephone):
+        if telephone and telephone_exists(telephone):
             return JsonResponse({"error": True, "msg": "Ce Numéro existe déjà dans la Base de Données."}, status=400)
 
         Client.objects.create(

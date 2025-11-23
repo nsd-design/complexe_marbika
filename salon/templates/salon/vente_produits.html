@@ -700,6 +700,10 @@
             sexe: sexe
         }
 
+        if(!clientData.fullname){
+            alert("Vous devez définir un nom pour le Client");
+            return;
+        }
         if(!clientData.sexe){
             alert("Vous devez specifier le sexe du Client");
             return;
