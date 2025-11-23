@@ -551,11 +551,9 @@ $(document).ready(function(){
 
     })
 
-    $("#remise").on("keyup", function(){
+    $("#remise").on("input", function(){
         // Mettre a jour les Montant total, le sous-total et la remise à chaque modification de la remise
-        if($("#remise").val()){
-            calculerMontant()
-        }
+        calculerMontant()
     })
 
         // Ajouter une nouvelle ligne de Prestation
