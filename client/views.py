@@ -255,8 +255,6 @@ def pool_records_per_date(request):
         data = json.loads(request.body)
         date_debut_str = data.get("dateDebut")
         date_fin_str = data.get("dateFin")
-        date_debut_str = "2025-11-22"
-        date_fin_str = "2025-11-22"
 
         # Convertir en datetime naive
         date_debut_naive = datetime.strptime(date_debut_str, "%Y-%m-%d")
