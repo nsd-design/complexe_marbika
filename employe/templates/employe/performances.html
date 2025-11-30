@@ -74,25 +74,18 @@
                                             <!-- Contenu chargé via Ajax-->
                                         </select>
                                     </div>
-                                    <div class="col-12 col-md-6 mb-4">
-                                        <label class="form-label" for="servicesPrestation">Selectionnez le
-                                            service</label>
-                                        <select class="form-select p-2" id="servicesPrestation"
-                                                aria-label="Default select example">
-                                            <!-- Contenu chargé via Ajax-->
-                                        </select>
-                                    </div>
+<!--                                    <div class="col-12 col-md-6 mb-4">-->
+<!--                                        <label class="form-label" for="servicesPrestation">Selectionnez le-->
+<!--                                            service</label>-->
+<!--                                        <select class="form-select p-2" id="servicesPrestation"-->
+<!--                                                aria-label="Default select example">-->
+<!--                                            &lt;!&ndash; Contenu chargé via Ajax&ndash;&gt;-->
+<!--                                        </select>-->
+<!--                                    </div>-->
                                     <div>
                                         <p>Montant Total : <span id="montantTotalPrestation" class="text-primary"></span></p>
                                     </div>
-                                    <!-- Zone d'affichage des messages -->
-                                    <div id="response-message" class="alert text-white alert-dismissible fade"
-                                         role="alert">
-                                        test
-                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"
-                                                aria-label="Close">
-                                        </button>
-                                    </div>
+
                                 </div>
                                 <div class="table-outer">
                                     <div class="table-responsive">
@@ -177,6 +170,8 @@
             const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
             return csrfToken ? csrfToken.value : "";
         }
+        var notyf = new Notyf();
+
         // Appliquer le filtre pour Charger les donnees de Prestations
         $("#btnDateFilter").on("click", function(){
             const date_debut_str = $("#date_debut").val()
@@ -211,43 +206,71 @@
                         option.setAttribute("data-montant", prest.montant_total);
                         $select.append(option);
                     });
+                    notyf.success({
+                      message: "Liste de prestation chargée avec succès.",
+                      duration: 3000,
+                      position: {
+                        x: 'right',
+                        y: 'top'
+                      }
+                    })
                 },
                 error: function(xhr){
                     console.log(xhr);
                     const errorResponse = xhr.responseJSON ? xhr.responseJSON.error : 'Erreur serveur.';
-                    $('#response-message').text(`Erreur: ${errorResponse}`);
-                    $('#response-message').removeClass('bg-success')
-                    $('#response-message').addClass('bg-warning show').fadeIn();
-                    // Faire disparaître après 3 secondes (3000 ms)
-                    setTimeout(function () {
-                        $('#response-message').removeClass('show').fadeOut();
-                        $('#response-message').removeClass('bg-warning');
-                    }, 3000);
+                    notyf.error({
+                      message: errorResponse,
+                      duration: 3000,
+                      position: {
+                        x: 'right',
+                        y: 'top'
+                      }
+                    })
                 }
             })
         }
 
         // Charger les services d'une prestation
         let listPrestations = []
+        let montantTotal;
         $("#prestations").on("change", function(){
             const idInitPrestation = $(this).val();
             const montant = $(this).find("option:selected").data("montant");
 
+            // Annuler le traitement si l'id init Prestation est null
+            if(!idInitPrestation){
+                return;
+            }
+
             $("#montantTotalPrestation").text(montant.toLocaleString() + " GNF")
+            montantTotal = toNumber($("#montantTotalPrestation").text())
+            montantTotal = toNumber($("#montantTotalPrestation").text())
             $.ajax({
                 url: `/employe/performances/details_prestation_par_id/${idInitPrestation}/`,
                 method: 'GET',
                 success: function(res){
                     listPrestations = res.data;
-                    $servicesPrestation = $("#servicesPrestation")
+
+                    createAttributionTBody(listPrestations, listPrestations.service, listPrestations.id, listPrestations.nb_prestataires)
+
+                    /*$servicesPrestation = $("#servicesPrestation")
                     $servicesPrestation.empty();
                     $servicesPrestation.append(new Option("-- Sélectionnez le Service --", "", true, true));
                     res.data.forEach(function(servicePrest){
                         const option = new Option(servicePrest.service, servicePrest.id);
                         $servicesPrestation.append(option);
-                    });
+                    });*/
                 },
-                error: function(xhr){}
+                error: function(xhr){
+                    notyf.error({
+                      message: xhr.msg,
+                      duration: 5000,
+                      position: {
+                        x: 'right',
+                        y: 'top'
+                      }
+                    })
+                }
             })
         })
 
@@ -255,35 +278,101 @@
             $attributionTBody = $("#attributionTBody")
             $attributionTBody.empty();
 
-            if(nb_prestataires > 1){
-                tabEmploye.forEach(function(employee){
+            //if(nb_prestataires > 1){
+                tabEmploye.forEach(function(prest){
                     const $tr = $('<tr>')
                     const $tdEmploye = $('<td>')
                     const $tdMontant = $('<td>')
-                    const $tdService = $('<td>')
+                    //const $tdService = $('<td>')
                     const $inputMontant = $('<input>', {type: 'number', class: 'prixService'})
                     $tdMontant.append($inputMontant)
 
-                    $tdService.text(service).attr('id', idService)
+                    const service = prest.service
+                    const prestataires = prest.prestataires
+                    const rowspan = prest.nb_prestataires
+
+                    // La Premiere ligne contient le Service
+                    const $firstTr = $('<tr>')
+                    const $tdService = $('<td>').text(service).attr('rowspan', rowspan)
+                    $firstTr.append($tdService)
+
+                    // Premier Prestataire
+                    const firstPrestataire = prestataires[0]
+                    const $tdPrestataire = $('<td>').text(firstPrestataire[1] + " " + firstPrestataire[2])
+                    $firstTr.append($tdPrestataire, $tdMontant)
+
+                    $attributionTBody.append($firstTr);
+
+                    // Pour les lignes suivantes (sans la colonne service)
+                    for(let i = 1; i < prestataires.length; i++){
+                        const $tdMontant2 = $('<td>')
+                        $tdMontant2.append($('<input>', {type: 'number', class: 'prixService', name: 'prixService'}))
+                        const prestataire = prestataires[i]
+                        const $tr = $('<tr>')
+                        $tr.append($('<td>').text(prestataire[1] + " " + prestataire[2]), $tdMontant2)
+
+                        $attributionTBody.append($tr)
+                    }
+
+                    /*$tdService.text(service).attr('id', idService)
                     $tdEmploye.text(employee[1] + " " + employee[2])
                     $tr.append($tdService, $tdEmploye, $tdMontant)
-                    $attributionTBody.append($tr)
+                    $attributionTBody.append($tr)*/
                 }) // End forEach
-            } else{
+            //}
+            /*else{
                 if(tabEmploye.length <= 0) return;
                 const $tr = $('<tr>')
                 $tdService.text(service).attr('id', idService)
                 $tdEmploye.text(tabEmploye[0][1] + " " + tabEmploye[0][2])
                 $tr.append($tdService, $tdEmploye, $tdMontant)
                 $attributionTBody.append($tr)
-            }
+            }*/
         }
 
-        $("#servicesPrestation").on("change", function(){
-            const currentPrestation = listPrestations.find(prest => prest.id === $(this).val())
-            // Ajouter le Service dans le tableau d'attribution des Montants
-            createAttributionTBody(currentPrestation.prestataires, currentPrestation.service, currentPrestation.id, currentPrestation.nb_prestataires)
+        // Formater une valeur (string ou autre) en Number
+        function toNumber(value) {
+            return Number(value.replace(/[^0-9.-]/g, ""));
+        }
+
+        $("#attributionTBody").on("input", ".prixService", function(){
+
+            // Calculer la somme de tous les services
+            let sommePrix = 0
+            const prixInputs = $(".prixService")
+
+            prixInputs.each(function(){
+                const prix = toNumber($(this).val());
+                if(!isNaN(prix)) sommePrix += prix
+            })
+
+            // Si le montant à attribuer dépasse le montant disponible
+            if(sommePrix > montantTotal){
+                notyf.error({
+                  message: "Le montant total est insuffisant.",
+                  duration: 3000,
+                  position: {
+                    x: 'right',
+                    y: 'top'
+                  }
+                })
+
+                prixInputs.each(function(){
+                    if(toNumber($(this).val()) <= 0){
+                        const prix = toNumber($(this).val());
+                        $(this).prop("disabled", true)
+                   }
+                })
+
+                return
+            }
+            prixInputs.prop("disabled", false)
+
+            // Nouveau montant disponible
+            const montantDisponible = montantTotal - sommePrix
+            $("#montantTotalPrestation").text(montantDisponible.toLocaleString() + " GNF")
         })
+
     })
 </script>
 <!--<script defer src="{% static 'assets/select2/js/select2.min.js' %}"></script>-->
