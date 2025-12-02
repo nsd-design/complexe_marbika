@@ -12,4 +12,5 @@ urlpatterns = [
     path("performances/", views.performances, name="performances"),
     path("performances/performances_par_date/", views.performances_par_date, name="performances_par_date"),
     path("performances/details_prestation_par_id/<str:id_init_prest>/", views.details_prestation_par_id, name="details_prestation_par_id"),
+    path("performances/attributions/", views.add_attributions, name="add_attributions"),
 ]

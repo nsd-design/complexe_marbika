@@ -18,7 +18,7 @@ from django.utils import timezone
 from employe.forms import EmployeForm
 from employe.models import Employe
 from restaurant.models import Commande
-from salon.models import Vente, Depense, InitPrestation, Prestation
+from salon.models import Vente, Depense, InitPrestation, Prestation, RepartitionMontantPrestation, Service
 from salon.views import currency
 
 tmp_base = "employe/"
@@ -531,9 +531,47 @@ def details_prestation_par_id(request, id_init_prest):
             list_details_prestation.append({
                 "id": prest.id,
                 "service": prest.service.designation,
+                "id_service": prest.service.id,
                 "nb_prestataires": prest.fait_par.count(),
                 "prestataires": [(prestataire.id, prestataire.first_name, prestataire.last_name) for prestataire in prest.fait_par.all() ]
             })
         return JsonResponse({"success": True, "data": list_details_prestation}, status=200)
     except Prestation.DoesNotExist:
         return JsonResponse({"success": False, "msg": "Aucun service trouvé pour cette prestation"}, status=404)
+
+
+def dejaAttribue(id_init_prest, id_employe, id_service):
+        return RepartitionMontantPrestation.objects.filter(
+            init_prestation__id=id_init_prest,
+            employe__id=id_employe,
+            service__id=id_service,
+        ).exists()
+
+@require_http_methods(["POST"])
+def add_attributions(request):
+    try:
+        data = json.loads(request.body)
+        id_init_prestation = data.get("idInitPrestation")
+        data_prestation = data.get("tabPrestations")
+
+        init_prestation = InitPrestation.objects.get(id=id_init_prestation)
+
+        nb_prestataires: int = 0
+        for prestation in data_prestation:
+            # // Si le montant est deja attribue a l'employe en cours, passé au suivant
+            if dejaAttribue(id_init_prestation, prestation['idPrestataire'], prestation['idService']): continue
+
+            employee = Employe.objects.get(id=prestation['idPrestataire'])
+            service = Service.objects.get(id=prestation['idService'])
+            r = RepartitionMontantPrestation.objects.create(
+                init_prestation=init_prestation,
+                employe=employee,
+                montant_attribue=prestation['montantAttribue'],
+                service=service
+            )
+            if r : nb_prestataires += 1
+
+        return JsonResponse({"success": True, "msg": f"Montant répartie entre {nb_prestataires} Employé(s)"}, status=201)
+    except Exception as e:
+        print("Erreur: ", str(e))
+        return JsonResponse({"success": False, "msg": str(e)}, status=400)

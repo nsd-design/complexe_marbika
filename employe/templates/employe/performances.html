@@ -103,6 +103,9 @@
                                         </table>
                                     </div>
                                 </div>
+                                <div class="d-flex col-12 justify-content-end">
+                                    <button class="btn btn-success m-2" id="validerAttribution">Valider</button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -278,56 +281,52 @@
             $attributionTBody = $("#attributionTBody")
             $attributionTBody.empty();
 
-            //if(nb_prestataires > 1){
-                tabEmploye.forEach(function(prest){
-                    const $tr = $('<tr>')
-                    const $tdEmploye = $('<td>')
-                    const $tdMontant = $('<td>')
-                    //const $tdService = $('<td>')
-                    const $inputMontant = $('<input>', {type: 'number', class: 'prixService'})
-                    $tdMontant.append($inputMontant)
-
-                    const service = prest.service
-                    const prestataires = prest.prestataires
-                    const rowspan = prest.nb_prestataires
-
-                    // La Premiere ligne contient le Service
-                    const $firstTr = $('<tr>')
-                    const $tdService = $('<td>').text(service).attr('rowspan', rowspan)
-                    $firstTr.append($tdService)
-
-                    // Premier Prestataire
-                    const firstPrestataire = prestataires[0]
-                    const $tdPrestataire = $('<td>').text(firstPrestataire[1] + " " + firstPrestataire[2])
-                    $firstTr.append($tdPrestataire, $tdMontant)
-
-                    $attributionTBody.append($firstTr);
-
-                    // Pour les lignes suivantes (sans la colonne service)
-                    for(let i = 1; i < prestataires.length; i++){
-                        const $tdMontant2 = $('<td>')
-                        $tdMontant2.append($('<input>', {type: 'number', class: 'prixService', name: 'prixService'}))
-                        const prestataire = prestataires[i]
-                        const $tr = $('<tr>')
-                        $tr.append($('<td>').text(prestataire[1] + " " + prestataire[2]), $tdMontant2)
-
-                        $attributionTBody.append($tr)
-                    }
-
-                    /*$tdService.text(service).attr('id', idService)
-                    $tdEmploye.text(employee[1] + " " + employee[2])
-                    $tr.append($tdService, $tdEmploye, $tdMontant)
-                    $attributionTBody.append($tr)*/
-                }) // End forEach
-            //}
-            /*else{
-                if(tabEmploye.length <= 0) return;
+            tabEmploye.forEach(function(prest){
                 const $tr = $('<tr>')
-                $tdService.text(service).attr('id', idService)
-                $tdEmploye.text(tabEmploye[0][1] + " " + tabEmploye[0][2])
+                const $tdEmploye = $('<td>')
+                const $tdMontant = $('<td>')
+                //const $tdService = $('<td>')
+
+                const service = prest.service
+                const id_service = prest.id_service
+                const prestataires = prest.prestataires
+                const rowspan = prest.nb_prestataires
+
+                // La Premiere ligne contient le Service
+                const $firstTr = $('<tr>')
+                const $tdService = $('<td>').text(service).attr('rowspan', rowspan)
+                $firstTr.append($tdService)
+
+                // Premier Prestataire
+                const firstPrestataire = prestataires[0]
+                const $tdPrestataire = $('<td>').text(firstPrestataire[1] + " " + firstPrestataire[2])
+                const $inputMontant = $('<input>', {type: 'number', class: 'prixService',
+                    'data-id-employe': firstPrestataire[0], 'data-id-service': id_service
+                })
+                $tdMontant.append($inputMontant)
+                $firstTr.append($tdPrestataire, $tdMontant)
+
+                $attributionTBody.append($firstTr);
+
+                // Pour les lignes suivantes (sans la colonne service)
+                for(let i = 1; i < prestataires.length; i++){
+                    const $tdMontant2 = $('<td>')
+                    const prestataire = prestataires[i]
+                    $tdMontant2.append($('<input>', {type: 'number', class: 'prixService',
+                        'data-id-employe': prestataire[0], 'data-id-service': id_service
+                    }))
+                    const $tr = $('<tr>')
+                    $tr.append($('<td>').text(prestataire[1] + " " + prestataire[2]), $tdMontant2)
+
+                    $attributionTBody.append($tr)
+                }
+
+                /*$tdService.text(service).attr('id', idService)
+                $tdEmploye.text(employee[1] + " " + employee[2])
                 $tr.append($tdService, $tdEmploye, $tdMontant)
-                $attributionTBody.append($tr)
-            }*/
+                $attributionTBody.append($tr)*/
+            }) // End forEach
+
         }
 
         // Formater une valeur (string ou autre) en Number
@@ -357,6 +356,8 @@
                   }
                 })
 
+                $("#validerAttribution").prop('disabled', true)
+
                 prixInputs.each(function(){
                     if(toNumber($(this).val()) <= 0){
                         const prix = toNumber($(this).val());
@@ -367,11 +368,74 @@
                 return
             }
             prixInputs.prop("disabled", false)
+            $("#validerAttribution").prop('disabled', false)
 
             // Nouveau montant disponible
             const montantDisponible = montantTotal - sommePrix
             $("#montantTotalPrestation").text(montantDisponible.toLocaleString() + " GNF")
         })
+
+       $("#validerAttribution").on("click", function(){
+            const idInitPrestation = $("#prestations").val()
+            const totalADistribuer = toNumber($("#montantTotalPrestation").text())
+            const $inputsPrix = $(".prixService")
+            const tabPrestations = [];
+
+            let erreur = false;
+
+            $inputsPrix.each(function(){
+                // Verifier si le montant total a bien été complètement distribué
+                if($(this).val() <= 0 || totalADistribuer > 0 ){
+                    notyf.error({
+                      message: "Vous devez attribuer tous le montant de la prestation",
+                      duration: 3000,
+                      position: {
+                        x: 'right',
+                        y: 'top'
+                      }
+                    })
+                    erreur = true;
+                    return false;
+                }
+                tabPrestations.push(
+                    {
+                        idPrestataire: $(this).data("id-employe"),
+                        idService: $(this).data("id-service"),
+                        montantAttribue: $(this).val()
+                    }
+                )
+            })
+
+            if(erreur) return
+
+            const data = {
+                idInitPrestation: idInitPrestation,
+                tabPrestations: tabPrestations,
+            }
+
+            $.ajax({
+                url: "/employe/performances/attributions/",
+                method: 'POST',
+                headers: { 'X-CSRFToken': getCSRFToken() },
+                data: JSON.stringify(data),
+                contentType: 'application/json',
+                dataType: 'json',
+                success: function(res){
+                    notyf.success({
+                      message: res.msg,
+                      duration: 3000,
+                      position: {
+                        x: 'right',
+                        y: 'top'
+                      }
+                    })
+                    $attributionTBody = $("#attributionTBody").empty();
+                },
+                error: function(err){
+                    console.log(err)
+                }
+            })
+       })
 
     })
 </script>
