@@ -2,7 +2,7 @@ import uuid
 from django.db import models
 
 from client.models import Client
-from employe.models import MyBaseModel
+from employe.models import MyBaseModel, Employe
 
 
 class CategorieService(MyBaseModel):
@@ -155,3 +155,12 @@ class DetailsAbonnementService(MyBaseModel):
     service = models.ForeignKey(Service, null=True, on_delete=models.SET_NULL, related_name="subscribed_service")
     prix_service = models.BigIntegerField()
     abonnement = models.ForeignKey(InitAbonnementService, on_delete=models.CASCADE)
+
+class RepartitionMontantPrestation(MyBaseModel):
+    init_prestation = models.ForeignKey(InitPrestation, on_delete=models.SET_NULL, null=True)
+    employe = models.ForeignKey(Employe, on_delete=models.SET_NULL, null=True)
+    montant_attribue = models.BigIntegerField()
+    service = models.ForeignKey(Service, on_delete=models.SET_NULL, null=True)
+
+    def __str__(self):
+        return f'{self.employe.first_name} {self.employe.last_name} - {self.montant_attribue}'
