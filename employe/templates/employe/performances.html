@@ -207,6 +207,7 @@
                     res.data.forEach(function(prest){
                         const option = new Option(`${prest.client} Montant: ${prest.montant_total} - Remise ${prest.remise} | ${prest.created_at}`,prest.id);
                         option.setAttribute("data-montant", prest.montant_total);
+                        option.setAttribute("data-remise", prest.remise);
                         $select.append(option);
                     });
                     notyf.success({
@@ -239,15 +240,17 @@
         $("#prestations").on("change", function(){
             const idInitPrestation = $(this).val();
             const montant = $(this).find("option:selected").data("montant");
+            const remise = $(this).find("option:selected").data("remise");
 
             // Annuler le traitement si l'id init Prestation est null
             if(!idInitPrestation){
                 return;
             }
 
-            $("#montantTotalPrestation").text(montant.toLocaleString() + " GNF")
+            const netPaye = montant - remise;
+            $("#montantTotalPrestation").text(netPaye.toLocaleString() + " GNF")
             montantTotal = toNumber($("#montantTotalPrestation").text())
-            montantTotal = toNumber($("#montantTotalPrestation").text())
+
             $.ajax({
                 url: `/employe/performances/details_prestation_par_id/${idInitPrestation}/`,
                 method: 'GET',
@@ -256,13 +259,6 @@
 
                     createAttributionTBody(listPrestations, listPrestations.service, listPrestations.id, listPrestations.nb_prestataires)
 
-                    /*$servicesPrestation = $("#servicesPrestation")
-                    $servicesPrestation.empty();
-                    $servicesPrestation.append(new Option("-- Sélectionnez le Service --", "", true, true));
-                    res.data.forEach(function(servicePrest){
-                        const option = new Option(servicePrest.service, servicePrest.id);
-                        $servicesPrestation.append(option);
-                    });*/
                 },
                 error: function(xhr){
                     notyf.error({
@@ -432,7 +428,14 @@
                     $attributionTBody = $("#attributionTBody").empty();
                 },
                 error: function(err){
-                    console.log(err)
+                    notyf.error({
+                      message: err.responseJSON.msg,
+                      duration: 3000,
+                      position: {
+                        x: 'right',
+                        y: 'top'
+                      }
+                    })
                 }
             })
        })

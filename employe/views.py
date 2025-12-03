@@ -556,7 +556,14 @@ def add_attributions(request):
 
         init_prestation = InitPrestation.objects.get(id=id_init_prestation)
 
+        total_montant_attribue = sum(int(item['montantAttribue']) for item in data_prestation)
+        net_paye = init_prestation.montant_total - init_prestation.remise
+
+        if total_montant_attribue > net_paye:
+            return JsonResponse({"success": False, "msg": "Le total des montants attribués depassent le montant de la prestation."}, status=400)
+
         nb_prestataires: int = 0
+
         for prestation in data_prestation:
             # // Si le montant est deja attribue a l'employe en cours, passé au suivant
             if dejaAttribue(id_init_prestation, prestation['idPrestataire'], prestation['idService']): continue
