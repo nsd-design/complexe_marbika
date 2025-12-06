@@ -489,6 +489,18 @@ def entrees_sorties_restaurant(request):
 def performances(request):
     return render(request, tmp_base + "performances.html")
 
+
+def date_str_to_date_naive(date_debut_str, date_fin_str):
+    # Convertir en datetime naive
+    date_debut_naive = datetime.strptime(date_debut_str, "%Y-%m-%d")
+    date_fin_naive = datetime.strptime(date_fin_str, "%Y-%m-%d") + timedelta(days=1) - timedelta(seconds=1)
+
+    # Rendre aware selon TIME_ZONE défini dans settings.py
+    date_debut = timezone.make_aware(date_debut_naive)
+    date_fin = timezone.make_aware(date_fin_naive)
+
+    return date_debut, date_fin
+
 @require_http_methods(["POST"])
 def performances_par_date(request):
 
@@ -497,13 +509,7 @@ def performances_par_date(request):
         date_debut_str = data.get("dateDebut")
         date_fin_str = data.get("dateFin")
 
-        # Convertir en datetime naive
-        date_debut_naive = datetime.strptime(date_debut_str, "%Y-%m-%d")
-        date_fin_naive = datetime.strptime(date_fin_str, "%Y-%m-%d") + timedelta(days=1) - timedelta(seconds=1)
-
-        # Rendre aware selon TIME_ZONE défini dans settings.py
-        date_debut = timezone.make_aware(date_debut_naive)
-        date_fin = timezone.make_aware(date_fin_naive)
+        date_debut, date_fin = date_str_to_date_naive(date_debut_str, date_fin_str)
 
         init_prestations_du_jour = InitPrestation.objects.filter(
             created_at__gte=date_debut, created_at__lte=date_fin
@@ -579,6 +585,32 @@ def add_attributions(request):
             if r : nb_prestataires += 1
 
         return JsonResponse({"success": True, "msg": f"Montant répartie entre {nb_prestataires} Employé(s)"}, status=201)
+    except Exception as e:
+        print("Erreur: ", str(e))
+        return JsonResponse({"success": False, "msg": str(e)}, status=400)
+
+
+@require_http_methods(["POST"])
+def montant_genere_par_employe(request):
+    try:
+        data = json.loads(request.body)
+        date_debut_str = data.get("dateDebut")
+        date_fin_str = data.get("dateFin")
+
+        date_debut, date_fin = date_str_to_date_naive(date_debut_str, date_fin_str)
+
+        total_repartition_par_employe = RepartitionMontantPrestation.objects.filter(
+            created_at__range=[date_debut, date_fin]
+        ).values(
+            "employe__id", "employe__first_name", "employe__last_name", "employe__telephone"
+        ).annotate(
+            total_attribue=Sum("montant_attribue")
+        )
+        list_total_repartitions: list = []
+        for rep in total_repartition_par_employe:
+            list_total_repartitions.append(rep)
+        return JsonResponse({"success": True, "data": list_total_repartitions}, status=200)
+
     except Exception as e:
         print("Erreur: ", str(e))
         return JsonResponse({"success": False, "msg": str(e)}, status=400)
