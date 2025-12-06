@@ -13,13 +13,14 @@ from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
 from django.utils.html import escape
 from django.views.decorators.http import require_http_methods
-from django.utils import timezone
 
 from employe.forms import EmployeForm
 from employe.models import Employe
 from restaurant.models import Commande
 from salon.models import Vente, Depense, InitPrestation, Prestation, RepartitionMontantPrestation, Service
+
 from salon.views import currency
+from employe.common.utils import date_str_to_date_naive
 
 tmp_base = "employe/"
 
@@ -489,17 +490,6 @@ def entrees_sorties_restaurant(request):
 def performances(request):
     return render(request, tmp_base + "performances.html")
 
-
-def date_str_to_date_naive(date_debut_str, date_fin_str):
-    # Convertir en datetime naive
-    date_debut_naive = datetime.strptime(date_debut_str, "%Y-%m-%d")
-    date_fin_naive = datetime.strptime(date_fin_str, "%Y-%m-%d") + timedelta(days=1) - timedelta(seconds=1)
-
-    # Rendre aware selon TIME_ZONE défini dans settings.py
-    date_debut = timezone.make_aware(date_debut_naive)
-    date_fin = timezone.make_aware(date_fin_naive)
-
-    return date_debut, date_fin
 
 @require_http_methods(["POST"])
 def performances_par_date(request):
