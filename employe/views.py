@@ -621,3 +621,8 @@ def login_user(request):
         else:
             messages.error(request, "Identifiants incorrects. Veuillez réessayer.")
     return render(request, tmp_base + 'login.html')
+
+
+def logout_user(request):
+    logout(request)
+    return redirect('login')

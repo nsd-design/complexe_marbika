@@ -19,11 +19,12 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path, include
 
-from employe.views import dashmin, login_user
+from employe.views import dashmin, login_user, logout_user
 
 urlpatterns = [
     path("", dashmin, name="dashmin"),
     path("login/", login_user, name="login"),
+    path("logout/", logout_user, name="logout"),
     path('admin/', admin.site.urls),
     path("employe/", include("employe.urls")),
     path("salon/", include("salon.urls")),
