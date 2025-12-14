@@ -3,6 +3,7 @@ import json
 from datetime import datetime, timedelta
 from http import HTTPStatus
 
+from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError, transaction
 from django.db.models import F, Sum
 from django.http import JsonResponse
@@ -29,6 +30,8 @@ def currency(value):
     except (ValueError, TypeError):
         return value
 
+
+@login_required(login_url="login")
 def services(request):
     categories = CategorieService.objects.all()
     services_list = Service.objects.all()
@@ -194,6 +197,7 @@ def add_service(request):
         return redirect("services")
 
 
+@login_required(login_url="login")
 def prix_services(request):
     prix_services_list = PrixService.objects.all()
     context = {
@@ -232,6 +236,7 @@ def add_prix_service(request):
         return redirect("prix_services")
 
 
+@login_required(login_url="login")
 def prestations(request):
 
     qs_services = Service.objects.all()
@@ -410,6 +415,7 @@ def add_prestation(request):
         return JsonResponse({"error": True, "msg": str(e)}, status=400)
 
 
+@login_required(login_url="login")
 def produits(request):
     form = ProduitForm()
     context = {
@@ -514,6 +520,8 @@ def approvisionner_produit(request):
 
 
 # Affiche le template où la vente des produits doit être fait
+
+@login_required(login_url="login")
 @require_http_methods(["GET"])
 def shop_produits(request):
     liste_produits = Produit.objects.all()
@@ -630,6 +638,7 @@ def get_ventes(request):
         print(e)
 
 
+@login_required(login_url="login")
 @require_http_methods(["GET"])
 def depenses(request):
     context = {
@@ -673,6 +682,7 @@ def get_depenses(request):
         return JsonResponse({"error": "Aucune dépense trouvée"})
 
 
+@login_required(login_url="login")
 @require_http_methods(["POST"])
 def creer_depense(request):
     try:

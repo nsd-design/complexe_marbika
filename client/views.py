@@ -2,6 +2,7 @@ import http
 import json
 from datetime import datetime, timedelta
 
+from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.utils.html import escape
 
@@ -27,6 +28,7 @@ def telephone_exists(telephone):
         return False
 
 
+@login_required(login_url="login")
 @require_http_methods(["POST"])
 def create_client(request):
     try:
@@ -55,6 +57,7 @@ def create_client(request):
         return JsonResponse({"error": True, "msg": "Une erreur est survenue lors de la création du Client, réessayer"}, status=400)
 
 
+@login_required(login_url="login")
 @require_http_methods(["GET"])
 def location_reservation(request):
     context = {
@@ -82,6 +85,7 @@ def create_zone(request):
         return JsonResponse({"error": True, "msg": "Données invalides"}, status=400)
 
 
+@login_required(login_url="login")
 @require_http_methods(["POST"])
 def create_location(request):
     try:
@@ -126,6 +130,7 @@ def check_zone_libre(id_zone):
         return False
 
 
+@login_required(login_url="login")
 @require_http_methods(["POST"])
 def create_reservation(request):
     try:

@@ -1,6 +1,7 @@
 import http
 import json
 
+from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
 from django.db.models import Sum
@@ -18,6 +19,9 @@ from restaurant.models import Plat, Boisson, Commande, CommandePlat, CommandeBoi
 from salon.views import currency
 
 tmp = "restaurant/"
+
+
+@login_required(login_url="login")
 def plats_boissons(request):
 
     context = {
@@ -113,6 +117,7 @@ def approvisionner_boisson(request):
         return JsonResponse({"error": "Methode non autorisée"}, status=405)
 
 
+@login_required(login_url="login")
 def commande(request):
     liste_plats = Plat.objects.all()
     liste_boissons = Boisson.objects.all()
