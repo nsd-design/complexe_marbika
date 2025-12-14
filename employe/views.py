@@ -5,11 +5,13 @@ from collections import defaultdict
 from datetime import date, timedelta, datetime
 
 import django.db.utils
+from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
 from django.db.models import Sum, Q, Count
 from django.db.models.functions import Extract, ExtractWeek
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
+from django.contrib import messages
 from django.template.loader import render_to_string
 from django.utils.html import escape
 from django.views.decorators.http import require_http_methods
@@ -604,3 +606,18 @@ def montant_genere_par_employe(request):
     except Exception as e:
         print("Erreur: ", str(e))
         return JsonResponse({"success": False, "msg": str(e)}, status=400)
+
+@require_http_methods(["POST", "GET"])
+def login_user(request):
+    if request.method == "POST":
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+
+        user = authenticate(request, username=username, password=password)
+
+        if user is not None:
+            login(request, user)
+            return redirect('dashmin')
+        else:
+            messages.error(request, "Identifiants incorrects. Veuillez réessayer.")
+    return render(request, tmp_base + 'login.html')

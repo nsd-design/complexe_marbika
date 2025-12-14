@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="fr">
+{% load static %}
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Complexe Marbika</title>
+
+    <!-- Meta -->
+    <meta property="og:title" content="Complexe Marbika">
+    <meta property="og:type" content="Website">
+    <meta property="og:site_name" content="Marbika">
+<!--    <link rel="shortcut icon" href="assets/images/favicon.svg" />-->
+
+    <!-- *************
+			************ CSS Files *************
+		************* -->
+    <link rel="stylesheet" href="{% static 'assets/fonts/bootstrap/bootstrap-icons.css' %}" />
+    <link rel="stylesheet" href="{% static 'assets/css/main.min.css' %}" />
+
+  </head>
+
+  <body>
+    {% if messages %}
+        {% for msg in messages %}
+        <div class="alert alert-warning w-50 m-auto alert-dismissible fade " id="alert" role="alert">
+            {{ msg }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+
+      {% endif %}
+    <!-- Auth wrapper starts -->
+    <div class="auth-wrapper">
+
+      <!-- Form starts -->
+      <form id="loginForm" action="{% url 'login' %}" method="POST">
+
+        {% csrf_token %}
+
+        <!-- Authbox starts -->
+        <div class="auth-box">
+
+          <!-- Logo starts -->
+            <div id="logo" class="d-flex justify-content-center">
+                <a href="{% url 'login' %}" class="auth-logo mb-4">
+                    <img src="{% static 'assets/images/LogoMarbika.png' %}" alt="Logo Marbika" />
+                </a>
+            </div>
+
+          <!-- Logo ends -->
+
+          <h4 class="mb-4 text-center">Connexion</h4>
+
+          <div class="mb-2">
+            <label class="form-label" for="username">Nom d'utilisateur <span class="text-danger">*</span></label>
+            <input type="text" id="username" name="username" class="form-control" placeholder="Entrez votre nom d'utilisateur" />
+          </div>
+
+          <div class="mb-2">
+            <label class="form-label" for="password">Mot de passe <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <input type="password" id="password" name="password" autocomplete="false" class="form-control" placeholder="Entrez votre mot de passe" />
+              <button class="btn btn-outline-secondary" id="showPassword" type="button">
+                <i class="bi bi-eye"></i>
+              </button>
+            </div>
+          </div>
+
+
+          <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-danger">Se Connecter</button>
+          </div>
+
+        </div>
+        <!-- Authbox ends -->
+
+      </form>
+      <!-- Form ends -->
+
+    </div>
+    <!-- Auth wrapper ends -->
+
+    <script src="{% static 'assets/js/jquery.min.js' %}"></script>
+    <script src="{% static 'assets/js/bootstrap.bundle.min.js' %}"></script>
+
+    <script>
+       $(document).ready(function(){
+            $("#showPassword").on('click', function(){
+                $("#password").attr("type") == "password" ?
+                $("#password").attr("type", "text") :
+                $("#password").attr("type", "password");
+            })
+       })
+    </script>
+    <script>
+        var alertMsg = document.getElementById("alert")
+        {% if messages %}
+          alertMsg.classList.add("show")
+          setTimeout(()=>{
+            alertMsg.classList.remove("show")
+          }, 3000)
+        {% endif %}
+
+    </script>
+
+
+  </body>
+
+</html>
