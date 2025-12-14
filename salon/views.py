@@ -13,6 +13,7 @@ from django.views.decorators.http import require_http_methods
 
 from client.models import Client
 from employe.models import Employe
+from employe.common.utils import date_str_to_date_naive
 from salon.forms import ServiceForm, CategorieForm, PrixServiceForm, ProduitForm, ApproProduitForm, PrestationForm, \
     DepensesForm
 from salon.models import CategorieService, Service, PrixService, Produit, Approvisionnement, Vente, \
@@ -836,3 +837,31 @@ def confirmer_prestation(request):
     except (ValueError, TypeError):
         print("Erreur inattendue")
         return JsonResponse({"error": True, "msg": "Erreur inattendue"}, status=HTTPStatus.INTERNAL_SERVER_ERROR)
+
+
+@require_http_methods(["POST"])
+def montant_genere_par_service(request):
+    try:
+        data = json.loads(request.body)
+        date_debut_str = data.get("dateDebut")
+        date_fin_str = data.get("dateFin")
+
+        date_debut, date_fin = date_str_to_date_naive(date_debut_str, date_fin_str)
+
+        montant_par_service = Prestation.objects.filter(
+            created_at__range=[date_debut, date_fin]
+        ).values(
+            "service__id", "service__designation"
+        ).annotate(
+            montant_total=Sum("service__prix_service")
+        )
+
+        liste_montant_par_service: list = []
+
+        for montant_service in montant_par_service:
+            liste_montant_par_service.append(montant_service)
+
+        return JsonResponse({"success": True, "data": liste_montant_par_service}, status=HTTPStatus.OK)
+    except Exception as e:
+        print(e)
+        return JsonResponse({"success": False, "msg": "Erreur inattendue"})

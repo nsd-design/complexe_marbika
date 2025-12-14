@@ -8,6 +8,7 @@ urlpatterns = [
     path("services/get_services/", get_services, name="get_services"),
     path("services/get/", get_service, name="get_service"),
     path("services/update/", update_service, name="update_service"),
+    path("services/montant_par_service/", montant_genere_par_service, name="montant_par_service"),
     path("categorie/add/", add_category, name="add_categorie"),
     path("categorie/get_categories/", get_categories, name="get_categories"),
     path("prix/", prix_services, name="prix_services"),
