@@ -52,6 +52,10 @@
 
           <h4 class="mb-4 text-center">Connexion</h4>
 
+            {% if next %}
+                <input type="hidden" name="next" value="{{ next }}">
+            {% endif %}
+
           <div class="mb-2">
             <label class="form-label" for="username">Nom d'utilisateur <span class="text-danger">*</span></label>
             <input type="text" id="username" name="username" class="form-control" placeholder="Entrez votre nom d'utilisateur" />

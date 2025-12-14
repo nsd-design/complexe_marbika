@@ -6,6 +6,7 @@ from datetime import date, timedelta, datetime
 
 import django.db.utils
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 from django.db.models import Sum, Q, Count
 from django.db.models.functions import Extract, ExtractWeek
@@ -110,6 +111,7 @@ def groupe_prestations_par_reference(year: int):
     return prestation_par_prestataire
 
 
+@login_required(login_url="login")
 def dashmin(request):
     current_year = date.today().year
 
@@ -122,6 +124,7 @@ def dashmin(request):
     return render(request, "dashboard.html", context)
 
 
+@login_required(login_url="login")
 def employe(request):
     form = EmployeForm()
 
@@ -147,6 +150,7 @@ def get_employes(request):
 
     return JsonResponse({"success": True, "data": list_employes})
 
+@login_required(login_url="login")
 def add_employe(request):
     if request.method == "POST":
 
@@ -489,6 +493,7 @@ def entrees_sorties_restaurant(request):
         return JsonResponse({"success": False, "msg": str(e)}, status=400)
 
 
+@login_required(login_url="login")
 def performances(request):
     return render(request, tmp_base + "performances.html")
 
@@ -545,6 +550,7 @@ def dejaAttribue(id_init_prest, id_employe, id_service):
             service__id=id_service,
         ).exists()
 
+@login_required(login_url="login")
 @require_http_methods(["POST"])
 def add_attributions(request):
     try:
@@ -607,8 +613,15 @@ def montant_genere_par_employe(request):
         print("Erreur: ", str(e))
         return JsonResponse({"success": False, "msg": str(e)}, status=400)
 
+
 @require_http_methods(["POST", "GET"])
 def login_user(request):
+
+    # Si l'utilisateur demande une url dont l'accès necessite l'auth alors
+    # on recupere cette url via le parametre 'next'
+
+    next_url = request.GET.get("next") or request.POST.get("next")
+
     if request.method == "POST":
         username = request.POST.get("username")
         password = request.POST.get("password")
@@ -617,12 +630,13 @@ def login_user(request):
 
         if user is not None:
             login(request, user)
-            return redirect('dashmin')
+            return redirect(next_url if next_url else 'dashmin')
         else:
             messages.error(request, "Identifiants incorrects. Veuillez réessayer.")
-    return render(request, tmp_base + 'login.html')
+    return render(request, tmp_base + 'login.html', context={"next": next_url})
 
 
+@login_required(login_url="login")
 def logout_user(request):
     logout(request)
     return redirect('login')
