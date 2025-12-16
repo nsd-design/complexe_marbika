@@ -33,6 +33,7 @@ def plats_boissons(request):
     return render(request, tmp + "plats_boissons.html", context)
 
 
+@login_required(login_url="login")
 def create_plat(request):
     if request.method == "POST":
         form = PlatForm(request.POST, request.FILES)
@@ -56,6 +57,7 @@ def create_plat(request):
         return JsonResponse({"error": "Méthode non autorisée"}, status=405)
 
 
+@login_required(login_url="login")
 def create_boisson(request):
     if request.method == "POST":
         form = BoissonForm(request.POST, request.FILES)
@@ -159,6 +161,8 @@ def get_commandes(request):
 
 from django.db import transaction
 
+
+@login_required(login_url="login")
 def passer_commande(request):
     if request.method == "POST":
         try:
@@ -311,6 +315,7 @@ def controle_boissons(request):
         return JsonResponse({"error": str(e)})
 
 
+@login_required(login_url="login")
 def create_controle_boissons(request):
     if request.method == "POST":
         try:
@@ -486,6 +491,7 @@ def controle_plats(request):
         return JsonResponse({"error": str(e)})
 
 
+@login_required(login_url="login")
 @require_http_methods(["POST"])
 def init_nouveau_controle_plats(request):
     try:
@@ -525,6 +531,7 @@ def init_nouveau_controle_plats(request):
         return JsonResponse({"success": False, "msg": str(e)}, status=500)
 
 
+@login_required(login_url="login")
 @require_http_methods(["POST"])
 def cloture_controle_plat(request):
     try:
@@ -552,7 +559,7 @@ def cloture_controle_plat(request):
                 try:
                     # Recuperer le plat dont les quantités doivent être mis à jour
                     plat_controle = PlatsControlles.objects.get(init_controle=controle_a_cloture, plat__id=id_plat)
-                    print("plat_controle:", plat_controle)
+
                     plat_controle.quantite_vendue = qte_vendue if qte_vendue else 0
                     plat_controle.quantite_restante = qte_restante if qte_restante else 0
                     plat_controle.updated_at = timezone.now()

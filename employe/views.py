@@ -77,12 +77,10 @@ def groupe_prestations_par_reference(year: int):
             "services": list(),
         })
 
-        print("prestation :",init_pres.prestation_set.all())
         for prestation in init_pres.prestation_set.all():
             prestataire = prestation.fait_par.all()
-            print("prestataire :", prestataire)
             service = prestation.service
-            print("prestataire :", prestataire)
+
             if prestataire and service:
                 key = prestataire.id
                 employe_data[key]["nom"] = prestataire.last_name
@@ -149,6 +147,7 @@ def get_employes(request):
         })
 
     return JsonResponse({"success": True, "data": list_employes})
+
 
 @login_required(login_url="login")
 def add_employe(request):

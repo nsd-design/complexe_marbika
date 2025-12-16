@@ -69,6 +69,7 @@ def location_reservation(request):
     return render(request, tmp_base + "location_reservation.html", context)
 
 
+@login_required(login_url="login")
 @require_http_methods(["POST"])
 def create_zone(request):
     zone_form = ZoneForm(request.POST)
@@ -236,6 +237,8 @@ def gestion_piscine(request):
     }
     return render(request, tmp_base + "gestion_piscine.html", context=context)
 
+
+@login_required(login_url="login")
 @require_http_methods(["POST"])
 def pool_entry(request):
     try:
