@@ -121,7 +121,7 @@ def update_service(request):
         return JsonResponse({"error": True, "msg": "Une erreur s'est produite."})
 
 
-
+@login_required(login_url="login")
 def add_category(request):
     if request.method == "POST":
         try:
@@ -167,6 +167,7 @@ def get_categories(request):
         return JsonResponse({"error": True, "msg": "Erreur inattendue"})
 
 
+@login_required(login_url="login")
 def add_service(request):
     if request.method == "POST":
         try:
@@ -209,6 +210,7 @@ def prix_services(request):
     return render(request, tmp + "prix_services.html", context)
 
 
+@login_required(login_url="login")
 def add_prix_service(request):
     if request.method == "POST":
         try:
@@ -353,6 +355,7 @@ def get_prix_service(request, service_id):
     return JsonResponse({"error": "Méthode non autorisée"}, status=405)
 
 
+@login_required(login_url="login")
 @require_http_methods(["POST"])
 def add_prestation(request):
     try:
@@ -426,6 +429,7 @@ def produits(request):
     return render(request, tmp + "produits.html", context)
 
 
+@login_required(login_url="login")
 @require_http_methods(["POST"])
 def add_produit(request):
     try:
@@ -455,6 +459,7 @@ def add_produit(request):
         return JsonResponse({"error": True, "msg": "Une erreur s'est produite"}, status=400)
 
 
+@login_required(login_url="login")
 @require_http_methods(["GET"])
 def get_produits(request):
     list_produits: list = []
@@ -495,7 +500,7 @@ def get_produits(request):
         print(e)
         return JsonResponse({"error": True, "msg": str(e)})
 
-
+@login_required(login_url="login")
 @require_http_methods(["POST"])
 def approvisionner_produit(request):
     try:
@@ -532,6 +537,7 @@ def shop_produits(request):
     return render(request, tmp + "vente_produits.html", context)
 
 
+@login_required(login_url="login")
 @require_http_methods(["POST"])
 def vente_produits(request):
     try:
@@ -831,6 +837,7 @@ def depense_semaine_mois_annee(request):
         return JsonResponse({"error": True, "msg": "Erreur lors de la mise en forme du montant"})
 
 
+@login_required(login_url="login")
 @require_http_methods(["POST"])
 def confirmer_prestation(request):
     try:
