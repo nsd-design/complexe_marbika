@@ -56,3 +56,7 @@ db.sqlite3
 # Autres
 *.bak
 *.log
+
+
+# Fichier de configuration gunicorn en Prod
+complexe_marbika.sock
