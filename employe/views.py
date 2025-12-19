@@ -7,6 +7,7 @@ from datetime import date, timedelta, datetime
 import django.db.utils
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.utils.crypto import get_random_string
 from django.db import IntegrityError
 from django.db.models import Sum, Q, Count
 from django.db.models.functions import Extract, ExtractWeek
@@ -168,8 +169,9 @@ def add_employe(request):
             # Ajouter 8 caracteres uniques d'un uuid au prenom pour former le username par default
             unique_part = str(uuid.uuid4())[:8]
             username = f"{base_first_name}_{unique_part}"
+            password = get_random_string(10)
             employee = Employe.objects.create_user(
-                first_name=data['first_name'], last_name=data['last_name'],
+                first_name=data['first_name'], last_name=data['last_name'], password=password,
                 email=data['email'], telephone=data['telephone'], username=username,
             )
 
