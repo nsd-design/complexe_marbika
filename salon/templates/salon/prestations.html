@@ -140,12 +140,19 @@
                                 <div class="row">
 
                                     <!-- Liste Clients -->
-                                    <div class="my-2 col-12 col-md-4 col-lg-4">
-                                        <label class="form-label" for="clients-select">Liste des Clients</label>
-                                        <select class="form-select bg-secondary" id="clients-select"
-                                                aria-label="Default select example">
-                                            <option value="">-- Selectionner un Client --</option>
-                                        </select>
+                                    <div class="d-flex my-2 col-12 flex-wrap justify-content-between align-items-center">
+                                        <div class="form-group">
+                                            <label class="form-label" for="clients-select">Liste des Clients</label>
+                                            <select class="form-select bg-secondary" id="clients-select"
+                                                    aria-label="Default select example">
+                                                <option value="">-- Selectionner un Client --</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <button id="printPrestation" class="btn btn-outline-secondary">
+                                                Imprimer <i class="bi bi-printer"></i>
+                                            </button>
+                                        </div>
                                     </div>
                                     <!-- End Liste Clients-->
 
@@ -178,7 +185,7 @@
                                                                 Ajouter
                                                             </button>
                                                         </td>
-                                                        <td colspan="6">
+                                                        <td colspan="4">
                                                             <div class="row justify-content-end">
                                                                 <div class="col-auto">
                                                                     <label class="col-form-label"
@@ -192,7 +199,7 @@
                                                         </td>
                                                     </tr>
                                                     <tr>
-                                                        <td colspan="5">&nbsp;</td>
+                                                        <td colspan="3">&nbsp;</td>
                                                         <td>
                                                             <p class="m-0">Sous-total</p>
                                                             <p class="m-0">Remise</p>
@@ -212,9 +219,6 @@
                                     <div class="col-12">
                                         <div class="invoice-footer">
                                             <div class="text-end mt-3">
-                                                <button id="enregistrerPrestations"
-                                                        class="btn btn-outline-secondary me-2">Enregistrer
-                                                </button>
                                                 <button id="submitPrestations" class="btn btn-primary me-2">Valider
                                                 </button>
                                                 <button id="cancel" class="btn btn-secondary">Annuler</button>
@@ -422,6 +426,65 @@ $(document).ready(function(){
             iframe.contentWindow.print();
         }, 100);
     }
+
+    // Recuperer les données dans la table de Prestations pour imprimer le ticket
+    $("#printPrestation").on('click', function(){
+        const tabPrestations = $("#tBodyCreatePrestations .rowPrestation");
+        let tabLignesPrestation = []
+
+        tabPrestations.each( function(){
+            const $row = $(this);
+            const service = $row.find(".selServices  option:selected").text()
+            const idService = $row.find(".selServices  option:selected").val()
+            const quantite = $row.find(".quantite").val()
+            const prix = $row.find(".prix").val()
+
+            tabLignesPrestation.push({
+                id: idService,
+                quantite,
+                designation: service,
+                prix
+            })
+
+        })
+
+        const objPrestation = {
+            reference: "",
+            date: "",
+            nom_client: "",
+            tel_client: "",
+            services: tabLignesPrestation
+        }
+        if(tabLignesPrestation.length === 0) return;
+        if(tabLignesPrestation[0].id === ''){
+            alert("Veuillez sélectionner un Service")
+            return
+        }
+
+        // Envoyer les données au ticket pour impression
+        const $prestationComponent = createTicketComponent(objPrestation);
+
+        $('#bodyCardTicket').html($prestationComponent);
+        $("#prestationServices").css({
+          "border-bottom": "1px dashed #000"
+        })
+
+        const subtotalValue = $("#subtotalValue").text()
+        const remiseValue = $("#remiseValue").text()
+        const totalValue = $("#totalValue").text()
+        ajouterFooterFacture(subtotalValue, remiseValue, totalValue, "data.reference")
+
+        $("#barcode-container").attr("hidden", false);
+        JsBarcode("#barcode", "test", {
+            format: "CODE128",
+            lineColor: "#000",
+            width: 2,
+            height: 40,
+            displayValue: true,
+            fontSize: 12,
+            margin: 10
+        });
+    })
 
     $("#btnPrintTicket").on("click", function () {
         printTicket("printTicket", "printFrame")
@@ -755,14 +818,6 @@ $(document).ready(function(){
         submitPrestations(statut)
     })
 
-    // Soumettre l'enregistrement d'une Prestation, là, la prestation est en attente
-    $("#enregistrerPrestations").on("click", function(){
-        let statut = "en_attente"
-        submitPrestations(statut)
-
-        // La liste des prestations en attentes
-        loadPrestationEnAttentes()
-    })
 
     // Creation d'un Nouveau Client
     $("#submitClient").on('click', function(){
