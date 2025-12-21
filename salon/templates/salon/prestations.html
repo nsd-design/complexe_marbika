@@ -277,19 +277,26 @@
                     <div class="text-center" id="logoMarbika">
                         <img src="{% static 'assets/images/LogoMarbika.png' %}" alt="Logo Marbika" class="img-fluid m-2"
                              style="width: 100px">
+
                     </div>
+
+                    <div class="infoEntreprise">
+                        <p>Complexe Marbika, Sis à Nongo</p>
+                        <p>Contact : 629 93 48 91</p>
+                        <p>Email : complexemarbika@gmail.com</p>
+                        <p class="slogan">"Votre bien-être est notre priorité"</p>
+                    </div>
+
                     <div id="infoPrestation" class="my-2 " style="color: #000;">
-                        <p class="my-0 fw-bold lh-lg">Prestation : <span class="fw-normal" id="referencePS"></span></p>
-                        <p class="my-0 fw-bold lh-lg">Client : <span class="fw-normal" id="nomClient"></span></p>
-                        <p class="my-0 fw-bold lh-lg">Telephone : <span class="fw-normal" id="telephoneClient"></span>
-                        </p>
-                        <p class="my-0 fw-bold lh-lg">Date : <span class="fw-normal" id="datePrestation"></span></p>
+                        <p class="my-0 fw-bold lh-lg">Ref    : <span class="fw-normal" id="referencePS"></span></p>
+                        <p class="my-0 fw-bold lh-lg">Gérant : <span class="fw-normal" id="gerant"></span></p>
+                        <p class="my-0 fw-bold lh-lg">Date   : <span class="fw-normal" id="datePrestation"></span></p>
                     </div>
                     <table id="tabTicketPrestation" class="col-12 col-xl-12 mt-3" style="color: #000">
                         <thead style="border-top: 1px dashed black; border-bottom: 1px dashed black; color: #000;">
                         <tr>
-                            <th class="border-end py-2">Qte</th>
-                            <th class="border-end py-2">Désignation</th>
+                            <th class="border-end py-2 designationService">Désignation</th>
+                            <th class="border-end py-2 qteService">Qte</th>
                             <th class="text-center">Prix</th>
                         </tr>
                         </thead>
@@ -314,6 +321,7 @@
                     <!-- Zone d'affichage du code-barre -->
                     <div id="barcode-container" class="mt-5" hidden="hidden">
                         <svg id="barcode" class="col-12 col-xl-12"></svg>
+                        <p>Print Date : <span id="printDate"></span></p>
                     </div>
                 </div>
             </div>
@@ -382,7 +390,7 @@ $(document).ready(function(){
                 <title>Impression</title>
                 <style>
                     body {
-                        font-family: monospace;
+                        font-family: sans-serif, monospace;
                         font-size: 11px;
                         width: 180px;
                         padding: 0;
@@ -393,9 +401,11 @@ $(document).ready(function(){
                         width: 100%;
                         border-collapse: collapse;
                         margin-top: 15px;
+                        margin-bottom: 15px;
                     }
                     th, td {
-                        padding: 2px 0;
+                        padding: 2px;
+                        font-size: 12px;
                     }
                     th {
                         border-bottom: 1px dashed #000;
@@ -411,6 +421,13 @@ $(document).ready(function(){
                     #ticketFooter{
                         display: flex;
                         justify-content: space-between;
+                    }
+                    .infoEntreprise{
+                        margin: 5px 0;
+                    }
+                    table th .designationService{
+                        border-left: 1px solid #000;
+                        background-color: red;
                     }
                 </style>
             </head>
@@ -451,8 +468,7 @@ $(document).ready(function(){
         const objPrestation = {
             reference: "",
             date: "",
-            nom_client: "",
-            tel_client: "",
+            gerant: "",
             services: tabLignesPrestation
         }
         if(tabLignesPrestation.length === 0) return;
@@ -587,6 +603,7 @@ $(document).ready(function(){
             "id": "{{ prestataire.id }}",
         })
     {% endfor %}
+
     function fillPrestataireSelect(prestataireSelect){
         prestataireSelect.empty(); // Vider l'ancien contenu
         tabPrestataires.forEach(function(prestataire){
@@ -619,7 +636,7 @@ $(document).ready(function(){
         calculerMontant()
     })
 
-        // Ajouter une nouvelle ligne de Prestation
+    // Ajouter une nouvelle ligne de Prestation
     $("#ajouterLignePrestation").on("click", function(){
         const $tBodyCreatePrestations = $("#tBodyCreatePrestations")
         const $rowPrestation = $("<tr>").addClass("rowPrestation w-100")
@@ -685,7 +702,7 @@ $(document).ready(function(){
        $("#ligneRemise").before($rowPrestation)
     })
 
-        // Supprimer une ligne de prestation
+    // Supprimer une ligne de prestation
     $(document).on("click", ".removeRow", function(){
         const $currentRow = $(this).closest(".rowPrestation");
         const $rowId = $currentRow.attr("id")
@@ -985,20 +1002,22 @@ $(document).ready(function(){
 
         $("#referencePS").text(prestation.reference)
         $("#datePrestation").text(prestation.date)
-        $("#nomClient").text(prestation.nom_client)
-        $("#telephoneClient").text(prestation.tel_client)
+        $("#gerant").text(prestation.gerant)
 
         if (Array.isArray(prestation.services)) {
             $("#prestationServices").empty()
             prestation.services.forEach(item => {
                 const $row = $('<tr>').append(
-                    $('<td>', { class: ' py-1', text: item.quantite + " x " }),
                     $('<td>', { class: ' py-1', text: item.designation }),
+                    $('<td>', { class: ' py-1', text: item.quantite }),
                     $('<td>', { class: ' text-center', text: item.prix.toLocaleString() + " GNF" }),
                 );
                 $("#prestationServices").append($row);
             });
         }
+
+        const printDate = new Date()
+        $("#printDate").text(printDate.toLocaleString())
 
     } // End createTicketComponent
 

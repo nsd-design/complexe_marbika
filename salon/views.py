@@ -298,8 +298,7 @@ def get_prestation_details(request, id_prestation):
 
         data = {
             "reference": prestation.reference,
-            "nom_client": prestation.client.nom_complet if prestation.client else "",
-            "tel_client": prestation.client.telephone if prestation.client else "",
+            "gerant": request.user.first_name + " " + request.user.last_name,
             "date": prestation.created_at.strftime("%d/%m/%Y %H:%M"),
             "total": prestation.montant_total,
             "remise": prestation.remise,
