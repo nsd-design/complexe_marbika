@@ -241,6 +241,7 @@ def details_commande(request, id_commande):
             "date_creation": commande.created_at.strftime("%d/%m/%Y %H:%M"),
             "montant": commande.prix_total,
             "reduction": commande.reduction,
+            "gerant": f"{request.user.first_name} {request.user.last_name}",
             "plats": [],
             "boissons": [],
         }

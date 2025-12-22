@@ -251,26 +251,37 @@
     </div>
     <!-- Liste Ventes Card ends -->
 
+    <!--    Reçu de paiement des Produits Vendus-->
     <div class="col-xl-4 col-sm-12">
         <div class="card mb-4">
-            <div class="card-header">
+            <div class="card-header d-flex justify-content-between">
                 <h5 class="card-title" id="cardTitle">Ticket</h5>
+                <button id="btnPrintTicket" class="dt-button buttons-print" tabindex="0" aria-controls="customButtons"
+                        type="button"><span>Print</span>
+                </button>
             </div>
             <div class="card-body scroll350 overflow-auto">
-                <div class="m-auto p-2" style="width: 303px; background-color: #fff">
+                <div class="m-auto p-2" style="width: 303px; background-color: #fff" id="printTicket">
                     <div class="text-center" id="logoMarbika">
                         <img src="{% static 'assets/images/LogoMarbika.png' %}" alt="Logo Marbika" class="img-fluid m-2"
                              style="width: 100px">
                     </div>
+                    <div class="infoEntreprise">
+                        <p>Complexe Marbika, Sis à Nongo</p>
+                        <p>Contact : 629 93 48 91</p>
+                        <p>Email : complexemarbika@gmail.com</p>
+                        <p class="slogan">"Votre bien-être est notre priorité"</p>
+                    </div>
                     <div id="infoCommande" class="mt-2" style="color: #000;">
-                        <p class="my-0 fw-bold">Commande : <span class="fw-normal" id="referenceCMD"></span></p>
-                        <p id="dateCommande"></p>
+                        <p class="my-0 fw-bold">Ref : <span class="fw-normal" id="referenceCMD"></span></p>
+                        <p class="my-0 fw-bold lh-lg">Gérant : <span class="fw-normal" id="gerant"></span></p>
+                        <p class="my-0 fw-bold lh-lg">Date   : <span class="fw-normal" id="dateCommande"></span></p>
                     </div>
                     <table id="tabDetailsCommande" class="col-12 col-xl-12" style="color: #000">
                         <thead style="border-top: 1px dashed black; border-bottom: 1px dashed black; color: #000;">
                         <tr>
-                            <th class="border-end py-2">Qte</th>
                             <th class="border-end text-center">Produits</th>
+                            <th class="border-end py-2">Qte</th>
                             <th class="text-end">Prix U</th>
                         </tr>
                         </thead>
@@ -280,12 +291,15 @@
                     </table>
                     <div id="barcode-container" class="mt-5" hidden="hidden">
                         <svg id="barcode" class="col-12 col-xl-12"></svg>
+                        <p>Print Date : <span id="printDate"></span></p>
                     </div>
                 </div>
 
             </div>
         </div>
     </div>
+    <!--    Reçu de paiement des Produits Vendus-->
+    <iframe id="printFrame" style="display:none;"></iframe>
 
 </div>
 <!-- Row ends -->
@@ -494,7 +508,9 @@
             alert("Specifier le Type de Vente")
             return
         }
+
         const actionUrl = $(this).attr("action");
+
         $.ajax({
           url: actionUrl,
           method: "POST",
@@ -555,7 +571,7 @@
            tabProduits = []
       })
 
-      // Tableau devant contenir les references des commandes
+      // Tableau devant contenir les references des Produits commandés
       var tabReferences = []
 
       $(document).on('click','.details', function(e){
@@ -564,11 +580,11 @@
         // Récupérer l'URL du lien
         let url = $(this).attr('href')
 
-        // Extraire l'ID depuis l'URL avec une regex
+        // Extraire l'ID depuis l'URL
         let parts = url.split("/")
-        let commande_id = parts[4]
+        let idVente = parts[4]
 
-        if(commande_id){
+        if(idVente){
             $.ajax({
                 url: url,
                 method: "GET",
@@ -576,17 +592,15 @@
                 success: function(res){
                     const reference = res.reference
                     const date_commande = res.date_creation
+                    const gerant = res.gerant
 
-                    //$("#cardTitle").text("Details de la commande : " + reference).fadeIn()
 
                     if(!tabReferences.includes(reference)){
-                      if(res.plats.length > 0){
-                        creerDetailElement(res.plats)
+                      if(res.produits.length > 0){
+                        creerDetailElement(res.produits, reference, date_commande, gerant)
                       }
-                      if(res.boissons.length > 0){
-                        creerDetailElement(res.boissons)
-                      }
-                      ajouterFooterFacture(res.montant, res.reduction, reference, date_commande)
+
+                      ajouterFooterFacture(res.montant, res.reduction)
 
                       //creerBarcode(reference)
                       // Afficher le code-barre
@@ -604,11 +618,9 @@
                       // Ajouter la reference au tableau pour empecher de dupliquer la commande sur la Facture
                       tabReferences.push(reference)
                     }
-
-
                 },
                 error: function(err){
-                    console.log(err)
+                    console.log(err.msg)
                 },
             })
         }
@@ -627,23 +639,27 @@
         }
       });
 
-      function creerDetailElement(tabDetailProduits){
+      function creerDetailElement(tabDetailProduits, reference, date_commande, gerant){
+          // Ajout de la reference de la commande sur le ticket
+          $("#referenceCMD").text(reference)
+          $("#gerant").text(gerant)
+          $("#dateCommande").text(date_commande)
 
           tabDetailProduits.forEach(produit =>{
              // La ligne devant contenir les produits Plats et Boisson
           let ligneProduits = $("<tr>")
 
           // Les Cellules de la ligne
-          let cellQte = $("<td>")
+          let cellQte = $("<td>").addClass("text-center qte")
           let cellNom = $("<td>").addClass("ps-1")
           let cellPrix = $("<td>").addClass("text-end")
 
-          cellQte.text(produit.quantite.toString() + " x ")
-          cellNom.text(produit.nom)
+          cellQte.text(produit.quantite.toString())
+          cellNom.text(produit.designation)
           cellPrix.text(produit.prix.toLocaleString() + " GNF")
 
           // Ajouter les cellules dans ligne parent
-          ligneProduits.append(cellQte, cellNom, cellPrix).attr("id", produit.id)
+          ligneProduits.append(cellNom, cellQte, cellPrix).attr("id", produit.id)
           $("#tabDetailsCommande tbody").append(ligneProduits)
         })
         $("#tabDetailsCommande tbody").css({
@@ -652,11 +668,9 @@
       } // Fin Creer Details commande
 
 
-      function ajouterFooterFacture(montant, reduction, reference, date_commande){
-        // Ajout de la reference de la commande sur le ticket
-        $("#referenceCMD").text(reference)
-        $("#dateCommande").text(date_commande)
+      function ajouterFooterFacture(montant, reduction){
         let divFooter = $("<div>").addClass("d-flex justify-content-between mt-5")
+        divFooter.attr("id", "ticketFooter")
 
         // Libelles
         let libSousTotal = $("<p>").addClass("m-0").text('Sous-total')
@@ -676,12 +690,84 @@
         divFooter.append(divLib, divVal)
         $("#tabDetailsCommande").after(divFooter)
 
-        // Créer les elements du code-barre
-        //let barcodeContainer = $("<div>").attr("id", "barcode-container")
-        //let barcode = $("<svg>").attr("id","barcode")
-        //$("#barcode-container").append(barcode)
+        const printDate = new Date()
+        $("#printDate").text(printDate.toLocaleString())
 
       }
+
+      function printTicket(id_ticket, id_frame){
+        //const iframe = document.getElementById("printFrame");
+        const iframe = document.getElementById(id_frame);
+        const doc = iframe.contentWindow.document;
+        const contenu = document.getElementById(id_ticket).innerHTML;
+
+        doc.open();
+        doc.write(`
+            <html>
+            <head>
+                <title>Impression</title>
+                <style>
+                    body {
+                        font-family: sans-serif, monospace;
+                        font-size: 11px;
+                        width: 180px;
+                        padding: 0;
+                        margin: 0;
+                        color: #000;
+                    }
+                    table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        margin-top: 15px;
+                        margin-bottom: 15px;
+                    }
+                    th, td {
+                        padding: 2px;
+                        font-size: 12px;
+                    }
+                    th {
+                        border-bottom: 1px dashed #000;
+                    }
+                    svg {
+                        display: block;
+                        margin: 10px auto 0;
+                        width: 100%;
+                    }
+                    p {
+                        margin: 2px 0;
+                    }
+                    #ticketFooter{
+                        display: flex;
+                        justify-content: space-between;
+                    }
+                    .infoEntreprise{
+                        margin: 5px 0;
+                    }
+                    table th .designationService{
+                        border-left: 1px solid #000;
+                        background-color: red;
+                    }
+                    .qte{
+                        text-align: center;
+                    }
+                </style>
+            </head>
+            <body>
+                ${contenu}
+            </body>
+            </html>
+        `);
+        doc.close();
+
+        setTimeout(() => {
+            iframe.contentWindow.focus();
+            iframe.contentWindow.print();
+        }, 100);
+      }
+
+      $("#btnPrintTicket").on("click", function () {
+        printTicket("printTicket", "printFrame")
+      })
 
 
       function get_csrf_token(){

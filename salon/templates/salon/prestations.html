@@ -429,6 +429,9 @@ $(document).ready(function(){
                         border-left: 1px solid #000;
                         background-color: red;
                     }
+                    .qte{
+                        text-align: center;
+                    }
                 </style>
             </head>
             <body>
@@ -1009,7 +1012,7 @@ $(document).ready(function(){
             prestation.services.forEach(item => {
                 const $row = $('<tr>').append(
                     $('<td>', { class: ' py-1', text: item.designation }),
-                    $('<td>', { class: ' py-1', text: item.quantite }),
+                    $('<td>', { class: ' py-1 qte text-center', text: item.quantite }),
                     $('<td>', { class: ' text-center', text: item.prix.toLocaleString() + " GNF" }),
                 );
                 $("#prestationServices").append($row);
