@@ -635,12 +635,41 @@ def get_ventes(request):
                 "reduction": "{:,.0f} GNF".format(float(vente.reduction)).replace(",", " "),
                 "montant_paye": "{:,.0f} GNF".format(montant_paye).replace(",", " "),
                 "type_vente": f'<span class="badge rounded-pill bg-success">{vente.get_type_vente_display()}</span>' if int(vente.type_vente) == 1 else f'<span class="badge rounded-pill bg-secondary">{vente.get_type_vente_display()}</span>',
-                'actions': f'<a href="/salon/produits/shop/{vente.id}" class="text-danger details"><i class="bi bi-box-arrow-up-right fs-5"></i></a>',
+                'actions': f'<a href="/salon/produits/shop/details/{vente.id}" class="text-danger details"><i class="bi bi-box-arrow-up-right fs-5"></i></a>',
             })
-        print("Ventes :", list_ventes)
+
         return JsonResponse({"success": True, "data": list_ventes})
     except Exception as e:
         print(e)
+
+
+@require_http_methods(["GET"])
+def details_vente(request, id_vente):
+    try:
+        vente = Vente.objects.get(id=id_vente)
+        produits_vendus = ProduitVendu.objects.filter(vente=vente)
+
+        data = {
+            "reference": vente.reference,
+            "date_creation": vente.created_at.strftime("%d/%m/%Y %H:%M"),
+            "montant": vente.montant_total,
+            "reduction": vente.reduction,
+            "type_vente": vente.type_vente,
+            "gerant": f"{request.user.first_name} {request.user.last_name}",
+            "produits": [],
+        }
+
+        for item in produits_vendus:
+            data["produits"].append({
+                "id": item.produit.id,
+                "designation": item.produit.designation,
+                "quantite": item.quantite,
+                "prix": item.prix_vente_unitaire,
+            })
+        return JsonResponse(data, safe=False)
+    except Exception as e:
+        print('Exception:', str(e))
+        return JsonResponse({"error": True, "msg": str(e)})
 
 
 @login_required(login_url="login")
