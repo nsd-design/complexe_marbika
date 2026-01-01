@@ -272,6 +272,8 @@
 
 <script>
     $(document).ready(function(){
+        // Variable de la lib Notyf pour les Toasts
+        var notyf = new Notyf();
 
       // Gestion Categories
       var tableCategory =  $("#table-category").DataTable({
@@ -402,16 +404,19 @@
             contentType: "application/json",
             success: function(res){
                 if(res.success){
-                  $("#response-message-service").text(res.msg);
-                  $("#response-message-service").addClass('show').fadeIn();
+                  notyf.success({
+                      message: res.msg,
+                      duration: 3000,
+                      position: {
+                        x: 'center',
+                        y: 'top'
+                      }
+                    })
                   $("#service-form")[0].reset();
 
                   // Recharger la table Service
                   tableService.ajax.reload();
 
-                  setTimeout(function () {
-                       $("#response-message-service").removeClass('show').fadeOut();
-                  }, 3000);
                 }
 
             },
