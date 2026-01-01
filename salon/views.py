@@ -270,7 +270,7 @@ def get_prestations(request):
                 "net_paye": "{:,.0f} GNF".format(net_paye).replace(",", " "),
                 "actions": f'''
                             <a href="/salon/prestations/details/{prestation.id}" class="text-info me-2 showDetails"><i class="bi bi-eye fs-5"></i></i></a>
-                            <a href="/salon/prestations/details/{prestation.id}" class="text-danger showTicket"><i class="bi bi-box-arrow-up-right fs-5"></i></a>
+                            <a href="/salon/prestations/details/{prestation.id}" class="text-danger showTicket"><i class="bi bi-printer fs-5"></i></a>
                             ''',
             })
 
