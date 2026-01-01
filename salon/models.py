@@ -36,6 +36,7 @@ class InitPrestation(MyBaseModel):
     remise = models.BigIntegerField(default=0)
     client = models.ForeignKey(Client, null=True, on_delete=models.SET_NULL)
     statut = models.CharField(max_length=10, choices=status, default="en_attente")
+    montant_attribue = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.reference} - {self.client} - Montant : {self.montant_total}"

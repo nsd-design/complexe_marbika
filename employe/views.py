@@ -510,14 +510,14 @@ def performances_par_date(request):
         date_debut, date_fin = date_str_to_date_naive(date_debut_str, date_fin_str)
 
         init_prestations_du_jour = InitPrestation.objects.filter(
-            created_at__gte=date_debut, created_at__lte=date_fin
+            created_at__gte=date_debut, created_at__lte=date_fin, montant_attribue=False
         ).order_by("-created_at")
 
         init_prestations: list = []
         for init_prest in init_prestations_du_jour:
             init_prestations.append({
                 "id": init_prest.id,
-                "created_at": init_prest.created_at,
+                "created_at": init_prest.created_at.strftime("%d/%m/%Y %H:%M"),
                 "montant_total": init_prest.montant_total,
                 "remise": init_prest.remise,
                 "client": init_prest.client.nom_complet,
