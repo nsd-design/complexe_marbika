@@ -49,7 +49,7 @@ class Prestation(MyBaseModel):
     quantite = models.SmallIntegerField(default=1)
 
     def __str__(self):
-        return f"{self.service.designation} - {self.fait_par.first_name} {self.fait_par.last_name} - InitPrest: {self.init_prestation}"
+        return f"{self.service.designation} - InitPrest: {self.init_prestation}"
 
 
 class Produit(MyBaseModel):
