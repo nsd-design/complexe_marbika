@@ -54,31 +54,26 @@ class Prestation(MyBaseModel):
 
 
 class Produit(MyBaseModel):
-    designation = models.CharField(max_length=120)
+    designation = models.CharField(max_length=120, null=True, blank=True)
     qr_code = models.CharField(max_length=255, null=True)
     stock = models.PositiveIntegerField(default=0)
-    prix_achat = models.BigIntegerField(default=0)
+    prix_achat = models.BigIntegerField(default=0, null=True, blank=True)
     prix_vente = models.BigIntegerField(default=0)
     image = models.ImageField(null=True, blank=True, upload_to="produits/")
 
     def __str__(self):
-        return f"{self.designation} - {self.prix_achat} - {self.prix_vente} | Stock {self.stock}"
+        return f"{self.designation} - PVU: {self.prix_vente} | Stock {self.stock}"
 
-    def approvisionner_produit(self, quantite, prix_achat_u, description):
-        if quantite <= 0 or prix_achat_u <= 0:
-            raise ValueError("La quantité et le prix d'achat doivent être positifs.")
+    def approvisionner_produit(self, quantite, description):
+        if quantite <= 0:
+            raise ValueError("La quantité doit être positive.")
 
-        ancien_total = self.prix_achat * self.stock if self.prix_achat else 0
-        nouveau_total = prix_achat_u * quantite
         self.stock += quantite
-
-        # Nouveau prix moyen pondéré
-        self.prix_achat = int((ancien_total + nouveau_total) / self.stock)
         self.save()
 
         #  Enregistrement dans l'historique des Approvisionnements
         Approvisionnement.objects.create(
-            produit=self, quantite=quantite, pau=prix_achat_u, description = description
+            produit=self, quantite=quantite, description = description
         )
 
 
@@ -126,8 +121,8 @@ class ProduitVendu(MyBaseModel):
 class Approvisionnement(MyBaseModel):
     produit = models.ForeignKey(Produit, on_delete=models.CASCADE)
     quantite = models.IntegerField()
-    pau = models.BigIntegerField()
-    description = models.CharField(max_length=255, null=True)
+    pau = models.BigIntegerField(null=True, blank=True)
+    description = models.CharField(max_length=255, null=True, blank=True)
 
 
     def __str__(self):

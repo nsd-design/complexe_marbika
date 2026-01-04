@@ -25,7 +25,7 @@ class BoissonForm(forms.ModelForm):
 
     class Meta:
         model = Boisson
-        fields = ['designation', 'prix_achat', 'photo_boisson', 'prix_vente', 'stock']
+        fields = ['designation', 'photo_boisson', 'prix_vente', 'stock']
 
 
 class ApprovisionnementBoissonForm(forms.ModelForm):
@@ -37,4 +37,4 @@ class ApprovisionnementBoissonForm(forms.ModelForm):
 
     class Meta:
         model = ApprovisionnementBoisson
-        fields = ['boisson', 'quantite', 'prix_achat_unit']
+        fields = ['boisson', 'quantite']

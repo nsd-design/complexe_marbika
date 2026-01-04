@@ -39,12 +39,6 @@
                                     </div>
                                     <div class="col-xl-3 col-sm-4 col-12">
                                         <div class="mb-3">
-                                            <label class="form-label" for="id_prix_achat">Prix d'achat</label>
-                                            {{ form.prix_achat | as_crispy_field }}
-                                        </div>
-                                    </div>
-                                    <div class="col-xl-3 col-sm-4 col-12">
-                                        <div class="mb-3">
                                             <label class="form-label" for="id_prix_vente">Prix de vente</label>
                                             {{ form.prix_vente | as_crispy_field }}
                                         </div>
@@ -111,12 +105,6 @@
                                     </div>
                                     <div class="col-xl-3 col-sm-4 col-12">
                                         <div class="mb-3">
-                                            <label class="form-label" for="id_pau">Prix d'achat</label>
-                                            {{ appro_form.pau | as_crispy_field }}
-                                        </div>
-                                    </div>
-                                    <div class="col-xl-3 col-sm-4 col-12">
-                                        <div class="mb-3">
                                             <label class="form-label" for="id_description">Description</label>
                                             {{ appro_form.description | as_crispy_field }}
                                         </div>
@@ -158,7 +146,6 @@
                             <tr>
                                 <th>#</th>
                                 <th class="text-center">Designation</th>
-                                <th>Prix Achat U</th>
                                 <th>Prix Vente U</th>
                                 <th>Stock</th>
                             </tr>
@@ -188,7 +175,6 @@
                                 <th>#</th>
                                 <th>Produit</th>
                                 <th>Quantité</th>
-                                <th>Prix Achat U</th>
                                 <th>Nouveau Stock</th>
                                 <th>Date Appro</th>
                                 <th>Description</th>
@@ -230,7 +216,6 @@
                       }
                 },
                 { data: 'designation'},
-                { data: 'prix_achat' },
                 { data: 'prix_vente' },
                 { data: 'stock' },
             ],
@@ -252,7 +237,6 @@
                 },
                 { data: 'produit'},
                 { data: 'quantite'},
-                { data: 'pau'},
                 { data: 'stock'},
                 { data: 'date_appro'},
                 { data: 'description'},
