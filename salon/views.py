@@ -5,7 +5,7 @@ from http import HTTPStatus
 
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError, transaction
-from django.db.models import F, Sum
+from django.db.models import F, Sum, ExpressionWrapper, BigIntegerField
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.utils import timezone
@@ -898,7 +898,13 @@ def montant_genere_par_service(request):
         ).values(
             "service__id", "service__designation"
         ).annotate(
-            montant_total=Sum("service__prix_service")
+            quantite_service=Sum("quantite"),
+            montant_total=Sum(
+                ExpressionWrapper(
+                    F("service__prix_service") * F("quantite"),
+                    output_field=BigIntegerField(),
+                )
+            ),
         )
 
         liste_montant_par_service: list = []

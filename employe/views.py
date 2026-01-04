@@ -8,7 +8,7 @@ import django.db.utils
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.utils.crypto import get_random_string
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
 from django.db.models import Sum, Q, Count
 from django.db.models.functions import Extract, ExtractWeek
 from django.http import JsonResponse
@@ -510,14 +510,14 @@ def performances_par_date(request):
         date_debut, date_fin = date_str_to_date_naive(date_debut_str, date_fin_str)
 
         init_prestations_du_jour = InitPrestation.objects.filter(
-            created_at__gte=date_debut, created_at__lte=date_fin
+            created_at__gte=date_debut, created_at__lte=date_fin, montant_attribue=False
         ).order_by("-created_at")
 
         init_prestations: list = []
         for init_prest in init_prestations_du_jour:
             init_prestations.append({
                 "id": init_prest.id,
-                "created_at": init_prest.created_at,
+                "created_at": init_prest.created_at.strftime("%d/%m/%Y %H:%M"),
                 "montant_total": init_prest.montant_total,
                 "remise": init_prest.remise,
                 "client": init_prest.client.nom_complet,
@@ -569,19 +569,35 @@ def add_attributions(request):
 
         nb_prestataires: int = 0
 
-        for prestation in data_prestation:
-            # // Si le montant est deja attribue a l'employe en cours, passé au suivant
-            if dejaAttribue(id_init_prestation, prestation['idPrestataire'], prestation['idService']): continue
+        with transaction.atomic():
+            nb_prestataires = 0
 
-            employee = Employe.objects.get(id=prestation['idPrestataire'])
-            service = Service.objects.get(id=prestation['idService'])
-            r = RepartitionMontantPrestation.objects.create(
-                init_prestation=init_prestation,
-                employe=employee,
-                montant_attribue=prestation['montantAttribue'],
-                service=service
-            )
-            if r : nb_prestataires += 1
+            for prestation in data_prestation:
+                # Si le montant est déjà attribué → passer
+                if dejaAttribue(
+                        id_init_prestation,
+                        prestation['idPrestataire'],
+                        prestation['idService']
+                ):
+                    continue
+
+                employee = Employe.objects.get(id=prestation['idPrestataire'])
+                service = Service.objects.get(id=prestation['idService'])
+
+                r = RepartitionMontantPrestation.objects.create(
+                    init_prestation=init_prestation,
+                    employe=employee,
+                    montant_attribue=prestation['montantAttribue'],
+                    service=service
+                )
+
+                if r:
+                    nb_prestataires += 1
+
+            # 🚨 CETTE PARTIE NE S’EXÉCUTE
+            # 🚨 QUE SI TOUT S’EST BIEN PASSÉ AU-DESSUS
+            init_prestation.montant_attribue = True
+            init_prestation.save()
 
         return JsonResponse({"success": True, "msg": f"Montant répartie entre {nb_prestataires} Employé(s)"}, status=201)
     except Exception as e:

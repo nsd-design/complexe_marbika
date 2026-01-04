@@ -159,6 +159,7 @@
                                             <tr>
                                                 <th>#</th>
                                                 <th>Service</th>
+                                                <th class="text-center">Quantité</th>
                                                 <th>Montant</th>
                                             </tr>
                                             </thead>
@@ -551,6 +552,7 @@
                       }
                 },
                 { data: 'service__designation' },
+                { data: 'quantite_service' },
                 {
                     data: 'montant_total',
                     render: function(value, type, row){
@@ -559,11 +561,17 @@
                     }
                 }
             ],
-             columnDefs: [{
-                "targets": 0,
-                "searchable": false,
-                "orderable": false
-            }],
+             columnDefs: [
+                 {
+                    "targets": 0,
+                    "searchable": false,
+                    "orderable": false
+                },
+                {
+                    targets: 2,
+                    className: 'dt-center',
+                }
+            ],
             order: [],
             rowCallback: function(row, data, index){
                 $('td:eq(0)', row).html(index + 1)
