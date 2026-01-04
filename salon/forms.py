@@ -70,7 +70,7 @@ class ProduitForm(forms.ModelForm):
 
     class Meta:
         model = Produit
-        fields = ["designation", "prix_achat", "prix_vente", "stock", "image"]
+        fields = ["designation", "prix_vente", "stock", "image"]
 
 
 class ApproProduitForm(forms.ModelForm):
@@ -81,7 +81,7 @@ class ApproProduitForm(forms.ModelForm):
 
     class Meta:
         model = Approvisionnement
-        fields = ["produit", "quantite", "pau", "description"]
+        fields = ["produit", "quantite", "description"]
 
 
 class DepensesForm(forms.ModelForm):

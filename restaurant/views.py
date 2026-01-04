@@ -90,7 +90,7 @@ def approvisionner_boisson(request):
     if request.method == "POST":
         try:
             data = json.loads(request.body)
-            required_fields = ['boisson', 'quantite', 'prix_achat_unit']
+            required_fields = ['boisson', 'quantite']
 
             for field in required_fields:
                 if not escape(data.get(field)):
@@ -98,9 +98,8 @@ def approvisionner_boisson(request):
 
             boisson = Boisson.objects.get(id=data['boisson'])
             quantite = int(data['quantite'])
-            prix_achat = int(data['prix_achat_unit'])
 
-            boisson.approvisionner(quantite, prix_achat)
+            boisson.approvisionner(quantite, description="")
 
             return JsonResponse({
                 "msg": f"{quantite} unités ajoutées à {boisson.designation}",

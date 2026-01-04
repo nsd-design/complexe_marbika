@@ -435,20 +435,17 @@ def add_produit(request):
         form_submitted = ProduitForm(request.POST, request.FILES)
         if form_submitted.is_valid():
             designation = form_submitted.cleaned_data['designation']
-            prix_achat = form_submitted.cleaned_data['prix_achat']
             prix_vente = form_submitted.cleaned_data['prix_vente']
             image = form_submitted.cleaned_data['image']
             stock_init = form_submitted.cleaned_data['stock']
 
-            if prix_achat <= 0:
-                return JsonResponse({"error": True, "msg": "Le prix d'achat doit être superieur à 0"}, status=400)
             if prix_vente <= 0:
                 return JsonResponse({"error": True, "msg": "Le prix de vente doit être superieur à 0"}, status=400)
 
             new_product = Produit.objects.create(
-                designation=designation, prix_achat=prix_achat, prix_vente=prix_vente, image=image
+                designation=designation, prix_vente=prix_vente, image=image
             )
-            new_product.approvisionner_produit(quantite=stock_init, prix_achat_u=prix_achat, description="Stock initial - 1er approvisionnement")
+            new_product.approvisionner_produit(quantite=stock_init, description="Stock initial - 1er approvisionnement")
 
             return JsonResponse({"success": True, "msg": "Produti céé avec succès !"}, status=201)
         else:
@@ -472,12 +469,10 @@ def get_produits(request):
             return JsonResponse({"succes": True, "msg": "Aucun produit n'a été trouvé"})
 
         for produit in produits:
-            pau = float(produit.prix_achat)
             pvu = float(produit.prix_vente)
             list_produits.append({
                 "id": produit.id,
                 "designation": produit.designation,
-                "prix_achat": "{:,.0f} GNF".format(pau).replace(",", " "),
                 "prix_vente": "{:,.0f} GNF".format(pvu).replace(",", " "),
                 "stock": f'<span class="badge border border-success text-success">{produit.stock}</span>' if int(produit.stock) > 0 else f'<span class="badge rounded-pill bg-secondary">{produit.stock}</span>',
             })
@@ -486,7 +481,6 @@ def get_produits(request):
             list_appro.append({
                 "id_appro": appro.id,
                 "produit": appro.produit.designation,
-                "pau": appro.pau,
                 "quantite": appro.quantite,
                 "stock": appro.produit.stock,
                 "date_appro": appro.created_at.strftime("%d/%m/%Y"),
@@ -507,12 +501,12 @@ def approvisionner_produit(request):
         if appro_form_submitted.is_valid():
             produit = appro_form_submitted.cleaned_data['produit']
             quantite = appro_form_submitted.cleaned_data['quantite']
-            pau = appro_form_submitted.cleaned_data['pau']
             description = appro_form_submitted.cleaned_data['description']
 
             produit_a_approvisionner = Produit.objects.get(id=produit.id)
+
             # Approvisionnement du Produit
-            produit_a_approvisionner.approvisionner_produit(int(quantite), pau, description=description)
+            produit_a_approvisionner.approvisionner_produit(int(quantite), description=description)
 
             return JsonResponse({"success": True, "msg": "Approvisionnement effectué !"}, status=200)
 

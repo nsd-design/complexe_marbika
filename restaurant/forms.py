@@ -37,4 +37,4 @@ class ApprovisionnementBoissonForm(forms.ModelForm):
 
     class Meta:
         model = ApprovisionnementBoisson
-        fields = ['boisson', 'quantite', 'prix_achat_unit']
+        fields = ['boisson', 'quantite']

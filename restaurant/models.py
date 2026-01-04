@@ -24,7 +24,7 @@ class Boisson(MyBaseModel):
     stock = models.PositiveIntegerField(default=0)
 
     def __str__(self):
-        return f"{self.designation} - Stock: {self.stock} - PAU: {self.prix_achat}"
+        return f"{self.designation} - Stock: {self.stock} - PVU: {self.prix_vente}"
 
     def approvisionner(self, quantite, description):
         if quantite <= 0:
