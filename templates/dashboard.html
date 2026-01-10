@@ -11,34 +11,28 @@
       </div>
       <div class="card-body">
         <!-- Row starts -->
+          {% csrf_token %}
         <div class="row gx-4 align-items-center">
           <div class="col-lg-3 col-sm-4 col-12">
-            <div class="mb-3">
-              {% csrf_token %}
-              <label class="form-label" for="selectYear">Années</label>
-              <select class="form-select" id="selectYear">
-              <!--Charger Dynamiquement via JS-->
-
-              </select>
-            </div>
+               <div class="mb-3">
+                    <label class="form-label" for="date_debut">Du</label>
+                    <div class="input-group">
+                        <span class="input-group-text">
+                          <i class="bi bi-calendar4"></i>
+                        </span>
+                        <input type="text" id="date_debut" class="form-control datepicker"/>
+                    </div>
+               </div>
           </div>
           <div class="col-lg-3 col-sm-4 col-12">
             <div class="mb-3">
-              <label class="form-label" for="selectWeek">Semaines</label>
-              <select class="form-select" id="selectWeek">
-                <option value="0">Toutes</option>
-                {% for data in semaines %}
-                <option value="{{ data.numero_semaine }}">Semaine - {{ data.numero_semaine }}</option>
-                {% endfor %}
-              </select>
-            </div>
-          </div>
-          <div class="col-lg-3 col-sm-4 col-12">
-            <div class="mb-3">
-              <label class="form-label" for="selectMonth">Mois</label>
-                <select class="form-select" id="selectMonth">
-                <!--Charger Dynamiquement via JS-->
-                </select>
+                <label class="form-label" for="date_fin">Au</label>
+                <div class="input-group">
+                    <span class="input-group-text">
+                      <i class="bi bi-calendar4"></i>
+                    </span>
+                    <input type="text" id="date_fin" class="form-control datepicker"/>
+                </div>
             </div>
           </div>
           <div class="col-lg-3 col-sm-4 col-12">
@@ -46,9 +40,6 @@
               <button type="button" id="submitFiltre" class="btn btn-outline-primary">
                 Filtrer
               </button>
-<!--              <button type="button" id="resetFiltre" class="btn btn-outline-secondary">-->
-<!--                <i class="bi bi-x-lg"></i>-->
-<!--              </button>-->
             </div>
           </div>
         </div>
@@ -56,6 +47,41 @@
       </div>
     </div>
   </div>
+</div>
+
+<div class="row gx-4">
+    <!-- Row starts -->
+      <div class="col-lg-4 col-sm-6 col-12">
+        <div class="card mb-4">
+          <div class="card-header">
+            <h5 class="card-title">Prestations effectuées</h5>
+          </div>
+          <div class="card-body">
+            <div class="d-flex justify-content-between">
+              <div>
+                <h2 id="nbPrestations">0</h2>
+                <h5 class="mb-2 fw-light" id="totalNetPrestations">0</h5>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-4 col-sm-6 col-12">
+        <div class="card mb-4">
+          <div class="card-header">
+            <h5 class="card-title">Piscine</h5>
+          </div>
+          <div class="card-body">
+            <div class="d-flex justify-content-between">
+              <div>
+                <h2 id="montantPiscine">0</h2>
+    <!--            <h5 class="mb-2 fw-light" id="totalNetPrestations">0</h5>-->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 </div>
 
 <!-- Row starts -->
@@ -148,32 +174,6 @@
         <h5 class="card-title">Entrées / Sorties</h5>
       </div>
       <div class="card-body">
-        <div class="row align-items-center">
-          <div class="col-lg-3 col-sm-4 col-12">
-            <div class="mb-3">
-              <label class="form-label" for="selectWeekSalon">Semaines</label>
-              <select class="form-select" id="selectWeekSalon">
-                <option value="0">Toutes</option>
-                {% for data in semaines %}
-                <option value="{{ data.numero_semaine }}">Semaine - {{ data.numero_semaine }}</option>
-                {% endfor %}
-              </select>
-            </div>
-          </div>
-          <div class="col-lg-3 col-sm-4 col-12">
-            <div class="mb-3">
-              <label class="form-label" for="selectMonthSalon">Mois</label>
-                <select class="form-select" id="selectMonthSalon">
-                <!--Charger Dynamiquement via JS-->
-                </select>
-            </div>
-          </div>
-          <div class="col-lg-3 col-sm-4 col-12">
-              <button type="button" id="submitFiltreSalon" class="btn btn-outline-primary">
-                Filtrer
-              </button>
-          </div>
-        </div>
         <div class="accordion" id="accordionEnreesSorties">
           <div class="accordion-item">
             <h2 class="accordion-header" id="headingSpecialTitleOne">
@@ -249,52 +249,6 @@
                   </div>
                 </div>
                   <!-- Row ends -->
-                <!-- Tableaux des Entrées/Sorties du Salon -->
-                <div class="row gx-4">
-                  <div class="col-sm-12 col-md-12 col-lg-6">
-                    <!-- Tableau Affichant les Entrées du Salon Starts -->
-                    <div class="table-outer p-2">
-                      <div class="table-responsive">
-                        <h3>Prestations</h3>
-                        <table class="table table-striped truncate m-0" id="entreesSalon">
-                          <thead>
-                            <tr>
-                              <th>#</th>
-                              <th>Montant</th>
-                              <th>Semaine</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                          <!-- Contenu chargé via ajax -->
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  </div>
-                  <!-- Tableau Affichant les Entrées du Salon End -->
-
-                  <!-- Tableau Affichant les Dépenses du Salon Starts -->
-                  <div class="col-sm-12 col-md-12 col-lg-6">
-                    <div class="table-outer p-2">
-                      <div class="table-responsive">
-                        <h3>Dépenses</h3>
-                        <table class="table table-striped truncate m-0" id="sortiesSalon">
-                          <thead>
-                            <tr>
-                              <th>#</th>
-                              <th>Montant</th>
-                              <th>Semaine</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                          <!-- Contenu chargé via ajax -->
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  </div>
-                   <!--Tableau Affichant les Dépenses du Salon End -->
-                </div>
               </div>
             </div>
           </div>
@@ -371,53 +325,6 @@
                       </div>
                   </div>
                   <!-- Tableaux des Entrees/Sorties du Restaurant Starts -->
-                <div class="row gx-4">
-                  <div class="col-sm-12 col-md-12 col-lg-6">
-                    <!-- Tableau Affichant les Entrées du Restaurant Starts -->
-                    <div class="table-outer p-2">
-                      <div class="table-responsive">
-                        <h3>Commandes Plats & Boissons</h3>
-                        <table class="table table-striped truncate m-0" id="entreesResto">
-                          <thead>
-                            <tr>
-                              <th>#</th>
-                              <th>Montant</th>
-                              <th>Semaine</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                          <!-- Contenu chargé via ajax -->
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  </div>
-                  <!-- Tableau Affichant les Entrées du Salon End -->
-
-                  <!-- Tableau Affichant les Dépenses du Salon Starts -->
-                  <div class="col-sm-12 col-md-12 col-lg-6">
-                    <div class="table-outer p-2">
-                      <div class="table-responsive">
-                        <h3>Dépenses</h3>
-                        <table class="table table-striped truncate m-0" id="sortiesResto">
-                          <thead>
-                            <tr>
-                              <th>#</th>
-                              <th>Montant</th>
-                              <th>Semaine</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                          <!-- Contenu chargé via ajax -->
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  </div>
-                   <!-- Tableaux des Entrees/Sorties du Restaurant Ends -->
-                </div>
-
-              </div>
             </div>
           </div>
         </div>
@@ -426,162 +333,6 @@
   </div>
 </div>
 <!-- Row Entrées / Sorties ends -->
-
-<!-- Row starts -->
-<div class="row gx-4">
-  <div class="col-lg-4 col-sm-6 col-12">
-    <div class="card mb-4">
-      <div class="card-header">
-        <h5 class="card-title">Prestations effectuées</h5>
-      </div>
-      <div class="card-body">
-        <div class="d-flex justify-content-between">
-          <div>
-            <h2 id="nbPrestations">0</h2>
-            <h5 class="mb-2 fw-light" id="totalNetPrestations">0</h5>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="col-lg-4 col-sm-6 col-12" id="cardServiceSemaine">
-    <div class="card mb-4">
-      <div class="card-header">
-        <h5 class="card-title">Service le plus demandé de la Semaine</h5>
-      </div>
-      <div class="card-body">
-        <div class="d-flex justify-content-between">
-          <div>
-            <h2 id="serviceDemandeSemaine"></h2>
-            <h5 class="mb-2 fw-light" id="nbDemandeSemaine"></h5>
-            <p class="m-0" >
-              <span id="montantServicePlusDemandeSemaine"></span>
-            </p>
-          </div>
-          <div class="ms-3 graph-mini" id="option2"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="col-lg-4 col-sm-12 col-12">
-    <div class="card mb-4">
-      <div class="card-header">
-        <h5 class="card-title">Service le plus demandé du Mois</h5>
-      </div>
-      <div class="card-body">
-        <div class="d-flex justify-content-between">
-          <div>
-            <h2 id="serviceDuMois"></h2>
-            <h5 class="mb-2 fw-light" id="nbDemandeServiceDuMois"></h5>
-            <p class="m-0" id="montantServiceDuMois">
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-<!-- Row ends -->
-
-<!-- Row Details Prestations par Employ starts -->
-<div class="row gx-4">
-  <div class="col-sm-12">
-    <div class="card mb-4">
-      <div class="card-header">
-        <h5 class="card-title">Details Prestations par Employé</h5>
-      </div>
-      <div class="card-body">
-        <div class="accordion" id="accordionSpecialTitle">
-          {% for prestation in prestations_par_reference %}
-          <div class="accordion-item">
-            <h2 class="accordion-header" id="headingSpecialTitle{{prestation.reference}}">
-              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                data-bs-target="#collapseSpecialTitle{{prestation.reference}}" aria-expanded="false"
-                aria-controls="collapseSpecialTitle{{prestation.reference}}">
-                <div class="d-flex flex-column">
-                  <h5 class="m-0">{{ prestation.reference}} - {{ prestation.date }}</h5>
-                </div>
-              </button>
-            </h2>
-            <div id="collapseSpecialTitle{{prestation.reference}}" class="accordion-collapse collapse"
-              aria-labelledby="headingSpecialTitle{{prestation.reference}}" data-bs-parent="#accordionSpecialTitle">
-              <div class="accordion-body">
-
-                <div class="row gx-4">
-                    <div class="col">
-                      <div class="card border border-secondary mb-4">
-                        <div class="card-body text-center">
-                          <h6 class="m-0">Montant Total</h6>
-                          <div class="mt-2">
-                            <span class="badge border border-primary fs-6 text-body">
-                              <i class="bi bi-circle-fill"></i> {{ prestation.montant_total }}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="col">
-                      <div class="card border border-secondary mb-4">
-                        <div class="card-body text-center">
-                          <h6 class="m-0">Remise</h6>
-                          <div class="mt-2">
-                            <span class="badge border border-secondary fs-6 text-body">
-                              <i class="bi bi-circle-fill"></i> {{ prestation.remise }}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="col">
-                      <div class="card border border-secondary mb-4">
-                        <div class="card-body text-center">
-                          <h6 class="m-0">Net Payé</h6>
-                          <div class="mt-2">
-                            <span class="badge border border-success fs-6 text-body">
-                              <i class="bi bi-circle-fill"></i> {{ prestation.net_paye }}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                  </div>
-
-               <div class="card-body">
-                  <div class="table-outer">
-                    <div class="table-responsive">
-                      <table class="table table-striped truncate m-0">
-                        <thead>
-                          <tr>
-                            <th colspan="3">Prestataires</th>
-                            <th>Nombre de Services</th>
-                            <th>Services</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {% for prest in prestation.prestataire %}
-                          <tr>
-                            <td>{{prest.initiales}}</td>
-                            <td><a href="#" class="text-primary">{{prest.nom_complet}}</a></td>
-                            <td>{{prest.email}}</td>
-                            <td>{{prest.nb_services}}</td>
-                            <td>{{prest.services}}</td>
-
-                          </tr>
-                          {% endfor %}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                </div>
-
-              </div>
-            </div>
-          </div>
-          {% endfor %}
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-  <!-- Row Details Prestations par Employ ends -->
 
 <!-- Row starts -->
 <div class="row gx-4">
@@ -867,81 +618,43 @@
 
 {% block custom_js %}
 <script src="{% static 'assets/js/datatables.min.js' %}"></script>
+<script src="{% static 'assets/js/modernizr.js' %}"></script>
+<script src="{% static 'assets/vendor/daterange/daterange.js' %}"></script>
+<script src="{% static 'assets/vendor/daterange/custom-daterange.js' %}"></script>
 <script>
     $(document).ready(function(){
-        // Tableau contenant les Dates
-        var tabPeriodes = []
-        var tabMois = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
-            "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre",
-        ]
-        {% for w in semaines %}
-            tabPeriodes.push({
-                "numero_semaine": "{{w.numero_semaine}}",
-                "annee_semaine": "{{w.annee_semaine}}",
-                "mois_semaine": "{{w.mois_semaine}}",
-                "num_mois_semaine": "{{w.num_mois_semaine}}",
-            })
-        {% endfor %}
-
-        tabPeriodes
-
-        // Charger le Mois de la Semaine sélectionnée dans l'input mois
-        const $week_num = $(this).val()
-        const $select = $("#selectMonth, #selectMonthSalon")
-
-        $select.append(new Option("Tous", 0));
-        tabMois.forEach(function(mois, index){
-            $select.append(new Option(mois, index + 1));
-        });
-
 
         function getCSRFToken(){
           const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
           return csrfToken ? csrfToken.value : "";
         }
 
+        // Creer une Date l'initialisation du dom pour charger les Data du jour
+        const myDate = new Date();
+        const start = `${myDate.getFullYear()}-${myDate.getMonth() + 1}-${myDate.getDate()}`;
+        const end = `${myDate.getFullYear()}-${myDate.getMonth() + 1}-${myDate.getDate()}`;
+
         // Soumettre la requete de filtre
-        $("#submitFiltre").on("click", function(){
-          const $selectYear = $("#selectYear").val()
-          const $selectWeek = $("#selectWeek").val()
-          const $selectMonth = $("#selectMonth").val()
+        $("#submitFiltre").click(function(){
+            const date_debut_str = $("#date_debut").val()
+            const date_fin_str = $("#date_fin").val()
+            const date_debut = `${date_debut_str.split('/')[2]}-${date_debut_str.split('/')[1]}-${date_debut_str.split('/')[0]}`;
+            const date_fin = `${date_fin_str.split('/')[2]}-${date_fin_str.split('/')[1]}-${date_fin_str.split('/')[0]}`;
 
-
-          get_stats_ventes_produits($selectYear, $selectWeek, $selectMonth)
+            get_statistiques(date_debut, date_fin)
+            situationSalon(date_debut, date_fin)
 
         })
 
         function get_stats_prestations(data){
-          $("#nbPrestations").text(data.nb_prestations)
-          $("#totalNetPrestations").text(data.montant_net_prestations)
-          $("#servicePlusDemande").text(data.service_month.designation)
-
-          if(data.service_semaine.designation != undefined){
-
-            $("#nbDemandeSemaine").text(data.service_semaine.nb_demande)
-            $("#serviceDemandeSemaine").text(data.service_semaine.designation)
-            $("#montantServicePlusDemandeSemaine").text(data.service_semaine.montant_total_service_semaine)
-
-          }
-
-          if(data.service_month.designation != undefined){
-            $("#serviceDuMois").text(data.service_month.designation)
-            $("#nbDemandeServiceDuMois").text(data.service_month.nb_demande)
-            $("#montantServiceDuMois").text(data.service_month.montant_total_service_month)
-          }
-
-          if(data.service_year.designation != undefined){
-            $("#servicePlusDemande").text(data.service_year.designation)
-          }
-
+            $("#nbPrestations").text(data.nb_prestations)
+            $("#totalNetPrestations").text(data.montant_net_prestations)
         }
 
-        function get_stats_ventes_produits(year, num_week, num_month){
-
+        function get_statistiques(dateDebut, dateFin){
             const data = {
-                year: year,
-                week_num: num_week,
-                month_num: num_month,
+                startDate: dateDebut,
+                endDate: dateFin,
             }
 
             $.ajax({
@@ -951,9 +664,14 @@
                 data: JSON.stringify(data),
                 headers: { 'X-CSRFToken': getCSRFToken() },
                 success: function(res){
+
                   const stats_vente_produits = res.data.stats_vente_produits;
                   const stats_prestaions = res.data['get_stats_prestaions'];
+                  const stats_piscine = res.data['get_stats_piscine'];
 
+
+                  // Data de la Piscine
+                  $("#montantPiscine").text(stats_piscine)
                   // Statistiques sur la Prestation
                   get_stats_prestations(stats_prestaions)
 
@@ -972,243 +690,164 @@
 
         }
 
-        // Charger les Données de l'année en cours à l'initialisation de la page
-        const currentYear = new Date().getFullYear();
-        get_stats_ventes_produits(annee = currentYear, num_week = 0, num_month = 0)
+        // Charger les Données du jour à l'initialisation de la page
+        get_statistiques(start, end)
 
 
-    })
-  const select = document.getElementById("selectYear");
-  const currentYear = new Date().getFullYear();
-
-  for (let year = currentYear; year >= 2025; year--) {
-    const option = document.createElement("option");
-    option.value = year;
-    option.textContent = year;
-    select.appendChild(option);
-  }
-</script>
-<script>
-  $(document).ready(function(){
-    function getCSRFToken(){
-      const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
-      return csrfToken ? csrfToken.value : "";
-    }
+        function situationEntreesSorties(
+            url, dateDebut, dateFin, $montantEntree,
+            $montantSorti, $benefice, incomeGraph, expensesGraph, revenueGraph
+        ){
+          const data = {
+              start_date:dateDebut,
+              end_date:dateFin
+          }
 
 
-    function situationEntreesSorties(
-        url, week_num, month_num, $montantEntree,
-        $montantSorti, $benefice, $tabEntree, $tabDepenses,
-        incomeGraph, expensesGraph, revenueGraph
-    ){
-      const data = {
-          week_num,
-          month_num,
-      }
+          $.ajax({
+              url: url,
+              method: "POST",
+              contentType: "application/json",
+              data: JSON.stringify(data),
+              headers: { 'X-CSRFToken': getCSRFToken() },
+              success: function(res){
+
+                const montant_entrees = res.data.total_net_entree
+                const montant_sorties = res.data.depenses
+                const benefice = montant_entrees - montant_sorties
+
+                // Calcule des Montants et Pourcentage
+                $montantEntree.text(montant_entrees.toLocaleString() + " GNF")
+                $montantSorti.text(montant_sorties.toLocaleString() + " GNF")
+                $benefice.text(benefice.toLocaleString() + " GNF")
+
+                const totalEntreesSorties = montant_entrees + montant_sorties
+                const percent_entrees = montant_entrees ? Math.round((montant_entrees / montant_entrees) * 100) : 0
+                const percent_sorties = montant_entrees ? Math.round((montant_sorties / montant_entrees) * 100) : montant_sorties ? Math.round(montant_sorties / montant_sorties) * 100 : 0
+                const percent_benefice = montant_entrees ? Math.round((benefice / montant_entrees) * 100) : 0
+
+                // Statistiques des mouvements
+                graphStatistics(incomeGraph, percent_entrees, "Entrées", ["#9196a2", "#ba1654", "#EEEEEE", "#CCCCCC", "#ba1654", "#222222"])
+                graphStatistics(expensesGraph, percent_sorties, "Dépenses", ["#ba1654", "#EEEEEE", "#CCCCCC", "#ba1654", "#222222"])
+                graphStatistics(revenueGraph, percent_benefice, "Solde", ["#126621"])
+              },
+              error: function(error){
+                  console.log("erreur :", error)
+              },
+          })
+        }
 
 
-      $.ajax({
-          url: url,
-          method: "POST",
-          contentType: "application/json",
-          data: JSON.stringify(data),
-          headers: { 'X-CSRFToken': getCSRFToken() },
-          success: function(res){
-            const dataSourceEntree = res.data.details_entrees
-            const dataSourceDepenses = res.data.details_depenses
+        // Definition des urls pour recuperer les mouvements Entrees/Sorties du Salon et du Restaurant
+        const url_salon = "/employe/dashmin/situation_salon/"
+        const url_resto = "/employe/dashmin/situation_resto/"
 
-            const montant_entrees = res.data.total_net_entree
-            const montant_sorties = res.data.depenses
-            const benefice = montant_entrees - montant_sorties
+        let montantEntree = $("#montantEntreeSalon")
+        let montantSorti = $("#montantSortisSalon")
+        let benefice = $("#beneficeSalon")
+        let tabEntree = $("#entreesSalon")
+        let tabDepenses = $("#sortiesSalon")
 
-            // Calcule des Montants et Pourcentage
-            $montantEntree.text(montant_entrees.toLocaleString() + " GNF")
-            $montantSorti.text(montant_sorties.toLocaleString() + " GNF")
-            $benefice.text(benefice.toLocaleString() + " GNF")
+        let montantEntreeResto = $("#montantEntreeResto")
+        let montantSortiResto = $("#montantSortisResto")
+        let beneficeResto = $("#beneficeResto")
+        let tabEntreeResto = $("#entreesResto")
+        let tabDepensesResto = $("#sortiesResto")
 
-            const totalEntreesSorties = montant_entrees + montant_sorties
-            const percent_entrees = montant_entrees ? Math.round((montant_entrees / montant_entrees) * 100) : 0
-            const percent_sorties = montant_entrees ? Math.round((montant_sorties / montant_entrees) * 100) : montant_sorties ? Math.round(montant_sorties / montant_sorties) * 100 : 0
-            const percent_benefice = montant_entrees ? Math.round((benefice / montant_entrees) * 100) : 0
+        // Les Graphs du Salon
+        const incomeGraphSalon = "income"
+        const expensesGraphSalon = "expenses"
+        const revenueGraphSalon = "revenue"
 
-            // Statistiques des mouvements
-            graphStatistics(incomeGraph, percent_entrees, "Entrées", ["#9196a2", "#ba1654", "#EEEEEE", "#CCCCCC", "#ba1654", "#222222"])
-            graphStatistics(expensesGraph, percent_sorties, "Dépenses", ["#ba1654", "#EEEEEE", "#CCCCCC", "#ba1654", "#222222"])
-            graphStatistics(revenueGraph, percent_benefice, "Bénéfices", ["#126621"])
+        // Les Graphs du Restaurant
+        const incomeGraphResto = "incomeResto"
+        const expensesGraphResto = "expensesResto"
+        const revenueGraphResto = "revenueResto"
 
+        //Recuperer les Entrees/Sorties du Salon via le filtre
+        function situationSalon(dateDebut, dateFin){
+          montantEntree = $("#montantEntreeSalon")
+          montantSorti = $("#montantSortisSalon")
+          benefice = $("#beneficeSalon")
+          tabEntree = $("#entreesSalon")
+          tabDepenses = $("#sortiesSalon")
 
-            if($.fn.DataTable.isDataTable($tabEntree)){
-              $tabEntree.DataTable().clear().rows.add(dataSourceEntree).draw();
-            }
-            else{
-              $tabEntree.DataTable({
-                destroy: true,
-                data: dataSourceEntree,
-                columns: [
-                  {
-                      data: null,
-                      render: function(data, type, row, meta){
-                          return meta.row + 1;
-                        }
-                  },
-                  { data: 'total_montant'},
-                  { data: 'week' }
-                ],
-                lengthMenu: [5, 10, 25, 50, 75, 100]
-              })
-            }
+          // Filtrer les Donnees Entrees/Sorties du Salon
+          const url_salon = "/employe/dashmin/situation_salon/"
+          situationEntreesSorties(url_salon, dateDebut, dateFin,
+            montantEntree, montantSorti, benefice,
+            incomeGraphSalon, expensesGraphSalon, revenueGraphSalon
+          )
 
-            if($.fn.DataTable.isDataTable($tabDepenses)){
-              $tabDepenses.DataTable().clear().rows.add(dataSourceDepenses).draw();
-            }
-            else{
-              $tabDepenses.DataTable({
-                destroy: true,
-                data: dataSourceDepenses,
-                columns: [
-                  {
-                      data: null,
-                      render: function(data, type, row, meta){
-                          return meta.row + 1;
-                        }
-                  },
-                  { data: 'sum_montant' },
-                  { data: 'week' }
-                ],
-                lengthMenu: [5, 10, 25, 50, 75, 100]
-              })
-            }
-          },
-          error: function(error){
-              console.log("erreur :", error)
-          },
-      })
-    }
+          // Filtrer les Donnees Entrees/Sorties du Restaurant
+          montantEntreeResto = $("#montantEntreeResto")
+          montantSortiResto = $("#montantSortisResto")
+          beneficeResto = $("#beneficeResto")
+          tabEntreeResto = $("#entreesResto")
+          tabDepensesResto = $("#sortiesResto")
 
-    // Definir le numero de semaine sur 'Toutes (0)' lorsqu'un mois est selectioné
-    $("#selectMonthSalon").on('change', function(){
-        if($(this).val() != 0){$("#selectWeekSalon").val(0)}
-    })
-    // Definir le numero de mois sur 'Tous (0)' lorsqu'une semaine est selectionée
-    $("#selectWeekSalon").on('change', function(){
-        if($(this).val() != 0){$("#selectMonthSalon").val(0)}
-    })
+          situationEntreesSorties(url_resto, dateDebut, dateFin, montantEntreeResto, montantSortiResto,
+            beneficeResto, incomeGraphResto, expensesGraphResto, revenueGraphResto
+          )
+        }
 
-    // Definition des urls pour recuperer les mouvements Entrees/Sorties du Salon et du Restaurant
-    const url_salon = "/employe/dashmin/situation_salon/"
-    const url_resto = "/employe/dashmin/situation_resto/"
+        // Recuperer les Entrees/Sorties du Salon à l'initialisation de la page
+        situationEntreesSorties(url_salon, start, end, montantEntree, montantSorti, benefice, "income", "expenses", "revenue")
 
-    let montantEntree = $("#montantEntreeSalon")
-    let montantSorti = $("#montantSortisSalon")
-    let benefice = $("#beneficeSalon")
-    let tabEntree = $("#entreesSalon")
-    let tabDepenses = $("#sortiesSalon")
+        // Recuperer les Entrees/Sorties du Restaurant à l'initialisation de la page
+        situationEntreesSorties(url_resto, start, end, montantEntreeResto, montantSortiResto, beneficeResto,
+            incomeGraphResto, expensesGraphResto, revenueGraphResto
+        )
 
-    let montantEntreeResto = $("#montantEntreeResto")
-    let montantSortiResto = $("#montantSortisResto")
-    let beneficeResto = $("#beneficeResto")
-    let tabEntreeResto = $("#entreesResto")
-    let tabDepensesResto = $("#sortiesResto")
-
-    // Les Graphs du Salon
-    const incomeGraphSalon = "income"
-    const expensesGraphSalon = "expenses"
-    const revenueGraphSalon = "revenue"
-
-    // Les Graphs du Restaurant
-    const incomeGraphResto = "incomeResto"
-    const expensesGraphResto = "expensesResto"
-    const revenueGraphResto = "revenueResto"
-
-    //Recuperer les Entrees/Sorties du Salon via le filtre (par semaine ou par mois)
-    $("#submitFiltreSalon").on('click', function(e){
-      const week_num = $("#selectWeekSalon").val()
-      const month_num = $("#selectMonthSalon").val()
-
-      montantEntree = $("#montantEntreeSalon")
-      montantSorti = $("#montantSortisSalon")
-      benefice = $("#beneficeSalon")
-      tabEntree = $("#entreesSalon")
-      tabDepenses = $("#sortiesSalon")
-
-      // Filtrer les Donnees Entrees/Sorties du Salon
-      const url_salon = "/employe/dashmin/situation_salon/"
-      situationEntreesSorties(url_salon, week_num, month_num,
-        montantEntree, montantSorti, benefice, tabEntree, tabDepenses,
-        incomeGraphSalon, expensesGraphSalon, revenueGraphSalon
-      )
-
-      // Filtrer les Donnees Entrees/Sorties du Restaurant
-      montantEntreeResto = $("#montantEntreeResto")
-      montantSortiResto = $("#montantSortisResto")
-      beneficeResto = $("#beneficeResto")
-      tabEntreeResto = $("#entreesResto")
-      tabDepensesResto = $("#sortiesResto")
-
-      situationEntreesSorties(url_resto, week_num, month_num, montantEntreeResto, montantSortiResto,
-        beneficeResto, tabEntreeResto, tabDepensesResto,
-        incomeGraphResto, expensesGraphResto, revenueGraphResto
-      )
-    })
-
-    // Recuperer les Entrees/Sorties du Salon à l'initialisation de la page
-    situationEntreesSorties(url_salon, 0, 0, montantEntree, montantSorti, benefice, tabEntree, tabDepenses, "income", "expenses", "revenue")
-
-    // Recuperer les Entrees/Sorties du Restaurant à l'initialisation de la page
-    situationEntreesSorties(url_resto, 0, 0, montantEntreeResto, montantSortiResto, beneficeResto,
-        tabEntreeResto, tabDepensesResto,
-        incomeGraphResto, expensesGraphResto, revenueGraphResto
-    )
-
-    // Graph 1
-    let chart = {};
-    function graphStatistics(idGraph, percent, graphLabel, tabColors){
-      if(chart[idGraph]){
-        chart[idGraph].updateSeries([percent]);
-        chart[idGraph].updateOptions({
-          labels: [graphLabel],
-          colors: tabColors
-        });
-      }
-      else{
-        var options = {
-          series: [percent],
-          chart: {
-              height: 280,
-              type: "radialBar",
-              offsetY: -10,
-          },
-          plotOptions: {
-              radialBar: {
-                  startAngle: -135,
-                  endAngle: 135,
-                  dataLabels: {
-                      name: {
-                          fontSize: "16px",
-                          color: undefined,
-                          offsetY: 0,
-                      },
-                      value: {
-                          offsetY: 20,
-                          fontSize: "22px",
-                          color: undefined,
-                          formatter: function (val) {
-                              return val + "%";
+        // Graph 1
+        let chart = {};
+        function graphStatistics(idGraph, percent, graphLabel, tabColors){
+          if(chart[idGraph]){
+            chart[idGraph].updateSeries([percent]);
+            chart[idGraph].updateOptions({
+              labels: [graphLabel],
+              colors: tabColors
+            });
+          }
+          else{
+            var options = {
+              series: [percent],
+              chart: {
+                  height: 280,
+                  type: "radialBar",
+                  offsetY: -10,
+              },
+              plotOptions: {
+                  radialBar: {
+                      startAngle: -135,
+                      endAngle: 135,
+                      dataLabels: {
+                          name: {
+                              fontSize: "16px",
+                              color: undefined,
+                              offsetY: 0,
+                          },
+                          value: {
+                              offsetY: 20,
+                              fontSize: "22px",
+                              color: undefined,
+                              formatter: function (val) {
+                                  return val + "%";
+                              },
                           },
                       },
                   },
               },
-          },
-          colors: tabColors,
-          stroke: {
-              dashArray: 4,
-          },
-          labels: [graphLabel],
-        };
-        chart[idGraph] = new ApexCharts(document.querySelector("#" + idGraph), options);
-        chart[idGraph].render();
-      }
-    }
-  })
+              colors: tabColors,
+              stroke: {
+                  dashArray: 4,
+              },
+              labels: [graphLabel],
+            };
+            chart[idGraph] = new ApexCharts(document.querySelector("#" + idGraph), options);
+            chart[idGraph].render();
+          }
+        }
+    })
 </script>
 {% endblock %}
