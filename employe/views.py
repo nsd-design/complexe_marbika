@@ -9,7 +9,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.utils.crypto import get_random_string
 from django.db import IntegrityError, transaction
-from django.db.models import Sum, Q, Count
+from django.db.models import Sum, Q, Count, ExpressionWrapper, BigIntegerField, F
 from django.db.models.functions import Extract, ExtractWeek
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
@@ -18,6 +18,7 @@ from django.template.loader import render_to_string
 from django.utils.html import escape
 from django.views.decorators.http import require_http_methods
 
+from client.models import Piscine
 from employe.forms import EmployeForm
 from employe.models import Employe
 from restaurant.models import Commande
@@ -189,18 +190,12 @@ def add_employe(request):
             return JsonResponse({"error": "Echec de l'enregistrement pour des raison de doublon"}, status=409)
 
 
-def get_stats_vente_produits(annee: int, week_num: int, month_num: int):
+def get_stats_vente_produits(date_debut_str, date_fin_str):
     try:
-        filtres = {"created_at__date__year": annee}
-
-        if month_num > 0:
-            # Filtre pour récupérer les data du mois
-            filtres["created_at__date__month"] = month_num
-        if week_num > 0:
-            # Filtre pour récupérer les data de la semaine
-            filtres["created_at__date__week"] = week_num
-
-        ventes = Vente.objects.filter(**filtres)
+        ventes = Vente.objects.filter(
+            created_at__gte=date_debut_str,
+            created_at__lte=date_fin_str,
+        )
 
         # Nombre de Ventes réalisé
         nb_ventes = ventes.count()
@@ -273,52 +268,12 @@ def get_montant_total_par_service(id_service, filtres):
     )
 
 
-def get_stats_prestaions(year: int, week_num: int, month_num: int):
+def get_stats_prestaions(date_debut, date_fin):
     try:
-        filtres = {"created_at__date__year": year}
-
-        service_de_la_semaine = {}
-        service_de_du_mois = {}
-        service_de_lannee = {}
-
-        if week_num:
-            filtres["created_at__date__week"] = week_num
-            # Rechercher le Service le plus demandé de la Semaine
-            service_semaine = get_service_le_plus_demande({"created_at__date__week": week_num})
-            if service_semaine:
-                # Récupérer le service le plus demandé de la semaine
-                montant_total_service_semaine = get_montant_total_par_service(
-                    service_semaine["service__id"],{"created_at__date__week": week_num}
-                )
-                service_de_la_semaine["designation"] = service_semaine["service__designation"]
-                service_de_la_semaine["nb_demande"] = service_semaine["nb_services"] or 0
-                service_de_la_semaine["montant_total_service_semaine"] = currency(montant_total_service_semaine)
-
-        if month_num:
-            filtres["created_at__date__month"] = month_num
-            service_month = get_service_le_plus_demande({"created_at__date__month": month_num})
-            if service_month:
-                print("service_month :", service_month)
-                montant_total_service_month = get_montant_total_par_service(service_month["service__id"], {"created_at__date__month": month_num})
-
-                service_de_du_mois["designation"] = service_month["service__designation"]
-                service_de_du_mois["nb_demande"] = service_month["nb_services"] or 0
-                service_de_du_mois["montant_total_service_month"] = currency(montant_total_service_month) if montant_total_service_month else currency(0)
-
-        # Récupérer le service le plus demandé de l'année
-        service_year = get_service_le_plus_demande({"created_at__date__year": year})
-
-        if service_year:
-            # Récupérer le montant total du service le plus demandé de l'année
-            montant_total_service_year = get_montant_total_par_service(
-                service_year["service__id"],{"created_at__date__year": year}
-            )
-            service_de_lannee["designation"] = service_year["service__designation"]
-            service_de_lannee["nb_demande"] = service_year["nb_services"] or 0
-            service_de_lannee["montant_total_service_year"] = currency(montant_total_service_year) if montant_total_service_year else currency(0)
-
-
-        prestations = InitPrestation.objects.filter(**filtres)
+        prestations = InitPrestation.objects.filter(
+            created_at__gte=date_debut,
+            created_at__lte=date_fin,
+        )
 
         # Montant total des Prestations
         resultats_montant_prestations = prestations.aggregate(
@@ -336,9 +291,6 @@ def get_stats_prestaions(year: int, week_num: int, month_num: int):
         data = {
             "montant_net_prestations": currency(montant_net_prestations) if montant_net_prestations else currency(0),
             "nb_prestations": nb_prestations if nb_prestations else 0,
-            "service_semaine": service_de_la_semaine,
-            "service_month": service_de_du_mois,
-            "service_year": service_de_lannee,
         }
 
         return data
@@ -351,19 +303,50 @@ def get_stats_prestaions(year: int, week_num: int, month_num: int):
         return None
 
 
+def get_stats_piscine(date_debut, date_fin):
+    try:
+        pool_data = Piscine.objects.filter(
+            created_at__gte=date_debut,
+            created_at__lte=date_fin,
+        )
+        calcul_montants = pool_data.aggregate(
+            sum_prix_unit=Sum(
+                ExpressionWrapper(
+                    F("nb_client") * F("prix_unitaire"),
+                    output_field=BigIntegerField(),
+                )
+            ),
+            sum_remise=Sum(
+                ExpressionWrapper(
+                    F("nb_client") * F("reduction"),
+                    output_field=BigIntegerField(),
+                )
+            )
+        )
+
+        montant_net_entre = calcul_montants["sum_prix_unit"] - calcul_montants["sum_remise"]
+        montant_net_entre_str = currency(montant_net_entre)
+
+        return montant_net_entre_str
+    except Exception as e:
+        print("erreur inattendue :", str(e))
+        return 0
+
+
 
 @require_http_methods(["POST"])
 def filtre_dashmin_data(request):
     try:
         data = json.loads(request.body)
 
-        year = int(data['year'])
-        week_num = int(data['week_num'])
-        month_num = int(data['month_num'])
+        date_debut_str = data.get("startDate")
+        date_fin_str = data.get("endDate")
 
+        date_debut, date_fin = date_str_to_date_naive(date_debut_str, date_fin_str)
         data = {
-            "stats_vente_produits": get_stats_vente_produits(year, week_num, month_num),
-            "get_stats_prestaions": get_stats_prestaions(year, week_num, month_num),
+            "stats_vente_produits": get_stats_vente_produits(date_debut, date_fin),
+            "get_stats_prestaions": get_stats_prestaions(date_debut, date_fin),
+            "get_stats_piscine": get_stats_piscine(date_debut, date_fin),
         }
 
         return JsonResponse({"success": True, "data": data}, status=http.HTTPStatus.OK)
@@ -376,36 +359,29 @@ current_week = date.today().isocalendar().week
 @require_http_methods(["POST"])
 def entrees_sorties_salon(request):
     try:
-        filters = get_date_filters(json.loads(request.body))
+        filters = json.loads(request.body)
+        date_debut_str = filters.get("start_date")
+        date_fin_str = filters.get("end_date")
+        date_debut, date_fin = date_str_to_date_naive(date_debut_str, date_fin_str)
 
         list_prestations: list = []
 
-        prestations = (
-            InitPrestation.objects
-            .filter(**filters)
-            .annotate(week=ExtractWeek("created_at"))
-            .values("week")
-            .annotate(
-                total_montant=Sum("montant_total"),
-                total_remise=Sum("remise")
-            )
+        prestations = InitPrestation.objects.filter(
+            created_at__gte=date_debut, created_at__lte=date_fin
+        ).annotate(
+            total_montant=Sum("montant_total"),
+            total_remise=Sum("remise")
         )
-        for presta in prestations:
-            presta_formatee = presta.copy()
-            presta_formatee['total_montant'] = currency(presta['total_montant'])
-            list_prestations.append(
-                presta_formatee
-            )
+
 
         sum_montant = prestations.aggregate(Sum("total_montant"))["total_montant__sum"] or 0
         sum_remise = prestations.aggregate(Sum("total_remise"))["total_remise__sum"] or 0
         total_net_entree = sum_montant - sum_remise
 
-        depenses, details_depenses = depenses_par_section("SALON", request)
+        depenses, details_depenses = depenses_par_section("SALON", date_debut, date_fin)
 
         data = {
             "total_net_entree": total_net_entree,
-            "details_entrees": list_prestations,
             "depenses": depenses,
             "details_depenses": details_depenses,
         }
@@ -414,37 +390,25 @@ def entrees_sorties_salon(request):
         print("Erreur: ", str(e))
         return JsonResponse({"success": False, "msg": str(e)}, status=400)
 
-def get_date_filters(data: dict) -> dict:
-    week_num = int(data['week_num'])
-    month_num = int(data['month_num'])
-
-    if week_num:
-        return {"created_at__date__week": week_num}
-    return {"created_at__date__month": month_num or date.today().month}
-
 
 # Renvoie les Depenses d'une Section du Complexe par Date a savoir :
 # Salon ou le Restaurant
 # Le param Filters represente soit le numero de la semaine ou du mois
-def depenses_par_section(section, req):
+def depenses_par_section(section, date_debut, date_fin):
     try:
         list_depenses: list = []
 
-        filters = get_date_filters(json.loads(req.body))
-
         depenses = (
             Depense.objects
-            .filter(section=section, **filters)
-            .annotate(week=ExtractWeek("created_at"))
-            .values("week")
+            .filter(section=section, created_at__gte=date_debut, created_at__lte=date_fin)
             .annotate(
                 sum_montant=Sum("montant")
             )
         )
-        for depense in depenses:
-            depense_formatee = depense.copy()
-            depense_formatee['sum_montant'] = currency(depense['sum_montant'])
-            list_depenses.append(depense_formatee)
+        # for depense in depenses:
+            # depense_formatee = depense.copy()
+            # depense_formatee['sum_montant'] = currency(depense['sum_montant'])
+            # list_depenses.append(depense_formatee)
 
         sum_depenses = depenses.aggregate(Sum("montant"))["montant__sum"] or 0
         return sum_depenses, list_depenses
@@ -454,37 +418,38 @@ def depenses_par_section(section, req):
 
 def entrees_sorties_restaurant(request):
     try:
-        filters = get_date_filters(json.loads(request.body))
+        filters = json.loads(request.body)
+        date_debut_str = filters.get("start_date")
+        date_fin_str = filters.get("end_date")
+        date_debut, date_fin = date_str_to_date_naive(date_debut_str, date_fin_str)
 
         list_commandes: list = []
 
         commandes = (
             Commande.objects
-            .filter(**filters)
-            .annotate(week=ExtractWeek("created_at"))
-            .values("week")
+            .filter(created_at__gte=date_debut, created_at__lte=date_fin)
             .annotate(
                 total_montant=Sum("prix_total"),
                 total_remise=Sum("reduction")
             )
         )
 
-        for cmd in commandes:
-            cmd_formatee = cmd.copy()
-            cmd_formatee['total_montant'] = currency(cmd['total_montant'])
-            list_commandes.append(
-                cmd_formatee
-            )
+        # for cmd in commandes:
+        #     cmd_formatee = cmd.copy()
+        #     cmd_formatee['total_montant'] = currency(cmd['total_montant'])
+        #     list_commandes.append(
+        #         cmd_formatee
+        #     )
 
         sum_montant = commandes.aggregate(Sum("total_montant"))["total_montant__sum"] or 0
         sum_remise = commandes.aggregate(Sum("total_remise"))["total_remise__sum"] or 0
         total_net_entree = sum_montant - sum_remise
 
-        depenses, details_depenses = depenses_par_section("RESTAURANT", request)
+        depenses, details_depenses = depenses_par_section("RESTAURANT", date_debut, date_fin)
 
         data = {
             "total_net_entree": total_net_entree,
-            "details_entrees": list_commandes,
+            # "details_entrees": list_commandes,
             "depenses": depenses,
             "details_depenses": details_depenses,
         }
