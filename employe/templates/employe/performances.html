@@ -460,6 +460,7 @@
                       }
                     })
                     $attributionTBody = $("#attributionTBody").empty();
+                    $("#btnDateFilter").trigger("click") // Recharger les data basées sur le filtre en cours
                 },
                 error: function(err){
                     notyf.error({
