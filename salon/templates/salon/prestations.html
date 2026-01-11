@@ -681,7 +681,7 @@ $(document).ready(function(){
                 $select.empty(); // Vider l'ancien contenu
                  $select.append(new Option("-- Sélectionner un Client --", "", true, true));
                 data.data.forEach(function(client){
-                    $select.append(new Option(`${client.nom_complet} - ${client.telephone ? client.telephone : ""}`, client.id));
+                    $select.append(new Option(`${client.code_client} - ${client.nom_complet} - ${client.telephone ? client.telephone : ""}`, client.id));
                 });
                 $select.select2({
                     allowClear: true
