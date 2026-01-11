@@ -1,4 +1,5 @@
-from django.db import models
+from django.db import models, transaction
+from django.db.models import Max
 
 from employe.models import MyBaseModel
 
@@ -6,12 +7,42 @@ from employe.models import MyBaseModel
 class Client(MyBaseModel):
     sexes = [(1, "Homme"), (2, "Femme")]
 
+    code_client = models.CharField(
+        max_length=7,
+        unique=True,
+        null=True,
+        blank=True,
+    )
+
     nom_complet = models.CharField(max_length=200, null=True, blank=True)
     telephone = models.CharField(max_length=20, null=True, blank=True)
     sexe = models.SmallIntegerField(choices=sexes, null=True)
 
+
+    def save(self, *args, **kwargs):
+        if not self.code_client:
+            self.code_client = self.generate_code_client()
+        super().save(*args, **kwargs)
+
+
     def __str__(self):
-        return f'{self.nom_complet} - {self.telephone}'
+        return f'{self.code_client} - {self.nom_complet} - {self.telephone}'
+
+
+    @staticmethod
+    def generate_code_client():
+        with transaction.atomic():
+            last_code = (
+                Client.objects.select_for_update()
+                .aggregate(max_code=Max("code_client"))["max_code"]
+            )
+
+            if last_code:
+                last_number = int(last_code[1:])
+            else:
+                last_number = 0
+
+            return f"C{last_number + 1:04d}"
 
 
 class ZoneAReserver(MyBaseModel):
