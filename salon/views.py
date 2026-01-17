@@ -602,7 +602,8 @@ def get_clients(request):
             list_clients.append({
                 "id": client.id,
                 "nom_complet":client.nom_complet,
-                "telephone": client.telephone
+                "telephone": client.telephone,
+                "code_client": client.code_client,
             })
         return JsonResponse({"success": True, "data": list_clients})
     except Exception as e:
