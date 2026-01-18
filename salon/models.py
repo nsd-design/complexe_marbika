@@ -64,7 +64,7 @@ class Produit(MyBaseModel):
     def __str__(self):
         return f"{self.designation} - PVU: {self.prix_vente} | Stock {self.stock}"
 
-    def approvisionner_produit(self, quantite, description):
+    def approvisionner_produit(self, quantite, description, user):
         if quantite <= 0:
             raise ValueError("La quantité doit être positive.")
 
@@ -73,7 +73,8 @@ class Produit(MyBaseModel):
 
         #  Enregistrement dans l'historique des Approvisionnements
         Approvisionnement.objects.create(
-            produit=self, quantite=quantite, description = description
+            produit=self, quantite=quantite, description = description,
+            created_by=user
         )
 
 

@@ -553,7 +553,8 @@ def add_attributions(request):
                     init_prestation=init_prestation,
                     employe=employee,
                     montant_attribue=prestation['montantAttribue'],
-                    service=service
+                    service=service,
+                    created_by=request.user
                 )
 
                 if r:
@@ -562,6 +563,7 @@ def add_attributions(request):
             # 🚨 CETTE PARTIE NE S’EXÉCUTE
             # 🚨 QUE SI TOUT S’EST BIEN PASSÉ AU-DESSUS
             init_prestation.montant_attribue = True
+            init_prestation.created_by = request.user
             init_prestation.save()
 
         return JsonResponse({"success": True, "msg": f"Montant répartie entre {nb_prestataires} Employé(s)"}, status=201)

@@ -44,7 +44,7 @@ def create_plat(request):
                 image = form.cleaned_data['photo_plat']
 
                 Plat.objects.create(
-                    nom_plat=nom_plat, prix=prix, photo_plat=image
+                    nom_plat=nom_plat, prix=prix, photo_plat=image, created_by=request.user
                 )
 
                 return JsonResponse({"msg": "Platajouté avec succès !"}, status=200)
@@ -70,10 +70,10 @@ def create_boisson(request):
 
                 new_boisson = Boisson.objects.create(
                     designation=designation, prix_vente=prix_vente,
-                    photo_boisson=image
+                    photo_boisson=image, created_by=request.user
                 )
 
-                new_boisson.approvisionner(quantite=stock, description="Stock initial - 1er approvisionnement")
+                new_boisson.approvisionner(quantite=stock, description="Stock initial - 1er approvisionnement", user=request.user)
 
                 return JsonResponse({"msg": "Boisson créée avec succès !"}, status=200)
 
@@ -99,7 +99,7 @@ def approvisionner_boisson(request):
             boisson = Boisson.objects.get(id=data['boisson'])
             quantite = int(data['quantite'])
 
-            boisson.approvisionner(quantite, description="")
+            boisson.approvisionner(quantite, description="", user=request.user)
 
             return JsonResponse({
                 "msg": f"{quantite} unités ajoutées à {boisson.designation}",
@@ -171,7 +171,7 @@ def passer_commande(request):
             with transaction.atomic():
                 prix_total = 0
 
-                current_commande = Commande.objects.create(prix_total=0, reduction=reduction)
+                current_commande = Commande.objects.create(prix_total=0, reduction=reduction, created_by=request.user)
                 current_commande.reference = f"CMD-{current_commande.id.hex[:8].upper()}"
                 current_commande.save()
 
@@ -327,7 +327,7 @@ def create_controle_boissons(request):
 
             with transaction.atomic():
                 # Ouvrir un Nouveau Control
-                new_control = ControleBoisson.objects.create(statut=1)
+                new_control = ControleBoisson.objects.create(statut=1, created_by=request.user)
                 details_control_created = False
                 for boisson in boissons:
                     id_boisson = escape(boisson.get("id"))
@@ -336,7 +336,10 @@ def create_controle_boissons(request):
                     try:
                         boisson_controle = Boisson.objects.get(id=id_boisson)
                         # if boisson_controle:
-                        DetailsControleBoissons.objects.create(boisson=boisson_controle, quantite_init=quantite, controle=new_control)
+                        DetailsControleBoissons.objects.create(
+                            boisson=boisson_controle, quantite_init=quantite, controle=new_control,
+                            created_by=request.user
+                        )
                         details_control_created = True
                     except Exception as e:
                         print(e)
@@ -503,7 +506,7 @@ def init_nouveau_controle_plats(request):
 
         with transaction.atomic():
             # Ouvrir un Nouveau Control
-            new_control = InitControlePlats.objects.create(statut=1)
+            new_control = InitControlePlats.objects.create(statut=1, created_by=request.user)
             details_control_created = False
             for plat in plats:
                 id_plat = escape(plat.get("id"))
@@ -514,7 +517,7 @@ def init_nouveau_controle_plats(request):
                     plat_controle = Plat.objects.get(id=id_plat)
 
                     PlatsControlles.objects.create(init_controle=new_control, plat=plat_controle,
-                                                   quantite_disponible=quantite)
+                                                   quantite_disponible=quantite, created_by=request.user)
                     details_control_created = True
                 except Exception as e:
                     print(e)

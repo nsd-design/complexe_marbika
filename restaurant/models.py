@@ -26,7 +26,7 @@ class Boisson(MyBaseModel):
     def __str__(self):
         return f"{self.designation} - Stock: {self.stock} - PVU: {self.prix_vente}"
 
-    def approvisionner(self, quantite, description):
+    def approvisionner(self, quantite, description, user):
         if quantite <= 0:
             raise ValueError("La quantité et le prix d'achat doivent être positifs.")
 
@@ -37,7 +37,8 @@ class Boisson(MyBaseModel):
         ApprovisionnementBoisson.objects.create(
             boisson=self,
             quantite=quantite,
-            description=description
+            description=description,
+            created_by=user
         )
 
     def controle_stock(self, quantite):

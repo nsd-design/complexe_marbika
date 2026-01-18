@@ -46,8 +46,9 @@ def create_client(request):
         if telephone and telephone_exists(telephone):
             return JsonResponse({"error": True, "msg": "Ce Numéro existe déjà dans la Base de Données."}, status=400)
 
+        user = request.user
         Client.objects.create(
-            nom_complet=fullname, telephone=telephone, sexe=int(sexe)
+            nom_complet=fullname, telephone=telephone, sexe=int(sexe), created_by=user
         )
 
         return JsonResponse({"success": True, "msg": "Nouveau Client créé avec succès !"}, status=200)
@@ -77,7 +78,7 @@ def create_zone(request):
         nom = zone_form.cleaned_data["nom"]
         statut = zone_form.cleaned_data["statut"]
         try:
-            ZoneAReserver.objects.create(nom=nom, statut=statut)
+            ZoneAReserver.objects.create(nom=nom, statut=statut, created_by=request.user)
             return JsonResponse({"success": True, "msg": "Zone crée avec succès !"})
         except Exception as e:
             print("Erreur :", e)
@@ -107,6 +108,7 @@ def create_location(request):
                 locateur=current_client, zone=current_zone, description=escape(data.get("description")), montant_a_payer=escape(data.get("montant_a_payer")),
                 montant_reduit=escape(data.get("remise")), date_debut=escape(data.get("date_debut")),
                 date_fin=escape(data.get("date_fin")), statut=escape(data.get("statut")), type_location=escape(data.get("type_location")),
+                created_by=request.user
             )
 
             current_zone.statut = 'reserve'
@@ -153,7 +155,8 @@ def create_reservation(request):
             # Créer la Réservation
             new_reservation = Reservation.objects.create(
                 type=escape(data.get("type")), client=current_client, zone=current_zone, etat_reservation=escape(data.get("statut")),
-                date_debut=escape(data.get("date_debut")), date_fin=escape(data.get("date_fin")), commentaire=escape(data.get("commentaire"))
+                date_debut=escape(data.get("date_debut")), date_fin=escape(data.get("date_fin")), commentaire=escape(data.get("commentaire")),
+                created_by=request.user
             )
 
             # Mettre à jour la Zone réservée, mettre son statut sur "reserve"
@@ -247,7 +250,10 @@ def pool_entry(request):
         prix_unitaire = data.get('prix_unitaire')
         reduction = data.get('reduction')
         note = data.get('note')
-        Piscine.objects.create(nb_client=nb_client, prix_unitaire=prix_unitaire, reduction=reduction, note=note)
+        Piscine.objects.create(
+            nb_client=nb_client, prix_unitaire=prix_unitaire,
+            reduction=reduction, note=note, created_by=request.user
+        )
         return JsonResponse({"success": True, "msg": "Enregistrement effectué avec succès."}, status=201)
     except json.decoder.JSONDecodeError:
         print("Erreur, format de données invalide")
