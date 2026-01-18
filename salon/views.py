@@ -106,6 +106,7 @@ def update_service(request):
         service.categorie = category
         service.prix_service = prix
         service.updated_at = datetime.now()
+        service.updated_by = request.user
 
         service.save()
 
@@ -131,8 +132,9 @@ def add_category(request):
                 if not data.get(field):
                     return JsonResponse({"error": f"{field} est obligatoire"}, status=400)
 
+            user = request.user
             category = CategorieService.objects.create(
-                nom_categorie=escape(data['category']),
+                nom_categorie=escape(data['category']), created_by=user
             )
             category.save()
 
@@ -182,10 +184,12 @@ def add_service(request):
             prix_service = escape(data['prix_service'])
 
             category = CategorieService.objects.get(id=id_categorie)
+            user = request.user
             Service.objects.create(
                 designation=designation,
                 categorie=category,
                 prix_service=prix_service,
+                created_by=user,
             )
             return JsonResponse({"success": True, "msg": "Service créé avec succès",}, status=201)
         except IntegrityError:
@@ -373,6 +377,7 @@ def add_prestation(request):
             # Init New Prestation
             init_prestation = InitPrestation(montant_total=0, remise=remise, client=current_client, statut=statut)
             init_prestation.reference = f"PS-{init_prestation.id.hex[:8].upper()}"
+            init_prestation.created_by = request.user
             init_prestation.save()
 
             montant_total = 0
@@ -394,7 +399,7 @@ def add_prestation(request):
                 # Enregistré la Prestation
                 new_prestation = Prestation.objects.create(
                     service=current_service, prix_service=prix_service,
-                    init_prestation=init_prestation, quantite=quantite,
+                    init_prestation=init_prestation, quantite=quantite, created_by=request.user
                 )
                 new_prestation.fait_par.set(prestataires)
 
@@ -443,9 +448,10 @@ def add_produit(request):
                 return JsonResponse({"error": True, "msg": "Le prix de vente doit être superieur à 0"}, status=400)
 
             new_product = Produit.objects.create(
-                designation=designation, prix_vente=prix_vente, image=image
+                designation=designation, prix_vente=prix_vente, image=image,
+                created_by=request.user
             )
-            new_product.approvisionner_produit(quantite=stock_init, description="Stock initial - 1er approvisionnement")
+            new_product.approvisionner_produit(quantite=stock_init, description="Stock initial - 1er approvisionnement", user=request.user)
 
             return JsonResponse({"success": True, "msg": "Produti céé avec succès !"}, status=201)
         else:
@@ -506,7 +512,7 @@ def approvisionner_produit(request):
             produit_a_approvisionner = Produit.objects.get(id=produit.id)
 
             # Approvisionnement du Produit
-            produit_a_approvisionner.approvisionner_produit(int(quantite), description=description)
+            produit_a_approvisionner.approvisionner_produit(int(quantite), description=description, user=request.user)
 
             return JsonResponse({"success": True, "msg": "Approvisionnement effectué !"}, status=200)
 
@@ -552,7 +558,8 @@ def vente_produits(request):
             # Init New Vente
             current_order = Vente.objects.create(reduction=reduction,
                                                  type_vente=type_vente, montant_total=0,
-                                                 client=current_client
+                                                 client=current_client,
+                                                 created_by=request.user
                                                  )
             current_order.reference = f"VP-{current_order.id.hex[:8].upper()}"
             current_order.save()
@@ -721,7 +728,8 @@ def creer_depense(request):
             motif = depense_form_submited.cleaned_data["motif"]
             section = depense_form_submited.cleaned_data["section"]
             Depense.objects.create(
-                motif=motif, montant=montant, section=section
+                motif=motif, montant=montant, section=section,
+                created_by=request.user
             )
             return JsonResponse({"success": True, "msg": "Dépense enregistrée avec succès."}, status=http.HTTPStatus.CREATED)
         else:
