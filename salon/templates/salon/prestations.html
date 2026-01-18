@@ -458,35 +458,36 @@ $(document).ready(function(){
         return csrfToken ? csrfToken.value : "";
     }
 
-    var table_prestation = $("#table-prestation").DataTable({
-        ajax: {
-            url: '/salon/get_prestations/',
-            dataSrc: 'data',
-        },
-        columns: [
-            {
-                data: null,
-                render: function(data, type, row, meta){
-                    return meta.row + 1;
-                  }
+    function loadPrestations(tableName){
+        tableName.DataTable({
+            ajax: {
+                url: '/salon/get_prestations/',
+                dataSrc: 'data',
             },
-            { data: 'reference' },
-            { data: 'client' },
-            { data: 'total' },
-            { data: 'remise' },
-            { data: 'net_paye' },
-            { data: 'actions' },
-        ],
-         columnDefs: [{
-            "targets": 0,
-            "searchable": false,
-            "orderable": false
-        }],
-        order: [],
-        rowCallback: function(row, data, index){
-            $('td:eq(0)', row).html(index + 1)
-        },
-    });
+            columns: [
+                {
+                    data: null,
+                    render: function(data, type, row, meta){
+                        return meta.row + 1;
+                      }
+                },
+                { data: 'reference' },
+                { data: 'client' },
+                { data: 'total' },
+                { data: 'remise' },
+                { data: 'net_paye' },
+                { data: 'actions' },
+            ],
+             columnDefs: [{
+                "targets": 0,
+                "searchable": false,
+                "orderable": false
+            }],
+        });
+    }
+
+    var table_prestation = $("#table-prestation")
+    loadPrestations(table_prestation)
 
     // Transformer les listes de Prestataires en Select2
     var tabSelPresta = ["selPresta-1"]
