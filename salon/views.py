@@ -272,12 +272,13 @@ def get_prestations(request):
                 "remise": "{:,.0f} GNF".format(remise).replace(",", " "),
                 "client": f'<p>{prestation.client.nom_complet}<br><span class="badge border border-info text-body">{prestation.client.telephone}</span></p>' if prestation.client else "",
                 "net_paye": "{:,.0f} GNF".format(net_paye).replace(",", " "),
+                "created_at": prestation.created_at.strftime("%d/%m/%Y"),
                 "actions": f'''
                             <a href="/salon/prestations/details/{prestation.id}" class="text-info me-2 showDetails"><i class="bi bi-eye fs-5"></i></i></a>
                             <a href="/salon/prestations/details/{prestation.id}" class="text-danger showTicket"><i class="bi bi-printer fs-5"></i></a>
                             ''',
             })
-
+        print("data:", data)
         return JsonResponse({"success": True, "data": data})
     except InitPrestation.DoesNotExist:
         return JsonResponse({"error": True, "msg": "Aucune données disponible."})
