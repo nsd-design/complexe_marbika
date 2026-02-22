@@ -278,7 +278,6 @@ def get_prestations(request):
                             <a href="/salon/prestations/details/{prestation.id}" class="text-danger showTicket"><i class="bi bi-printer fs-5"></i></a>
                             ''',
             })
-        print("data:", data)
         return JsonResponse({"success": True, "data": data})
     except InitPrestation.DoesNotExist:
         return JsonResponse({"error": True, "msg": "Aucune données disponible."})

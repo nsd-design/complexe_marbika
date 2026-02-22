@@ -145,9 +145,9 @@ def get_employes(request):
             "full_name": employe.first_name + " " + employe.last_name,
             "telephone": employe.telephone,
             "email": employe.email,
+            "created_at": employe.created_at.strftime("%d/%m/%Y"),
             "action": f'<a class="btn btn-danger btn-sm" href="#"><i class="bi bi-pencil"></i></a>'
         })
-
     return JsonResponse({"success": True, "data": list_employes})
 
 
