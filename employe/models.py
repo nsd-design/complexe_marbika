@@ -12,6 +12,11 @@ class Employe(AbstractUser):
 
     telephone = models.CharField(max_length=18)
 
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.CharField(max_length=255, null=True, blank=True)
+    updated_at = models.DateTimeField(null=True, blank=True)
+    updated_by = models.CharField(max_length=255, null=True, blank=True)
+
     def __str__(self):
         return f"{self.first_name} {self.last_name} ({self.telephone})"
 

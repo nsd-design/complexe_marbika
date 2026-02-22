@@ -145,9 +145,9 @@ def get_employes(request):
             "full_name": employe.first_name + " " + employe.last_name,
             "telephone": employe.telephone,
             "email": employe.email,
+            "created_at": employe.created_at.strftime("%d/%m/%Y"),
             "action": f'<a class="btn btn-danger btn-sm" href="#"><i class="bi bi-pencil"></i></a>'
         })
-
     return JsonResponse({"success": True, "data": list_employes})
 
 
@@ -324,10 +324,11 @@ def get_stats_piscine(date_debut, date_fin):
             )
         )
 
-        montant_net_entre = calcul_montants["sum_prix_unit"] - calcul_montants["sum_remise"]
-        montant_net_entre_str = currency(montant_net_entre)
+        if calcul_montants["sum_prix_unit"] and calcul_montants["sum_remise"]:
+            montant_net_entre = calcul_montants["sum_prix_unit"] - calcul_montants["sum_remise"]
+            montant_net_entre_str = currency(montant_net_entre)
 
-        return montant_net_entre_str
+            return montant_net_entre_str
     except Exception as e:
         print("erreur inattendue :", str(e))
         return 0
