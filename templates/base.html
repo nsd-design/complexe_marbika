@@ -62,6 +62,11 @@
                   </div>
                 </a>
                 <div class="dropdown-menu dropdown-menu-end shadow-lg">
+                    {%if user.is_staff%}
+                      <a class="dropdown-item d-flex align-items-center" href="/admin" target="_blank">
+                          <i class="bi bi-person-lines-fill fs-5 me-2"></i>Admin
+                      </a>
+                    {%endif%}
                   <div class="mx-3 mt-2 d-grid">
                     <a href="{% url 'logout' %}" class="btn btn-primary">Se Déconnecter</a>
                   </div>
