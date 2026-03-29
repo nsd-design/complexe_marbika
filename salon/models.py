@@ -38,6 +38,9 @@ class InitPrestation(MyBaseModel):
     statut = models.CharField(max_length=10, choices=status, default="en_attente")
     montant_attribue = models.BooleanField(default=False)
 
+    # Champs Redefinis
+    created_at = models.DateTimeField()
+
     def __str__(self):
         return f"{self.reference} - {self.client} - Montant : {self.montant_total}"
 
@@ -48,6 +51,9 @@ class Prestation(MyBaseModel):
     init_prestation = models.ForeignKey(InitPrestation, on_delete=models.CASCADE)
     fait_par = models.ManyToManyField("employe.Employe", related_name="prestations_realisees")
     quantite = models.SmallIntegerField(default=1)
+
+    # Champs Redefinis
+    created_at = models.DateTimeField()
 
     def __str__(self):
         return f"{self.service.designation} - InitPrest: {self.init_prestation}"

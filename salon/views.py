@@ -367,6 +367,8 @@ def add_prestation(request):
         remise = escape(data.get("remise", 0))
         id_client = escape(data.get("client"))
         statut = data.get("statut")
+        date_str = data.get("dateHeurePresta")
+        created_at = datetime.strptime(date_str, "%d/%m/%Y %I:%M %p")
 
         with transaction.atomic():
             prestation_saved = False # Flag pour savoir si chacune des prestations a été enregistré sans interruption
@@ -378,6 +380,7 @@ def add_prestation(request):
             init_prestation = InitPrestation(montant_total=0, remise=remise, client=current_client, statut=statut)
             init_prestation.reference = f"PS-{init_prestation.id.hex[:8].upper()}"
             init_prestation.created_by = request.user
+            init_prestation.created_at = created_at
             init_prestation.save()
 
             montant_total = 0
@@ -399,7 +402,7 @@ def add_prestation(request):
                 # Enregistré la Prestation
                 new_prestation = Prestation.objects.create(
                     service=current_service, prix_service=prix_service,
-                    init_prestation=init_prestation, quantite=quantite, created_by=request.user
+                    init_prestation=init_prestation, quantite=quantite, created_by=request.user, created_at=created_at
                 )
                 new_prestation.fait_par.set(prestataires)
 
