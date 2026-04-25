@@ -22,10 +22,12 @@ from client.models import Piscine
 from employe.forms import EmployeForm
 from employe.models import Employe
 from restaurant.models import Commande
-from salon.models import Vente, Depense, InitPrestation, Prestation, RepartitionMontantPrestation, Service
+from salon.models import Vente, Depense, InitPrestation, Prestation, RepartitionMontantPrestation, Service, \
+    DetailRepartitionMontant
 
 from salon.views import currency
 from employe.common.utils import date_str_to_date_naive
+from services.prestation_service import get_unique_prestataire, attribuer_montant_total
 
 tmp_base = "employe/"
 
@@ -531,47 +533,97 @@ def add_attributions(request):
         net_paye = init_prestation.montant_total - init_prestation.remise
 
         if total_montant_attribue > net_paye:
-            return JsonResponse({"success": False, "msg": "Le total des montants attribués depassent le montant de la prestation."}, status=400)
+            return JsonResponse({
+                "success": False,
+                "msg": "Le total des montants attribués depassent le montant de la prestation."
+            }, status=400)
 
-        nb_prestataires: int = 0
+        # 🔹 Préchargement des données (OPTIMISATION)
+        service_ids = [uuid.UUID(p['idService']) for p in data_prestation]
+        employe_ids = [uuid.UUID(p['idPrestataire']) for p in data_prestation]
+
+        services_map = {s.id: s for s in Service.objects.filter(id__in=service_ids)}
+        employes_map = {e.id: e for e in Employe.objects.filter(id__in=employe_ids)}
+
+        # 🔹 Nettoyage + filtrage des prestations
+        prestations_valides = []
+        for p in data_prestation:
+            if dejaAttribue(id_init_prestation, p['idPrestataire'], p['idService']):
+                continue
+
+            prestations_valides.append({
+                "employe": employes_map.get(uuid.UUID(p['idPrestataire'])),
+                "service": services_map.get(uuid.UUID(p['idService'])),
+                "montant": int(p['montantAttribue'])
+            })
+
+        if not prestations_valides:
+            return JsonResponse({"success": False, "msg": "Aucune attribution valide."}, status=400)
+
+        # 🔹 Détection prestataire unique
+        prestations = Prestation.objects.filter(init_prestation=init_prestation)
+        unique_id = get_unique_prestataire(prestations)
+
+        # 🔥 CAS 1 : PRESTATAIRE UNIQUE
+        if unique_id:
+            list_services = [p["service"] for p in prestations_valides]
+
+            attribuer_montant_total(
+                init_prestation.id,
+                unique_id,
+                request.user,
+                list_services
+            )
+
+            return JsonResponse({
+                "success": True,
+                "msg": "Montant attribué avec succès."
+            }, status=201)
+
+        # 🔥 CAS 2 : MULTI PRESTATAIRES
+        repartitions = []
+        details = []
 
         with transaction.atomic():
-            nb_prestataires = 0
 
-            for prestation in data_prestation:
-                # Si le montant est déjà attribué → passer
-                if dejaAttribue(
-                        id_init_prestation,
-                        prestation['idPrestataire'],
-                        prestation['idService']
-                ):
-                    continue
-
-                employee = Employe.objects.get(id=prestation['idPrestataire'])
-                service = Service.objects.get(id=prestation['idService'])
-
-                r = RepartitionMontantPrestation.objects.create(
+            for p in prestations_valides:
+                r = RepartitionMontantPrestation(
                     init_prestation=init_prestation,
-                    employe=employee,
-                    montant_attribue=prestation['montantAttribue'],
-                    service=service,
+                    employe=p["employe"],
+                    montant_attribue=p["montant"],
                     created_by=request.user
                 )
+                repartitions.append(r)
 
-                if r:
-                    nb_prestataires += 1
+            # 🔹 bulk create
+            repartitions = RepartitionMontantPrestation.objects.bulk_create(repartitions)
 
-            # 🚨 CETTE PARTIE NE S’EXÉCUTE
-            # 🚨 QUE SI TOUT S’EST BIEN PASSÉ AU-DESSUS
+            # 🔹 détails liés
+            for r, p in zip(repartitions, prestations_valides):
+                details.append(
+                    DetailRepartitionMontant(
+                        repartition=r,
+                        service=p["service"],
+                        created_by=request.user
+                    )
+                )
+
+            DetailRepartitionMontant.objects.bulk_create(details)
+
             from django.utils import timezone
             init_prestation.montant_attribue = True
             init_prestation.updated_by = request.user
             init_prestation.updated_at = timezone.now()
             init_prestation.save()
 
-        return JsonResponse({"success": True, "msg": f"Montant répartie entre {nb_prestataires} Employé(s)"}, status=201)
+
+        return JsonResponse({
+            "success": True,
+            "msg": f"Montant réparti entre {len(repartitions)} employé(s)"
+        }, status=201)
+
     except Exception as e:
-        print("Erreur: ", str(e))
+        print("Erreur:", str(e))
         return JsonResponse({"success": False, "msg": str(e)}, status=400)
 
 
