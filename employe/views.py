@@ -2,7 +2,7 @@ import http
 import json
 import uuid
 from collections import defaultdict
-from datetime import date, timedelta, datetime
+from datetime import date, timedelta, datetime, timezone
 
 import django.db.utils
 from django.contrib.auth import authenticate, login, logout
@@ -563,8 +563,10 @@ def add_attributions(request):
 
             # 🚨 CETTE PARTIE NE S’EXÉCUTE
             # 🚨 QUE SI TOUT S’EST BIEN PASSÉ AU-DESSUS
+            from django.utils import timezone
             init_prestation.montant_attribue = True
-            init_prestation.created_by = request.user
+            init_prestation.updated_by = request.user
+            init_prestation.updated_at = timezone.now()
             init_prestation.save()
 
         return JsonResponse({"success": True, "msg": f"Montant répartie entre {nb_prestataires} Employé(s)"}, status=201)
