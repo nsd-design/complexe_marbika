@@ -2,6 +2,7 @@ import http
 import json
 from datetime import datetime, timedelta
 from http import HTTPStatus
+from threading import Thread
 
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError, transaction
@@ -10,6 +11,7 @@ from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.utils import timezone
 from django.utils.html import escape
+from django.utils.timezone import make_aware, get_current_timezone
 from django.views.decorators.http import require_http_methods
 
 from client.models import Client
@@ -19,6 +21,7 @@ from salon.forms import ServiceForm, CategorieForm, PrixServiceForm, ProduitForm
     DepensesForm
 from salon.models import CategorieService, Service, PrixService, Produit, Approvisionnement, Vente, \
     ProduitVendu, Prestation, InitPrestation, Depense
+from services.prestation_service import get_unique_prestataire, attribuer_montant_total
 
 tmp = "salon/"
 
@@ -369,6 +372,8 @@ def add_prestation(request):
         statut = data.get("statut")
         date_str = data.get("dateHeurePresta")
         created_at = datetime.strptime(date_str, "%d/%m/%Y %I:%M %p")
+        tz = get_current_timezone()
+        created_at = make_aware(created_at, timezone=tz)
 
         with transaction.atomic():
             prestation_saved = False # Flag pour savoir si chacune des prestations a été enregistré sans interruption
@@ -384,6 +389,7 @@ def add_prestation(request):
             init_prestation.save()
 
             montant_total = 0
+            list_services: list = []
 
             for prestation in prestations_faites:
 
@@ -396,6 +402,7 @@ def add_prestation(request):
                     raise ValueError("Veuillez sélectionner les Prestataires")
 
                 current_service = Service.objects.get(id=id_service)
+                list_services.append(current_service)
 
                 prestataires = Employe.objects.filter(id__in=prestataires_ids)
 
@@ -417,6 +424,16 @@ def add_prestation(request):
         init_prestation.save()
         if not prestation_saved:
             return JsonResponse({"error": True, "msg": "Impossible de valider la Prestation, une erreur s'est produite."})
+
+        def process_attribution(init_prestation, services):
+            prestations = Prestation.objects.filter(init_prestation=init_prestation)
+
+            unique_id_prestataire = get_unique_prestataire(prestations)
+
+            if unique_id_prestataire:
+                attribuer_montant_total(init_prestation.id, unique_id_prestataire, request.user, services)
+        # Lancer le process d'attribution en async
+        Thread(target=process_attribution, args=(init_prestation, list_services)).start()
 
         return JsonResponse({"success": True, "msg": "Prestation enregistrée avec succès"}, status=200)
 

@@ -167,3 +167,7 @@ class RepartitionMontantPrestation(MyBaseModel):
 
     def __str__(self):
         return f'{self.employe.first_name} {self.employe.last_name} - {self.montant_attribue}'
+
+class DetailRepartitionMontant(MyBaseModel):
+    repartition = models.ForeignKey(RepartitionMontantPrestation, on_delete=models.CASCADE)
+    service = models.ForeignKey(Service, on_delete=models.SET_NULL, null=True)
