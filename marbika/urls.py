@@ -30,6 +30,7 @@ urlpatterns = [
     path("salon/", include("salon.urls")),
     path("restaurant/", include("restaurant.urls")),
     path("client/", include("client.urls")),
+    path("attendance/api/v1/", include("pointage.urls")),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -37,6 +37,8 @@ INSTALLED_APPS = [
     'formation',
     'restaurant',
     'salon',
+    'pointage',
+    'rest_framework',
     'crispy_forms',
     'crispy_bootstrap5',
 ]
