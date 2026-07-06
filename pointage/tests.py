@@ -1,3 +1,4 @@
+from django.db.models import ProtectedError
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -127,8 +128,8 @@ class AttendanceApiTests(APITestCase):
                                 {"badge_token": nouveau_token}, format="json")
         self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
 
-    def test_recorded_by_rempli_si_authentifie(self):
-        """L'agent de sécurité connecté est tracé sur le pointage."""
+    def test_created_by_rempli_si_authentifie(self):
+        """L'agent de sécurité connecté est tracé comme auteur de l'arrivée."""
         garde = Employe.objects.create_user(
             username="garde", first_name="Agent", last_name="Securite",
             telephone="620000009", email="garde@test.local", password="x",
@@ -137,13 +138,32 @@ class AttendanceApiTests(APITestCase):
         resp = self.client.post(self.check_in_url, self._payload(), format="json")
         self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
         att = Attendance.objects.get(employee=self.employe)
-        self.assertEqual(att.recorded_by, garde)
+        self.assertEqual(att.created_by, garde)
 
-    def test_recorded_by_null_si_anonyme(self):
+    def test_created_by_null_si_anonyme(self):
         resp = self.client.post(self.check_in_url, self._payload(), format="json")
         self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
         att = Attendance.objects.get(employee=self.employe)
-        self.assertIsNone(att.recorded_by)
+        self.assertIsNone(att.created_by)
+
+    def test_updated_by_et_updated_at_remplis_au_depart(self):
+        """Le départ (check-out) trace l'agent et l'horodatage de mise à jour."""
+        garde = Employe.objects.create_user(
+            username="garde_depart", first_name="Agent", last_name="Depart",
+            telephone="620000010", email="garde_depart@test.local", password="x",
+        )
+        self.client.force_authenticate(user=garde)
+        self.client.post(self.check_in_url, self._payload(), format="json")
+        self.client.post(self.check_out_url, self._payload(), format="json")
+        att = Attendance.objects.get(employee=self.employe)
+        self.assertEqual(att.updated_by, garde)
+        self.assertIsNotNone(att.updated_at)
+
+    def test_suppression_employe_avec_pointage_protegee(self):
+        """PROTECT : un employé ayant des pointages ne peut pas être supprimé."""
+        self.client.post(self.check_in_url, self._payload(), format="json")
+        with self.assertRaises(ProtectedError):
+            self.employe.delete()
 
     def test_badge_token_genere_automatiquement_et_unique(self):
         autre = Employe.objects.create_user(

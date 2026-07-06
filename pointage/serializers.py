@@ -20,14 +20,16 @@ class EmployeeSerializer(serializers.ModelSerializer):
 class AttendanceSerializer(serializers.ModelSerializer):
     """Sérialiseur de lecture (list / retrieve / réponses check-in/out)."""
     employee = EmployeeSerializer(read_only=True)
-    recorded_by = EmployeeSerializer(read_only=True)
+    created_by = EmployeeSerializer(read_only=True)
+    updated_by = EmployeeSerializer(read_only=True)
     is_open = serializers.BooleanField(read_only=True)
     duration_seconds = serializers.SerializerMethodField()
 
     class Meta:
         model = Attendance
-        fields = ["id", "employee", "recorded_by", "check_in_time",
-                  "check_out_time", "is_open", "duration_seconds"]
+        fields = ["id", "employee", "check_in_time", "check_out_time",
+                  "created_by", "updated_at", "updated_by",
+                  "is_open", "duration_seconds"]
         read_only_fields = fields
 
     def get_duration_seconds(self, obj):
