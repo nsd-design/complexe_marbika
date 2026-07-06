@@ -39,9 +39,22 @@ INSTALLED_APPS = [
     'salon',
     'pointage',
     'rest_framework',
+    'rest_framework.authtoken',
     'crispy_forms',
     'crispy_bootstrap5',
 ]
+
+# Toute l'API DRF exige une authentification par jeton (app mobile de pointage).
+# SessionAuthentication est conservée pour l'API navigable en dev/back-office.
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.TokenAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
+    ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
+}
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 
