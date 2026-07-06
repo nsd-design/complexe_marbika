@@ -9,10 +9,17 @@ class Attendance(models.Model):
     check_in_time = models.DateTimeField(auto_now_add=True, db_index=True)
     check_out_time = models.DateTimeField(null=True, blank=True)
 
+    @property
+    def is_open(self):
+        """L'employé est sur site : arrivée pointée, départ pas encore pointé."""
+        return self.check_out_time is None
+
     def __str__(self):
-        return f"{self.employee.user.get_full_name()} - IN: {self.check_in_time} - OUT: {self.check_out_time}"
+        nom = self.employee.get_full_name() if self.employee else "Employé supprimé"
+        return f"{nom} - IN: {self.check_in_time} - OUT: {self.check_out_time}"
 
     class Meta:
+        ordering = ["-check_in_time"]
         constraints = [
             UniqueConstraint(
                 fields=["employee"],
