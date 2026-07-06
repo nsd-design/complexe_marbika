@@ -4,6 +4,7 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from employe.models import Employe
 from pointage.models import Attendance
 from pointage.serializers import AttendanceSerializer, CheckActionSerializer
 
@@ -21,10 +22,10 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
       - GET  attendance/                 liste (filtres: ?employee=<id>&open=true)
       - GET  attendance/{id}/            détail
 
-    Actions :
-      - POST attendance/check-in/        pointer une arrivée  {"employee": <id>}
-      - POST attendance/check-out/       pointer un départ    {"employee": <id>}
-      - GET  attendance/status/?employee=<id>   état courant d'un employé
+    Actions (l'app mobile scanne le badge et envoie son badge_token) :
+      - POST attendance/check-in/        pointer une arrivée  {"badge_token": "..."}
+      - POST attendance/check-out/       pointer un départ    {"badge_token": "..."}
+      - GET  attendance/status/?badge_token=<t>  (ou ?employee=<id>)  état courant
 
     Contrainte : jamais de doublon arrivée/départ. Un employé ne peut pointer
     une arrivée tant qu'un départ n'est pas enregistré, et inversement.
@@ -40,6 +41,12 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
         if self.request.query_params.get("open") in ("1", "true", "True"):
             qs = qs.filter(check_out_time__isnull=True)
         return qs
+
+    @staticmethod
+    def _guard(request):
+        """L'agent de sécurité authentifié qui a scanné (None si anonyme)."""
+        user = getattr(request, "user", None)
+        return user if getattr(user, "is_authenticated", False) else None
 
     @action(detail=False, methods=["post"], url_path="check-in",
             serializer_class=CheckActionSerializer)
@@ -57,7 +64,9 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
                 ).exists():
                     return Response({"detail": DEJA_ARRIVE},
                                     status=status.HTTP_409_CONFLICT)
-                attendance = Attendance.objects.create(employee=employee)
+                attendance = Attendance.objects.create(
+                    employee=employee, recorded_by=self._guard(request)
+                )
         except IntegrityError:
             # Course entre deux requêtes concurrentes : la contrainte a tranché.
             return Response({"detail": DEJA_ARRIVE},
@@ -92,10 +101,20 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
 
     @action(detail=False, methods=["get"], url_path="status")
     def current_status(self, request):
+        badge_token = request.query_params.get("badge_token")
         employee_id = request.query_params.get("employee")
-        if not employee_id:
-            return Response({"detail": "Le paramètre 'employee' est requis."},
-                            status=status.HTTP_400_BAD_REQUEST)
+
+        if badge_token:
+            employe = Employe.objects.filter(badge_token=badge_token).first()
+            if employe is None:
+                return Response({"detail": "Badge inconnu."},
+                                status=status.HTTP_404_NOT_FOUND)
+            employee_id = str(employe.id)
+        elif not employee_id:
+            return Response(
+                {"detail": "Fournir 'badge_token' (scan) ou 'employee'."},
+                status=status.HTTP_400_BAD_REQUEST)
+
         open_attendance = (
             Attendance.objects.select_related("employee")
             .filter(employee_id=employee_id, check_out_time__isnull=True)

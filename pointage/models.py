@@ -8,6 +8,12 @@ class Attendance(models.Model):
     employee = models.ForeignKey(Employe, on_delete=models.SET_NULL, null=True, related_name="attendances")
     check_in_time = models.DateTimeField(auto_now_add=True, db_index=True)
     check_out_time = models.DateTimeField(null=True, blank=True)
+    # Agent de sécurité ayant scanné le badge (traçabilité anti-fraude).
+    # Nullable : rempli depuis request.user si la requête est authentifiée.
+    recorded_by = models.ForeignKey(
+        Employe, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="pointages_enregistres",
+    )
 
     @property
     def is_open(self):
