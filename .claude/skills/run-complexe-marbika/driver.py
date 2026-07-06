@@ -128,15 +128,39 @@ def main():
     check("authenticated dashboard renders",
           code == 200 and "MARBIKA" in body, f"status={code}")
 
-    # 5. DRF attendance API returns JSON (no auth configured → open).
-    code, body, _ = get(follow, base + "/attendance/api/v1/attendance/")
-    is_json = False
+    # 5. DRF attendance API is protected (Token auth required).
+    api = base + "/attendance/api/v1/attendance/"
+    anon = urllib.request.build_opener()  # no cookies, no credentials
+
+    # 5a. Unauthenticated request is rejected.
+    code, _, _ = get(anon, api)
+    check("attendance API rejects unauthenticated (401)", code == 401,
+          f"status={code}")
+
+    # 5b. Obtain a DRF token from username/password.
+    tok_req = urllib.request.Request(
+        base + "/attendance/api/v1/token/",
+        data=json.dumps({"username": args.user, "password": args.password}).encode(),
+        headers={"Content-Type": "application/json"},
+    )
+    api_token = None
     try:
-        json.loads(body); is_json = True
-    except Exception:
+        api_token = json.loads(anon.open(tok_req, timeout=15).read().decode()).get("token")
+    except urllib.error.HTTPError:
         pass
-    check("attendance API returns JSON", code == 200 and is_json,
-          f"status={code} body[:60]={body[:60]!r}")
+    check("token endpoint returns a token", bool(api_token),
+          "token acquired" if api_token else "no token")
+
+    # 5c. Authenticated call with the token returns JSON.
+    if api_token:
+        code, body, _ = get(anon, api, headers={"Authorization": f"Token {api_token}"})
+        is_json = False
+        try:
+            json.loads(body); is_json = True
+        except Exception:
+            pass
+        check("attendance API returns JSON with token", code == 200 and is_json,
+              f"status={code}")
 
     _summary(failures)
     sys.exit(1 if failures else 0)

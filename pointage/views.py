@@ -2,6 +2,7 @@ from django.db import IntegrityError, transaction
 from django.utils import timezone
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from employe.models import Employe
@@ -29,9 +30,13 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
 
     Contrainte : jamais de doublon arrivée/départ. Un employé ne peut pointer
     une arrivée tant qu'un départ n'est pas enregistré, et inversement.
+
+    Toute opération exige une authentification (jeton) : l'agent de sécurité
+    doit être identifié — il est tracé dans created_by / updated_by.
     """
     queryset = Attendance.objects.select_related("employee").all()
     serializer_class = AttendanceSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         qs = super().get_queryset()

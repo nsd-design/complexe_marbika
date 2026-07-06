@@ -73,7 +73,9 @@ Expected output (exit code `0`; exit `1` if any check fails):
 [PASS] login form served with CSRF token - status=200
 [PASS] login succeeds (302 away from login) - status=302 location=/
 [PASS] authenticated dashboard renders - status=200
-[PASS] attendance API returns JSON - status=200 body[:60]='[]'
+[PASS] attendance API rejects unauthenticated (401) - status=401
+[PASS] token endpoint returns a token - token acquired
+[PASS] attendance API returns JSON with token - status=200
 ----------------------------------------
 RESULT: PASS - all smoke checks green
 ```
@@ -89,13 +91,15 @@ powershell -Command "Get-CimInstance Win32_Process -Filter \"Name='python.exe'\"
 
 ### Poke it by hand
 
-The DRF attendance API needs no auth (no `REST_FRAMEWORK` config → AllowAny) and
-serves a browsable HTML UI:
+The DRF attendance API requires Token auth (`REST_FRAMEWORK` → `IsAuthenticated` +
+`TokenAuthentication`). Unauthenticated requests get `401`; obtain a token first:
 
 ```bash
-curl -s http://127.0.0.1:8000/attendance/api/v1/attendance/            # -> [] (JSON)
-curl -s -H "Accept: text/html" http://127.0.0.1:8000/attendance/api/v1/attendance/ | grep -o '<title>[^<]*</title>'
-# -> <title>Attendance List – Django REST framework</title>
+curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8000/attendance/api/v1/attendance/   # -> 401
+TOKEN=$(curl -s -H "Content-Type: application/json" \
+  -d '{"username":"smoke_test","password":"smokepass123"}' \
+  http://127.0.0.1:8000/attendance/api/v1/token/ | python -c "import sys,json;print(json.load(sys.stdin)['token'])")
+curl -s -H "Authorization: Token $TOKEN" http://127.0.0.1:8000/attendance/api/v1/attendance/   # -> [] (JSON)
 ```
 
 ## Run (human path)
@@ -106,8 +110,11 @@ stop. Useless headless — use the agent path above.
 
 ## Test
 
-`tests.py` in every app is an empty stub — `manage.py test` runs 0 real tests.
-**The driver is the actual smoke test for this project.** Use it to verify changes.
+The `pointage` app has a real DRF test suite (`manage.py test pointage --noinput`,
+~20 tests covering auth, the anti-duplicate check-in/out rule, and audit fields).
+Other apps' `tests.py` are still empty stubs. `--noinput` auto-drops a stale
+`test_marbika_db` left by an interrupted run. The driver remains the end-to-end
+smoke test against the running server.
 
 ## Gotchas
 
@@ -115,7 +122,7 @@ stop. Useless headless — use the agent path above.
 - **Windows console is cp1252.** Non-ASCII in stdout raises `UnicodeEncodeError` (`→` etc.). The driver prints ASCII only; keep it that way if you extend it.
 - **Login needs the CSRF *form* token, not just the cookie.** Django checks `csrfmiddlewaretoken` (POST field, scraped from the login page HTML) against the `csrftoken` cookie. The driver does both; a plain `curl -d username=...` without the form token gets the login form re-rendered (200), not a 302.
 - **Login "success" is a 302 away from `/login/`.** A wrong password re-renders the form with status **200** — so a 200 on the login POST means failure, not success. The driver asserts `302 && location != /login`.
-- **Most views are `@login_required`** and redirect unauthenticated requests to `/login/?next=...` (302). Only the `pointage` API is open.
+- **Most views are `@login_required`** and redirect unauthenticated requests to `/login/?next=...` (302). The `pointage` DRF API is **not** open — it requires `Authorization: Token <t>` (401 otherwise); obtain a token via `POST /attendance/api/v1/token/`.
 
 ## Troubleshooting
 
