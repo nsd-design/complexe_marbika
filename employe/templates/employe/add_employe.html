@@ -108,6 +108,29 @@
     </div>
 </div>
 
+<!-- Modale QR du badge : l'image est chargée en lazy loading (uniquement au clic) -->
+<div class="modal fade" id="qrModal" tabindex="-1" aria-labelledby="qrModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="qrModalLabel">QR du badge</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <p class="mb-2 fw-semibold" id="qr-employe-nom"></p>
+                <!-- Spinner affiché le temps du chargement du QR -->
+                <div id="qr-loader" class="py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Chargement...</span>
+                    </div>
+                </div>
+                <img id="qr-image" src="" alt="QR du badge" class="img-fluid d-none" style="max-width: 260px;">
+                <p id="qr-error" class="text-danger d-none mt-2">Impossible de charger le QR.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Custom JS files -->
 {% block custom_js %}
 <script src="{% static 'assets/js/jquery.min.js' %}"></script>
@@ -151,6 +174,42 @@
             const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
             return csrfToken ? csrfToken.value : "";
         }
+
+        // QR du badge en lazy loading : l'image n'est requêtée qu'au clic sur le
+        // bouton QR. Délégation d'événement car DataTables redessine les lignes.
+        var qrModal = new bootstrap.Modal(document.getElementById('qrModal'));
+        var $qrImage = $('#qr-image');
+        var $qrLoader = $('#qr-loader');
+        var $qrError = $('#qr-error');
+
+        $(document).on('click', '.btn-qr', function(){
+            var employeId = $(this).data('employe-id');
+            var employeNom = $(this).data('employe-nom');
+
+            // Réinitialiser l'état de la modale avant le (re)chargement.
+            $('#qr-employe-nom').text(employeNom || '');
+            $qrImage.addClass('d-none').attr('src', '');
+            $qrError.addClass('d-none');
+            $qrLoader.removeClass('d-none');
+            qrModal.show();
+
+            // Déclenche la génération du QR côté serveur (à la demande).
+            $qrImage.attr('src', '/employe/' + employeId + '/qrcode/');
+        });
+
+        $qrImage.on('load', function(){
+            if ($(this).attr('src')) {
+                $qrLoader.addClass('d-none');
+                $qrImage.removeClass('d-none');
+            }
+        });
+
+        $qrImage.on('error', function(){
+            if ($(this).attr('src')) {
+                $qrLoader.addClass('d-none');
+                $qrError.removeClass('d-none');
+            }
+        });
 
         $("#employe-form").submit(function(event){
             event.preventDefault();

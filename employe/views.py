@@ -1,18 +1,20 @@
 import http
+import io
 import json
 import uuid
 from collections import defaultdict
 from datetime import date, timedelta, datetime, timezone
 
 import django.db.utils
+import qrcode
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.utils.crypto import get_random_string
 from django.db import IntegrityError, transaction
 from django.db.models import Sum, Q, Count, ExpressionWrapper, BigIntegerField, F
 from django.db.models.functions import Extract, ExtractWeek
-from django.http import JsonResponse
-from django.shortcuts import render, redirect
+from django.http import JsonResponse, HttpResponse, Http404
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.template.loader import render_to_string
 from django.utils.html import escape
@@ -137,20 +139,58 @@ def employe(request):
     return render(request, tmp_base + "add_employe.html", context)
 
 
+@login_required(login_url="login")
 @require_http_methods(["GET"])
 def get_employes(request):
     employes = Employe.objects.all()
     list_employes: list = []
     for employe in employes:
+        nom_complet = employe.first_name + " " + employe.last_name
+        # Bouton QR : ouvre la modale et charge l'image en lazy loading (voir
+        # add_employe.html). Le badge_token n'est jamais exposé côté client.
+        qr_btn = (
+            f'<button type="button" class="btn btn-secondary btn-sm btn-qr" '
+            f'data-employe-id="{employe.id}" '
+            f'data-employe-nom="{escape(nom_complet)}" '
+            f'title="Afficher le QR du badge"><i class="bi bi-qr-code"></i></button>'
+        )
+        edit_btn = '<a class="btn btn-danger btn-sm" href="#"><i class="bi bi-pencil"></i></a>'
         list_employes.append({
             "id": employe.id,
-            "full_name": employe.first_name + " " + employe.last_name,
+            "full_name": nom_complet,
             "telephone": employe.telephone,
             "email": employe.email,
             "created_at": employe.created_at.strftime("%d/%m/%Y"),
-            "action": f'<a class="btn btn-danger btn-sm" href="#"><i class="bi bi-pencil"></i></a>'
+            "action": f'<div class="d-flex gap-1">{qr_btn}{edit_btn}</div>',
         })
     return JsonResponse({"success": True, "data": list_employes})
+
+
+@login_required(login_url="login")
+@require_http_methods(["GET"])
+def employe_qrcode(request, employe_id):
+    """Génère à la volée le QR du badge (encode le badge_token tel quel, cf.
+    pointage/API.md) et le renvoie en PNG. Chargé en lazy loading depuis la
+    liste des employés : l'image n'est produite que lorsqu'on l'affiche."""
+    employe = get_object_or_404(Employe, pk=employe_id)
+
+    qr = qrcode.QRCode(
+        version=None,  # ajuste automatiquement la taille au contenu
+        error_correction=qrcode.constants.ERROR_CORRECT_M,
+        box_size=10,
+        border=4,
+    )
+    qr.add_data(employe.badge_token)
+    qr.make(fit=True)
+    image = qr.make_image(fill_color="black", back_color="white")
+
+    buffer = io.BytesIO()
+    image.save(buffer, format="PNG")
+
+    response = HttpResponse(buffer.getvalue(), content_type="image/png")
+    # Le badge_token est rotatif : ne pas mettre en cache un QR périmé.
+    response["Cache-Control"] = "no-store"
+    return response
 
 
 @login_required(login_url="login")
