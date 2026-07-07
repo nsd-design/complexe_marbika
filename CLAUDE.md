@@ -30,6 +30,8 @@ python manage.py test salon.tests.MyTest.test_x   # single test
 
 Configuration is read from `.env` (via `python-dotenv`): `SECRET_KEY`, `DEBUG`, `DB_*`, `ALLOWED_HOSTS`. There is no `settings.py` split for prod — the same file reads env vars.
 
+Note: `requirements.txt` is **incomplete** — it omits `djangorestframework` even though `pointage` and `settings.INSTALLED_APPS` depend on `rest_framework` + `rest_framework.authtoken`. Install DRF manually (`pip install djangorestframework`) if setting up a fresh venv. `TIME_ZONE = 'UTC'` with `USE_TZ = True`, so the manual `timezone.now()` stamping described below writes UTC.
+
 ## Architecture
 
 Django project `marbika/` with domain apps mounted in `marbika/urls.py`:
@@ -38,7 +40,7 @@ Django project `marbika/` with domain apps mounted in `marbika/urls.py`:
 - **`salon`** — services, prestations (jobs), products, sales, expenses, subscriptions.
 - **`restaurant`** — dishes, drinks, orders, stock-control sessions.
 - **`client`** — clients, zone rental/reservation, pool entries, gym subscriptions.
-- **`formation`** — training courses and enrollments (minimal).
+- **`formation`** — training courses and enrollments (minimal; registered in `INSTALLED_APPS` but has **no `urls.py`** and is not mounted in `marbika/urls.py`).
 - **`pointage`** — staff attendance, the only DRF/REST app.
 - **`services/`** — plain-Python domain services (not a Django app), e.g. `prestation_service.py`.
 
@@ -61,4 +63,4 @@ Views are **function-based**, not class-based (except the one DRF ViewSet in `po
 Server-rendered Django templates in `templates/` (shared `base.html`, `sidebar.html`, `head.html`) plus per-app `templates/<app>/`. Bootstrap 5 via `crispy-forms`/`crispy-bootstrap5`. Dynamic tables/forms are populated by AJAX calls to the JSON endpoints above. The `marbika.context_processors.current_url_name` processor exposes the active URL name to every template (used for sidebar highlighting). Static assets in `static/assets`, user uploads in `media/`.
 
 ### Attendance API (DRF)
-`pointage` mounts under `attendance/api/v1/` via a DRF `DefaultRouter`. `Attendance` enforces one open check-in per employee with a `UniqueConstraint` (`check_out_time__isnull=True`). This is the only app using serializers/viewsets. The whole DRF API requires **Token auth** (`REST_FRAMEWORK` sets `IsAuthenticated` + `TokenAuthentication`); clients obtain a token via `POST attendance/api/v1/token/`. Employees are scanned by `badge_token` (opaque, rotatable QR credential on `Employe`), not by primary key. See `pointage/API.md` for the mobile-facing API doc.
+`pointage` mounts under `attendance/api/v1/` via a DRF `DefaultRouter`. `Attendance` enforces one open check-in per employee with a `UniqueConstraint` (`check_out_time__isnull=True`). This is the only app using serializers/viewsets. The whole DRF API requires authentication (`REST_FRAMEWORK` sets `IsAuthenticated`); auth classes are `TokenAuthentication` (mobile app) + `SessionAuthentication` (browsable API in dev/back-office). Clients obtain a token via `POST attendance/api/v1/token/` with `{username, password}` — that endpoint is the only public one. Employees are scanned by `badge_token` (opaque, rotatable QR credential on `Employe`), not by primary key. See `pointage/API.md` for the mobile-facing API doc.
