@@ -10,6 +10,14 @@ class Attendance(models.Model):
     employee = models.ForeignKey(Employe, on_delete=models.PROTECT, related_name="attendances")
     check_in_time = models.DateTimeField(auto_now_add=True, db_index=True)
     check_out_time = models.DateTimeField(null=True, blank=True)
+    # Coordonnées GPS du lieu de pointage (traçabilité : où l'arrivée/le départ a
+    # été scanné). Nullable : le check-out reste nul tant que le départ n'est pas
+    # pointé, et l'historique antérieur n'a pas de coordonnées. Le caractère
+    # obligatoire est imposé à l'entrée API (serializer), pas en base.
+    check_in_latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    check_in_longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    check_out_latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    check_out_longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     # Agent de sécurité ayant scanné le badge (traçabilité anti-fraude).
     # Nullable : rempli depuis request.user si la requête est authentifiée.
     # created_by = l'arrivée (check-in) ; updated_by = le dernier départ (check-out).

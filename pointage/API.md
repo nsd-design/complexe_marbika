@@ -57,6 +57,10 @@ et `updated_by` (au départ) du pointage.
 - **Session de pointage** : un enregistrement `Attendance` = une arrivée + un départ.
   Le check-in crée la session (`check_out_time = null`, `is_open = true`), le check-out
   la clôture.
+- **Coordonnées GPS** : l'app relève la position (`latitude`, `longitude`) au moment
+  du scan et l'envoie à chaque `check-in` / `check-out` (**obligatoire**). Le backend
+  se contente de les **enregistrer** pour traçabilité — aucun contrôle de zone
+  autorisée à ce stade. Guide d'intégration dédié : [`MOBILE_GEO.md`](MOBILE_GEO.md).
 - **Contrainte anti-doublon (garantie backend)** :
   - impossible de pointer une **arrivée** si une session est déjà ouverte → `409`.
   - impossible de pointer un **départ** s'il n'y a aucune session ouverte → `409`.
@@ -75,6 +79,10 @@ et `updated_by` (au départ) du pointage.
   "employee": { ... objet Employee ... },
   "check_in_time": "2026-07-06T15:57:18.215909Z",
   "check_out_time": null,
+  "check_in_latitude": "9.535000",
+  "check_in_longitude": "-13.677300",
+  "check_out_latitude": null,
+  "check_out_longitude": null,
   "created_by": null,
   "updated_at": null,
   "updated_by": null,
@@ -89,6 +97,10 @@ et `updated_by` (au départ) du pointage.
 | `employee` | objet `Employee` | Employé pointé |
 | `check_in_time` | datetime | Horodatage de l'arrivée (auto) |
 | `check_out_time` | datetime \| null | Horodatage du départ ; `null` si sur site |
+| `check_in_latitude` | décimal (string) \| null | Latitude GPS du lieu d'**arrivée** |
+| `check_in_longitude` | décimal (string) \| null | Longitude GPS du lieu d'**arrivée** |
+| `check_out_latitude` | décimal (string) \| null | Latitude GPS du lieu de **départ** ; `null` si sur site |
+| `check_out_longitude` | décimal (string) \| null | Longitude GPS du lieu de **départ** ; `null` si sur site |
 | `created_by` | objet `Employee` \| null | Agent ayant enregistré l'**arrivée** (si authentifié) |
 | `updated_at` | datetime \| null | Dernière modification (renseigné au départ) |
 | `updated_by` | objet `Employee` \| null | Agent ayant enregistré le **départ** (si authentifié) |
@@ -155,11 +167,19 @@ curl -X POST https://<host>/attendance/api/v1/token/ \
 
 Crée une nouvelle session de pointage pour l'employé associé au badge scanné.
 
-**Requête**
+**Requête** — `latitude` et `longitude` (coordonnées GPS du lieu de pointage,
+relevées par l'app) sont **obligatoires** :
 
 ```json
-{ "badge_token": "un5kZ_ikDy6nOC6bIpSH3w" }
+{
+  "badge_token": "un5kZ_ikDy6nOC6bIpSH3w",
+  "latitude": 9.535000,
+  "longitude": -13.677300
+}
 ```
+
+> `latitude` ∈ [-90, 90], `longitude` ∈ [-180, 180], jusqu'à 6 décimales.
+> Elles sont enregistrées dans `check_in_latitude` / `check_in_longitude`.
 
 **Réponse `201 Created`** — l'objet `Attendance` créé :
 
@@ -195,6 +215,8 @@ Crée une nouvelle session de pointage pour l'employé associé au badge scanné
 | `400 Bad Request` | `{"badge_token": ["Badge inconnu."]}` | Jeton QR non reconnu |
 | `400 Bad Request` | `{"badge_token": ["Employé désactivé."]}` | Compte employé inactif |
 | `400 Bad Request` | `{"badge_token": ["..."]}` | `badge_token` manquant ou vide |
+| `400 Bad Request` | `{"latitude": ["This field is required."]}` | `latitude` / `longitude` manquante |
+| `400 Bad Request` | `{"latitude": ["Ensure this value is less than or equal to 90."]}` | Coordonnée hors bornes |
 
 **Exemple**
 
@@ -202,20 +224,25 @@ Crée une nouvelle session de pointage pour l'employé associé au badge scanné
 curl -X POST https://<host>/attendance/api/v1/attendance/check-in/ \
   -H "Authorization: Token 9944b09199c62bcf9418ad8bf3f04d7fb46e29ff" \
   -H "Content-Type: application/json" \
-  -d '{"badge_token": "un5kZ_ikDy6nOC6bIpSH3w"}'
+  -d '{"badge_token": "un5kZ_ikDy6nOC6bIpSH3w", "latitude": 9.535, "longitude": -13.6773}'
 ```
 
 ---
 
 ### 4.2 Pointer un départ — `POST /attendance/check-out/`
 
-Clôture la session ouverte de l'employé (renseigne `check_out_time`, `updated_at`,
-`updated_by`).
+Clôture la session ouverte de l'employé (renseigne `check_out_time`,
+`check_out_latitude`, `check_out_longitude`, `updated_at`, `updated_by`).
 
-**Requête**
+**Requête** — `latitude` et `longitude` (coordonnées GPS du lieu de départ) sont
+**obligatoires**, mêmes règles qu'à l'arrivée :
 
 ```json
-{ "badge_token": "un5kZ_ikDy6nOC6bIpSH3w" }
+{
+  "badge_token": "un5kZ_ikDy6nOC6bIpSH3w",
+  "latitude": 9.535600,
+  "longitude": -13.677400
+}
 ```
 
 **Réponse `200 OK`** — l'objet `Attendance` clôturé :
@@ -249,6 +276,7 @@ Clôture la session ouverte de l'employé (renseigne `check_out_time`, `updated_
 | `409 Conflict` | `{"detail": "Aucun pointage d'arrivée en cours. L'employé doit d'abord pointer son arrivée."}` | Aucune session ouverte à clôturer |
 | `400 Bad Request` | `{"badge_token": ["Badge inconnu."]}` | Jeton QR non reconnu |
 | `400 Bad Request` | `{"badge_token": ["Employé désactivé."]}` | Compte employé inactif |
+| `400 Bad Request` | `{"latitude": ["This field is required."]}` | `latitude` / `longitude` manquante ou hors bornes |
 
 **Exemple**
 
@@ -256,7 +284,7 @@ Clôture la session ouverte de l'employé (renseigne `check_out_time`, `updated_
 curl -X POST https://<host>/attendance/api/v1/attendance/check-out/ \
   -H "Authorization: Token 9944b09199c62bcf9418ad8bf3f04d7fb46e29ff" \
   -H "Content-Type: application/json" \
-  -d '{"badge_token": "un5kZ_ikDy6nOC6bIpSH3w"}'
+  -d '{"badge_token": "un5kZ_ikDy6nOC6bIpSH3w", "latitude": 9.5356, "longitude": -13.6774}'
 ```
 
 ---
@@ -361,7 +389,8 @@ curl "https://<host>/attendance/api/v1/attendance/8/" \
 1. **Connexion de l'agent** : `POST /token/` avec ses identifiants → stocker le jeton
    et l'envoyer dans l'en-tête `Authorization: Token <jeton>` de toutes les requêtes
    suivantes.
-2. L'agent scanne le QR → on obtient le `badge_token`.
+2. L'agent scanne le QR → on obtient le `badge_token`. L'app relève aussi la
+   **position GPS** courante (`latitude`, `longitude`), à joindre au check-in/check-out.
 3. (Optionnel mais recommandé) `GET /status/?badge_token=<t>` :
    - `on_site = false` → afficher **« Pointer l'arrivée »** → `POST /check-in/`.
    - `on_site = true` → afficher **« Pointer le départ »** → `POST /check-out/`.

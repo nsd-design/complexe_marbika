@@ -30,7 +30,7 @@ python manage.py test salon.tests.MyTest.test_x   # single test
 
 Configuration is read from `.env` (via `python-dotenv`): `SECRET_KEY`, `DEBUG`, `DB_*`, `ALLOWED_HOSTS`. There is no `settings.py` split for prod — the same file reads env vars.
 
-Note: `requirements.txt` is **incomplete** — it omits `djangorestframework` even though `pointage` and `settings.INSTALLED_APPS` depend on `rest_framework` + `rest_framework.authtoken`. Install DRF manually (`pip install djangorestframework`) if setting up a fresh venv. `TIME_ZONE = 'UTC'` with `USE_TZ = True`, so the manual `timezone.now()` stamping described below writes UTC.
+`requirements.txt` pins all runtime deps including `djangorestframework`, `qrcode` (badge QR generation), and the `django-stubs`/`djangorestframework-stubs` type stubs — but there is **no mypy/type-check config** checked in, so the stubs are unused by any tooling in-repo. `TIME_ZONE = 'UTC'` with `USE_TZ = True`, so the manual `timezone.now()` stamping described below writes UTC.
 
 ## Architecture
 
