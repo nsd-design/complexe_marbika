@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from rest_framework import serializers
 
 from employe.models import Employe
@@ -28,6 +30,8 @@ class AttendanceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Attendance
         fields = ["id", "employee", "check_in_time", "check_out_time",
+                  "check_in_latitude", "check_in_longitude",
+                  "check_out_latitude", "check_out_longitude",
                   "created_by", "updated_at", "updated_by",
                   "is_open", "duration_seconds"]
         read_only_fields = fields
@@ -44,8 +48,20 @@ class CheckActionSerializer(serializers.Serializer):
 
     Le QR contient le badge_token opaque ; on résout l'employé côté serveur.
     L'employé résolu est déposé dans validated_data["employee"] pour la vue.
+
+    latitude / longitude : coordonnées GPS du lieu de pointage, obligatoires
+    (l'app mobile les envoie à chaque scan). Les bornes rejettent les valeurs
+    aberrantes ; aucune notion de zone autorisée à ce stade.
     """
     badge_token = serializers.CharField(write_only=True, trim_whitespace=True)
+    latitude = serializers.DecimalField(
+        max_digits=9, decimal_places=6, write_only=True,
+        min_value=Decimal("-90"), max_value=Decimal("90"),
+    )
+    longitude = serializers.DecimalField(
+        max_digits=9, decimal_places=6, write_only=True,
+        min_value=Decimal("-180"), max_value=Decimal("180"),
+    )
 
     def validate_badge_token(self, value):
         try:

@@ -30,9 +30,16 @@ class AttendanceApiTests(APITestCase):
         # Par défaut, les requêtes sont authentifiées en tant qu'agent de sécurité.
         self.client.force_authenticate(user=self.garde)
 
-    def _payload(self):
-        # Ce que l'app mobile envoie après scan du QR du badge.
-        return {"badge_token": self.employe.badge_token}
+    def _payload(self, **overrides):
+        # Ce que l'app mobile envoie après scan du QR du badge : le jeton + les
+        # coordonnées GPS du lieu de pointage (obligatoires).
+        payload = {
+            "badge_token": self.employe.badge_token,
+            "latitude": "9.535000",
+            "longitude": "-13.677300",
+        }
+        payload.update(overrides)
+        return payload
 
     # --- Authentification ---------------------------------------------------
 
@@ -121,6 +128,57 @@ class AttendanceApiTests(APITestCase):
             1,
         )
 
+    # --- Géolocalisation ----------------------------------------------------
+
+    def test_check_in_enregistre_les_coordonnees(self):
+        """Les coordonnées GPS de l'arrivée sont stockées telles quelles."""
+        resp = self.client.post(
+            self.check_in_url,
+            self._payload(latitude="9.535000", longitude="-13.677300"),
+            format="json")
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+        att = Attendance.objects.get(employee=self.employe)
+        self.assertEqual(str(att.check_in_latitude), "9.535000")
+        self.assertEqual(str(att.check_in_longitude), "-13.677300")
+        # Le départ n'est pas encore pointé : ses coordonnées restent nulles.
+        self.assertIsNone(att.check_out_latitude)
+        self.assertIsNone(att.check_out_longitude)
+
+    def test_check_out_enregistre_les_coordonnees(self):
+        """Le départ stocke ses propres coordonnées sans écraser celles d'arrivée."""
+        self.client.post(
+            self.check_in_url,
+            self._payload(latitude="9.535000", longitude="-13.677300"),
+            format="json")
+        resp = self.client.post(
+            self.check_out_url,
+            self._payload(latitude="9.540000", longitude="-13.680000"),
+            format="json")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        att = Attendance.objects.get(employee=self.employe)
+        self.assertEqual(str(att.check_in_latitude), "9.535000")
+        self.assertEqual(str(att.check_out_latitude), "9.540000")
+        self.assertEqual(str(att.check_out_longitude), "-13.680000")
+
+    def test_coordonnees_obligatoires(self):
+        """Sans latitude/longitude, le pointage est refusé (400)."""
+        resp = self.client.post(
+            self.check_in_url, {"badge_token": self.employe.badge_token},
+            format="json")
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("latitude", resp.data)
+        self.assertIn("longitude", resp.data)
+        self.assertEqual(Attendance.objects.count(), 0)
+
+    def test_coordonnees_hors_bornes_refusees(self):
+        """Une latitude > 90 est rejetée par la validation de plage."""
+        resp = self.client.post(
+            self.check_in_url, self._payload(latitude="200.000000"),
+            format="json")
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("latitude", resp.data)
+        self.assertEqual(Attendance.objects.count(), 0)
+
     # --- Statut -------------------------------------------------------------
 
     def test_status_reflete_la_presence(self):
@@ -149,7 +207,7 @@ class AttendanceApiTests(APITestCase):
 
     def test_badge_inconnu_refuse(self):
         resp = self.client.post(self.check_in_url,
-                                {"badge_token": "jeton-bidon-inexistant"},
+                                self._payload(badge_token="jeton-bidon-inexistant"),
                                 format="json")
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(Attendance.objects.count(), 0)
@@ -169,12 +227,12 @@ class AttendanceApiTests(APITestCase):
 
         # L'ancien badge est refusé.
         resp = self.client.post(self.check_in_url,
-                                {"badge_token": ancien_token}, format="json")
+                                self._payload(badge_token=ancien_token), format="json")
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
 
         # Le nouveau badge fonctionne.
         resp = self.client.post(self.check_in_url,
-                                {"badge_token": nouveau_token}, format="json")
+                                self._payload(badge_token=nouveau_token), format="json")
         self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
 
     def test_badge_token_genere_automatiquement_et_unique(self):

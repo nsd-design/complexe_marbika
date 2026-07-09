@@ -70,7 +70,9 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
                     return Response({"detail": DEJA_ARRIVE},
                                     status=status.HTTP_409_CONFLICT)
                 attendance = Attendance.objects.create(
-                    employee=employee, created_by=self._guard(request)
+                    employee=employee, created_by=self._guard(request),
+                    check_in_latitude=serializer.validated_data["latitude"],
+                    check_in_longitude=serializer.validated_data["longitude"],
                 )
         except IntegrityError:
             # Course entre deux requêtes concurrentes : la contrainte a tranché.
@@ -100,9 +102,13 @@ class AttendanceViewSet(viewsets.ReadOnlyModelViewSet):
                                 status=status.HTTP_409_CONFLICT)
             now = timezone.now()
             attendance.check_out_time = now
+            attendance.check_out_latitude = serializer.validated_data["latitude"]
+            attendance.check_out_longitude = serializer.validated_data["longitude"]
             attendance.updated_at = now
             attendance.updated_by = self._guard(request)
-            attendance.save(update_fields=["check_out_time", "updated_at", "updated_by"])
+            attendance.save(update_fields=["check_out_time", "check_out_latitude",
+                                           "check_out_longitude", "updated_at",
+                                           "updated_by"])
 
         return Response(AttendanceSerializer(attendance).data,
                         status=status.HTTP_200_OK)
